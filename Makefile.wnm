@@ -6,12 +6,12 @@
 CC = cl
 
 # Normal flags
-CFLAGS = /nologo /ML /W3 /GX /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /c
-LDFLAGS = /subsystem:console /incremental:no /machine:I386
+CFLAGS = /nologo /MT /W3 /EHsc /Ox /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /c
+LDFLAGS = /nologo /subsystem:console /incremental:no /machine:I386
 
 # Debugging flags
-#CFLAGS = /nologo /MDd /W3 /GX /Od /Gm /Zi /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /c
-#LDFLAGS = /subsystem:console /incremental:yes /debug /machine:I386
+#CFLAGS = /nologo /MTd /W3 /EHsc /Od /Gm /Zi /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /c
+#LDFLAGS = /nologo /subsystem:console /incremental:yes /debug /machine:I386
 
 LD = link
 LIBS = user32.lib
