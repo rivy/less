@@ -272,16 +272,24 @@ flush()
 						break;
 					if (at & 1)
 					{
+#if MSDOS_COMPILER==WIN32C
+							fg |= FOREGROUND_INTENSITY;
+#else
 							fg = bo_fg_color;
 							bg = bo_bg_color;
+#endif
 					} else if (at & 2)
 					{
 							fg = so_fg_color;
 							bg = so_bg_color;
 					} else if (at & 4)
 					{
+#if MSDOS_COMPILER==WIN32C
+							bg |= BACKGROUND_INTENSITY;
+#else
 							fg = ul_fg_color;
 							bg = ul_bg_color;
+#endif
 					} else if (at & 8)
 					{
 							fg = bl_fg_color;
