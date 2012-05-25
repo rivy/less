@@ -37,7 +37,7 @@ all: less.exe lesskey.exe
 # This is really horrible, but the command line is too long for 
 # MS-DOS if we try to link ${OBJ}.
 less.exe: $(OBJ)
-	-del lesskey.obj
+	-if EXIST "lesskey.obj" del lesskey.obj
 	$(LD) $(LDFLAGS) *.obj $(LIBS) /out:$@
 
 lesskey.exe: lesskey.obj version.obj
