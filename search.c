@@ -1242,7 +1242,6 @@ search(search_type, pattern, n)
 	int n;
 {
 	POSITION pos;
-	int result;
 
 	if (pattern == NULL || *pattern == '\0')
 	{
