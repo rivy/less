@@ -39,6 +39,7 @@ extern long jump_sline_fraction;
 /*
  * Interrupt signal handler.
  */
+static RETSIGTYPE u_interrupt(int);
 	/* ARGSUSED*/
 	static RETSIGTYPE
 u_interrupt(type)
@@ -116,6 +117,7 @@ winch(type)
  */
 #include "windows.h"
 
+static BOOL WINAPI wbreak_handler(DWORD);
 	static BOOL WINAPI 
 wbreak_handler(dwCtrlType)
 	DWORD dwCtrlType;
