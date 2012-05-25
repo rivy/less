@@ -217,7 +217,7 @@
 	public struct loption * findopt_name ();
 	public int iread ();
 	public void intread ();
-	public long get_time ();
+	public time_type get_time ();
 	public char * errno_message ();
 	public int percentage ();
 	public POSITION percent_pos ();

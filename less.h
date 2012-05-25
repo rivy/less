@@ -77,6 +77,9 @@
 #if HAVE_LIMITS_H
 #include <limits.h>
 #endif
+#if HAVE_TIME_H
+#include <time.h>
+#endif
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -225,6 +228,12 @@ typedef off_t		LINENUM;
 #define MAX_UTF_CHAR_LEN   6	/* Max bytes in one UTF-8 char */
 
 #define	NULL_POSITION	((POSITION)(-1))
+
+#if HAVE_TIME_T
+#define time_type time_t
+#else
+#define time_type long
+#endif
 
 /*
  * Flags for open()

@@ -34,11 +34,11 @@
 #include <values.h>
 #endif
 
-#if HAVE_TIME_T
-#define time_type	time_t
-#else
-#define	time_type	long
-#endif
+// #if HAVE_TIME_T
+// #define time_type	time_t
+// #else
+// #define	time_type	long
+// #endif
 
 /*
  * BSD setjmp() saves (and longjmp() restores) the signal mask.
@@ -192,9 +192,9 @@ intread()
  * Return the current time.
  */
 #if HAVE_TIME
-	public long
+	public time_type
 get_time()
-{
+	{
 	time_type t;
 
 	time(&t);
