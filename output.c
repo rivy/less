@@ -1,11 +1,10 @@
 /*
- * Copyright (C) 1984-2011  Mark Nudelman
+ * Copyright (C) 1984-2012  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
  *
- * For more information about less, or for information on how to 
- * contact the author, see the README file.
+ * For more information, see the README file.
  */
 
 
@@ -136,7 +135,7 @@ flush()
 				FOREGROUND_RED,
 				FOREGROUND_GREEN,
 				FOREGROUND_RED|FOREGROUND_GREEN,
-				FOREGROUND_BLUE, 
+				FOREGROUND_BLUE,
 				FOREGROUND_BLUE|FOREGROUND_RED,
 				FOREGROUND_BLUE|FOREGROUND_GREEN,
 				FOREGROUND_BLUE|FOREGROUND_GREEN|FOREGROUND_RED
@@ -174,6 +173,7 @@ flush()
 						 */
 						p++;
 						anchor = p_next = p;
+						at = 0;
 						WIN32setcolors(nm_fg_color, nm_bg_color);
 						continue;
 					}
@@ -181,7 +181,7 @@ flush()
 
 					/*
 					 * Select foreground/background colors
-					 * based on the escape sequence. 
+					 * based on the escape sequence.
 					 */
 					fg = nm_fg_color;
 					bg = nm_bg_color;
@@ -272,16 +272,24 @@ flush()
 						break;
 					if (at & 1)
 					{
+						/*
+						 * If \e[1m use defined bold
+						 * color, else set intensity.
+						 */
+						if (p[-2] == '[')
+						{
 #if MSDOS_COMPILER==WIN32C
 							fg |= FOREGROUND_INTENSITY;
 #else
 							fg = bo_fg_color;
 							bg = bo_bg_color;
 #endif
+						} else
+							fg |= 8;
 					} else if (at & 2)
 					{
-							fg = so_fg_color;
-							bg = so_bg_color;
+						fg = so_fg_color;
+						bg = so_bg_color;
 					} else if (at & 4)
 					{
 #if MSDOS_COMPILER==WIN32C
@@ -292,8 +300,8 @@ flush()
 #endif
 					} else if (at & 8)
 					{
-							fg = bl_fg_color;
-							bg = bl_bg_color;
+						fg = bl_fg_color;
+						bg = bl_bg_color;
 					}
 					fg &= 0xf;
 					bg &= 0xf;
