@@ -280,6 +280,7 @@ flush()
 						{
 #if MSDOS_COMPILER==WIN32C
 							fg |= FOREGROUND_INTENSITY;
+							bg |= BACKGROUND_INTENSITY;
 #else
 							fg = bo_fg_color;
 							bg = bo_bg_color;
