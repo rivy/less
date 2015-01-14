@@ -51,7 +51,8 @@ defines.h: defines.wn
 $(OBJ): less.h defines.h funcs.h cmd.h
 
 clean:
-	-del *.obj 
+	-del *.obj
+	-del defines.h
 	-del less.exe
 	-del lesskey.exe
 
