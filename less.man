@@ -1,4 +1,4 @@
-LESS(1)                                                                LESS(1)
+LESS(1)                     General Commands Manual                    LESS(1)
 
 
 
@@ -119,6 +119,10 @@ LESS(1)                                                                LESS(1)
               Go to line N in the file, default the end of the  file.   (Warn-
               ing:  this  may  be slow if N is large, or if N is not specified
               and standard input, rather than a file, is being read.)
+
+       ESC-G  Same as G, except if no number N is specified and the  input  is
+              standard  input,  goes  to  the  last  line  which  is currently
+              buffered.
 
        p or % Go to a position N percent into the file.  N should be between 0
               and 100, and may contain a decimal point.
@@ -478,7 +482,7 @@ LESS(1)                                                                LESS(1)
 
        -b[4mn[24m or --buffers=[4mn[0m
               Specifies  the  amount  of  buffer  space [4mless[24m will use for each
-              file, in units of kilobytes (1024 bytes).   By  default  64K  of
+              file, in units of kilobytes (1024 bytes).  By  default  64 K  of
               buffer  space  is used for each file (unless the file is a pipe;
               see the -B option).  The -b  option  specifies  instead  that  [4mn[0m
               kilobytes of buffer space should be used for each file.  If [4mn[24m is
@@ -490,7 +494,7 @@ LESS(1)                                                                LESS(1)
               automatically as needed.  If a large amount of data is read from
               the  pipe,  this  can cause a large amount of memory to be allo-
               cated.  The -B option disables this automatic allocation of buf-
-              fers  for pipes, so that only 64K (or the amount of space speci-
+              fers for pipes, so that only 64 K (or the amount of space speci-
               fied by the -b option) is used for the pipe.  Warning: use of -B
               can  result  in  erroneous display, since only the most recently
               viewed part of the piped data is kept  in  memory;  any  earlier
@@ -584,93 +588,99 @@ LESS(1)                                                                LESS(1)
               so  on.  If the line is specified as a fraction, the actual line
               number is recalculated if the terminal  window  is  resized,  so
               that  the  target  line remains at the specified fraction of the
-              screen height.  If any form of the -j option  is  used,  forward
-              searches  begin  at  the line immediately after the target line,
-              and backward searches begin at the target line,  unless  changed
-              by  -a or -A.  For example, if "-j4" is used, the target line is
-              the fourth line on the screen, so forward searches begin at  the
-              fifth line on the screen.
+              screen height.  If any form of the -j option is  used,  repeated
+              forward  searches  (invoked  with  "n" or "N") begin at the line
+              immediately  after  the  target  line,  and  repeated   backward
+              searches  begin  at the target line, unless changed by -a or -A.
+              For example, if "-j4" is used, the target  line  is  the  fourth
+              line  on the screen, so forward searches begin at the fifth line
+              on the screen.  However nonrepeated searches (invoked  with  "/"
+              or  "?")  always begin at the start or end of the current screen
+              respectively.
 
        -J or --status-column
-              Displays  a  status  column at the left edge of the screen.  The
-              status column shows the lines that matched the  current  search.
-              The  status  column  is  also  used if the -w or -W option is in
+              Displays a status column at the left edge of  the  screen.   The
+              status  column  shows the lines that matched the current search.
+              The status column is also used if the -w  or  -W  option  is  in
               effect.
 
        -k[4mfilename[24m or --lesskey-file=[4mfilename[0m
-              Causes [4mless[24m to open and interpret the named file  as  a  [4mlesskey[0m
+              Causes  [4mless[24m  to  open and interpret the named file as a [4mlesskey[0m
               (1) file.  Multiple -k options may be specified.  If the LESSKEY
-              or LESSKEY_SYSTEM environment variable is set, or if  a  lesskey
+              or  LESSKEY_SYSTEM  environment variable is set, or if a lesskey
               file is found in a standard place (see KEY BINDINGS), it is also
               used as a [4mlesskey[24m file.
 
        -K or --quit-on-intr
-              Causes [4mless[24m to exit immediately (with status 2) when  an  inter-
-              rupt  character  (usually  ^C) is typed.  Normally, an interrupt
+              Causes  [4mless[24m  to exit immediately (with status 2) when an inter-
+              rupt character (usually ^C) is typed.   Normally,  an  interrupt
               character causes [4mless[24m to stop whatever it is doing and return to
-              its  command  prompt.   Note  that  use  of this option makes it
+              its command prompt.  Note that  use  of  this  option  makes  it
               impossible to return to the command prompt from the "F" command.
 
        -L or --no-lessopen
-              Ignore the LESSOPEN environment variable  (see  the  INPUT  PRE-
-              PROCESSOR  section  below).   This option can be set from within
-              [4mless[24m, but it will apply only to files opened  subsequently,  not
+              Ignore  the  LESSOPEN  environment  variable (see the INPUT PRE-
+              PROCESSOR section below).  This option can be  set  from  within
+              [4mless[24m,  but  it will apply only to files opened subsequently, not
               to the file which is currently open.
 
        -m or --long-prompt
-              Causes  [4mless[24m  to  prompt verbosely (like [4mmore[24m), with the percent
+              Causes [4mless[24m to prompt verbosely (like [4mmore[24m),  with  the  percent
               into the file.  By default, [4mless[24m prompts with a colon.
 
        -M or --LONG-PROMPT
               Causes [4mless[24m to prompt even more verbosely than [4mmore.[0m
 
        -n or --line-numbers
-              Suppresses line numbers.  The default (to use line numbers)  may
-              cause  [4mless[24m  to run more slowly in some cases, especially with a
-              very large input file.  Suppressing line  numbers  with  the  -n
-              option  will  avoid this problem.  Using line numbers means: the
+              Suppresses  line numbers.  The default (to use line numbers) may
+              cause [4mless[24m to run more slowly in some cases, especially  with  a
+              very  large  input  file.   Suppressing line numbers with the -n
+              option will avoid this problem.  Using line numbers  means:  the
               line number will be displayed in the verbose prompt and in the =
-              command,  and the v command will pass the current line number to
-              the editor (see also  the  discussion  of  LESSEDIT  in  PROMPTS
+              command, and the v command will pass the current line number  to
+              the  editor  (see  also  the  discussion  of LESSEDIT in PROMPTS
               below).
 
        -N or --LINE-NUMBERS
-              Causes  a  line  number to be displayed at the beginning of each
+              Causes a line number to be displayed at the  beginning  of  each
               line in the display.
 
        -o[4mfilename[24m or --log-file=[4mfilename[0m
-              Causes [4mless[24m to copy its input to the named file as it  is  being
+              Causes  [4mless[24m  to copy its input to the named file as it is being
               viewed.  This applies only when the input file is a pipe, not an
-              ordinary file.  If the file already exists, [4mless[24m  will  ask  for
+              ordinary  file.   If  the file already exists, [4mless[24m will ask for
               confirmation before overwriting it.
 
        -O[4mfilename[24m or --LOG-FILE=[4mfilename[0m
               The -O option is like -o, but it will overwrite an existing file
               without asking for confirmation.
 
-              If no log file has been specified, the -o and -O options can  be
-              used  from  within  [4mless[24m  to specify a log file.  Without a file
+              If  no log file has been specified, the -o and -O options can be
+              used from within [4mless[24m to specify a log  file.   Without  a  file
               name, they will simply report the name of the log file.  The "s"
               command is equivalent to specifying -o from within [4mless.[0m
 
        -p[4mpattern[24m or --pattern=[4mpattern[0m
-              The  -p  option  on the command line is equivalent to specifying
-              +/[4mpattern[24m; that is, it tells [4mless[24m to start at the  first  occur-
+              The -p option on the command line is  equivalent  to  specifying
+              +/[4mpattern[24m;  that  is, it tells [4mless[24m to start at the first occur-
               rence of [4mpattern[24m in the file.
 
        -P[4mprompt[24m or --prompt=[4mprompt[0m
-              Provides  a  way  to  tailor the three prompt styles to your own
+              Provides a way to tailor the three prompt  styles  to  your  own
               preference.  This option would normally be put in the LESS envi-
               ronment variable, rather than being typed in with each [4mless[24m com-
               mand.  Such an option must either be the last option in the LESS
-              variable,  or be terminated by a dollar sign.  -Ps followed by a
-              string changes the default (short) prompt to that  string.   -Pm
-              changes  the  medium  (-m)  prompt.   -PM  changes the long (-M)
-              prompt.  -Ph changes  the  prompt  for  the  help  screen.   -P=
-              changes  the  message printed by the = command.  -Pw changes the
-              message printed while waiting for data (in the F command).   All
-              prompt  strings  consist  of  a  sequence of letters and special
-              escape sequences.  See the section on PROMPTS for more details.
+              variable, or be terminated by a dollar sign.
+               -Ps followed by a string changes the default (short) prompt  to
+              that string.
+               -Pm changes the medium (-m) prompt.
+               -PM changes the long (-M) prompt.
+               -Ph changes the prompt for the help screen.
+               -P= changes the message printed by the = command.
+               -Pw  changes the message printed while waiting for data (in the
+              F command).  All prompt strings consist of a sequence of letters
+              and  special  escape  sequences.  See the section on PROMPTS for
+              more details.
 
        -q or --quiet or --silent
               Causes moderately "quiet" operation: the terminal  bell  is  not
@@ -1035,7 +1045,7 @@ LESS(1)                                                                LESS(1)
        lessopen.sh:
             #! /bin/sh
             case "$1" in
-            *.Z) uncompress -
+            *.Z) uncompress -c $1  >/tmp/less.$$  2>/dev/null
                  if [ -s /tmp/less.$$ ]; then
                       echo /tmp/less.$$
                  else
@@ -1296,6 +1306,10 @@ LESS(1)                                                                LESS(1)
        %t     Causes any trailing spaces to be removed.  Usually used  at  the
               end of the string, but may appear anywhere.
 
+       %T     Normally  expands  to the word "file".  However if viewing files
+              via a tags list using the -t option,  it  expands  to  the  word
+              "tag".
+
        %x     Replaced by the name of the next input file in the list.
 
        If any item is unknown (for example, the file size if input is a pipe),
@@ -1366,7 +1380,7 @@ LESS(1)                                                                LESS(1)
        Notice how each question mark has a matching  period,  and  how  the  %
        after the %pt is included literally by escaping it with a backslash.
 
-       ?n?f%f .?m(file %i of %m) ..?e(END) ?x- Next\: %x..%t
+       ?n?f%f .?m(%T %i of %m) ..?e(END) ?x- Next\: %x..%t";
 
        This  prints  the  filename if this is the first prompt in a file, fol-
        lowed by the "file N of N" message if there  is  more  than  one  input
@@ -1377,15 +1391,15 @@ LESS(1)                                                                LESS(1)
        respectively).   Each  is  broken  into  two lines here for readability
        only.
 
-       ?n?f%f .?m(file %i of %m) ..?e(END) ?x- Next\: %x.:
+       ?n?f%f .?m(%T %i of %m) ..?e(END) ?x- Next\: %x.:
             ?pB%pB\%:byte %bB?s/%s...%t
 
-       ?f%f .?n?m(file %i of %m) ..?ltlines %lt-%lb?L/%L. :
+       ?f%f .?n?m(%T %i of %m) ..?ltlines %lt-%lb?L/%L. :
             byte %bB?s/%s. .?e(END) ?x- Next\: %x.:?pB%pB\%..%t
 
        And here is the default message produced by the = command:
 
-       ?f%f .?m(file %i of %m) .?ltlines %lt-%lb?L/%L. .
+       ?f%f .?m(%T %i of %m) .?ltlines %lt-%lb?L/%L. .
             byte %bB?s/%s. ?e(END) :?pB%pB\%..%t
 
        The prompt expansion features are also used for another purpose: if  an
@@ -1434,8 +1448,8 @@ LESS(1)                                                                LESS(1)
        less behaves differently in these ways:
 
        The  -e  option  works  differently.  If the -e option is not set, [4mless[0m
-       behaves as if the -E option were set.  If the -e option  is  set,  [4mless[0m
-       behaves as if the -e and -F options were set.
+       behaves as if the -e option were set.  If the -e option  is  set,  [4mless[0m
+       behaves as if the -E option were set.
 
        The  -m  option  works  differently.   If the -m option is not set, the
        medium prompt is used, and it is prefixed with the  string  "--More--".
@@ -1493,7 +1507,7 @@ LESS(1)                                                                LESS(1)
        LESSANSIMIDCHARS
               Characters which may appear between the ESC  character  and  the
               end   character  in  an  ANSI  color  escape  sequence  (default
-              "0123456789;[?!"'#%()*+ ".
+              "0123456789:;[?!"'#%()*+ ".
 
        LESSBINFMT
               Format for displaying non-printable, non-control characters.
@@ -1590,7 +1604,7 @@ LESS(1)                                                                LESS(1)
 
 
 [1mCOPYRIGHT[0m
-       Copyright (C) 1984-2012  Mark Nudelman
+       Copyright (C) 1984-2014  Mark Nudelman
 
        less  is  part of the GNU project and is free software.  You can redis-
        tribute it and/or modify it under the terms of either (1) the GNU  Gen-
@@ -1618,4 +1632,4 @@ LESS(1)                                                                LESS(1)
 
 
 
-                           Version 458: 04 Apr 2013                    LESS(1)
+                           Version 471: 14 Dec 2014                    LESS(1)
