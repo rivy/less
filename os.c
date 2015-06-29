@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2012  Mark Nudelman
+ * Copyright (C) 1984-2014  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -32,12 +32,6 @@
 #if HAVE_VALUES_H
 #include <values.h>
 #endif
-
-// #if HAVE_TIME_T
-// #define time_type	time_t
-// #else
-// #define	time_type	long
-// #endif
 
 /*
  * BSD setjmp() saves (and longjmp() restores) the signal mask.
@@ -243,7 +237,7 @@ errno_message(filename)
 #else
 	p = "cannot open";
 #endif
-	len = strlen(filename) + strlen(p) + 3;
+	len = (int) (strlen(filename) + strlen(p) + 3);
 	m = (char *) ecalloc(len, sizeof(char));
 	SNPRINTF2(m, len, "%s: %s", filename, p);
 	return (m);

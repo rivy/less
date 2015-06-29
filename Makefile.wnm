@@ -45,14 +45,15 @@ lesskey.exe: lesskey.obj version.obj
 	$(LD) $(LDFLAGS) lesskey.obj version.obj $(LIBS) /out:$@
 
 defines.h: defines.wn
-	-del defines.h
+	-if EXIST "defines.h" del defines.h
 	-copy defines.wn defines.h
 
 $(OBJ): less.h defines.h funcs.h cmd.h
 
 clean:
-	-del *.obj 
-	-del less.exe
-	-del lesskey.exe
+	-if EXIST "*.obj" del *.obj
+	-if EXIST "defines.h" del defines.h
+	-if EXIST "less.exe" del less.exe
+	-if EXIST "lesskey.exe" del lesskey.exe
 
 
