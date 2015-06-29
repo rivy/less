@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2014  Mark Nudelman
+ * Copyright (C) 1984-2015  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -979,7 +979,7 @@ close_altfile(altfilename, filename, pipefd)
 	     	return;
 	if (num_pct_s(lessclose) > 2) 
 	{
-		error("Invalid LESSCLOSE variable");
+		error("Invalid LESSCLOSE variable", NULL_PARG);
 		return;
 	}
 	len = (int) (strlen(lessclose) + strlen(filename) + strlen(altfilename) + 2);
