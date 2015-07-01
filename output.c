@@ -205,7 +205,7 @@ flush()
                         }
 
                         if (q == p ||
-                            code > 49 || code < 0 ||
+                            code > 107 || code < 0 ||
                             (!is_ansi_end(*q) && *q != ';'))
                         {
                             p_next = q;
@@ -216,7 +216,8 @@ flush()
 
                         switch (code)
                         {
-                        default:
+                        default: break;
+                        case 0:
                         /* case 0: all attrs off */
                             fg = nm_fg_color;
                             bg = nm_bg_color;
@@ -237,7 +238,7 @@ flush()
                             at |= 8;
                             break;
                         case 8: /* concealed on */
-                            fg = (bg & 7) | 8;
+                            fg = bg;
                             break;
                         case 22: /* bold off */
                             at &= ~1;
@@ -252,7 +253,7 @@ flush()
                         case 30: case 31: case 32:
                         case 33: case 34: case 35:
                         case 36: case 37:
-                            fg = (fg & 8) | (screen_color[code - 30]);
+                            fg = screen_color[code - 30];
                             break;
                         case 39: /* default fg */
                             fg = nm_fg_color;
@@ -260,7 +261,7 @@ flush()
                         case 40: case 41: case 42:
                         case 43: case 44: case 45:
                         case 46: case 47:
-                            bg = (bg & 8) | (screen_color[code - 40]);
+                            bg = screen_color[code - 40];
                             break;
                         case 49: /* default fg */
                             bg = nm_bg_color;
@@ -270,39 +271,46 @@ flush()
                     }
                     if (!is_ansi_end(*p) || p == p_next)
                         break;
-                    if (at & 1)
+                    /* same order/priority as in screen.c within at_enter() */
+                    if (at & 4)
                     {
-                        /*
-                         * If \e[1m use defined bold
-                         * color, else set intensity.
-                         */
-                        if (p[-2] == '[')
+                        if (ul_fg_color >= 0)
                         {
-#if MSDOS_COMPILER==WIN32C
-                            fg |= FOREGROUND_INTENSITY;
-                            bg |= BACKGROUND_INTENSITY;
-#else
-                            fg = bo_fg_color;
-                            bg = bo_bg_color;
-#endif
-                        } else
-                            fg |= 8;
-                    } else if (at & 2)
-                    {
-                        fg = so_fg_color;
-                        bg = so_bg_color;
-                    } else if (at & 4)
-                    {
-#if MSDOS_COMPILER==WIN32C
-                            bg |= BACKGROUND_INTENSITY;
-#else
                             fg = ul_fg_color;
                             bg = ul_bg_color;
-#endif
-                    } else if (at & 8)
+                        }
+                        else
+                            bg |= 8;
+                    }
+                    if (at & 1)
                     {
-                        fg = bl_fg_color;
-                        bg = bl_bg_color;
+                        if (bo_fg_color >= 0)
+                        {
+                            fg = bo_fg_color;
+                            bg = bo_bg_color;
+                        }
+                        else
+                            fg |= 8;
+                    }
+                    if (at & 8)
+                    {
+                        if (bl_fg_color >= 0)
+                        {
+                            fg = bl_fg_color;
+                            bg = bl_bg_color;
+                        }
+                        else
+                            bg |= 8;
+                    }
+                    if (at & 2)
+                    {
+                        if (so_fg_color >= 0)
+                        {
+                            fg = so_fg_color;
+                            bg = so_bg_color;
+                        }
+                        else
+                            fg |= 8;
                     }
                     fg &= 0xf;
                     bg &= 0xf;
