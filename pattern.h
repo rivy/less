@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2014  Mark Nudelman
+ * Copyright (C) 1984-2015  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -17,9 +17,9 @@
 #if HAVE_POSIX_REGCOMP
 #include <regex.h>
 #ifdef REG_EXTENDED
-#define	REGCOMP_FLAG	REG_EXTENDED
+#define REGCOMP_FLAG    REG_EXTENDED
 #else
-#define	REGCOMP_FLAG	0
+#define REGCOMP_FLAG    0
 #endif
 #define DEFINE_PATTERN(name)  regex_t *name
 #define CLEAR_PATTERN(name)   name = NULL
@@ -54,6 +54,6 @@ extern int reg_show_error;
 #endif
 
 #if NO_REGEX
-#define DEFINE_PATTERN(name)  
-#define CLEAR_PATTERN(name)   
+#define DEFINE_PATTERN(name)
+#define CLEAR_PATTERN(name)
 #endif

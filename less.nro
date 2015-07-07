@@ -1,4 +1,4 @@
-.TH LESS 1 "Version 471: 14 Dec 2014"
+.TH LESS 1 "Version 478: 21 May 2015"
 .SH NAME
 less \- opposite of more
 .SH SYNOPSIS
@@ -85,6 +85,10 @@ Warning: some systems use ^Y as a special job control character.
 Scroll backward N lines, default one half of the screen size.
 If N is specified, it becomes the new default for
 subsequent d and u commands.
+.IP "J"
+Like j, but continues to scroll beyond the end of the file.
+.IP "K or Y"
+Like k, but continues to scroll beyond the beginning of the file.
 .IP "ESC-) or RIGHTARROW"
 Scroll horizontally right N characters, default half the screen width
 (see the \-# option).
@@ -213,7 +217,8 @@ that is, do a simple textual comparison.
 .RE
 .IP ?pattern
 Search backward in the file for the N-th line containing the pattern.
-The search starts at the line immediately before the top line displayed.
+The search starts at the last line displayed
+(but see the \-a and \-j options, which change this).
 .sp
 Certain characters are special as in the / command:
 .RS
@@ -754,7 +759,7 @@ Like \-r, but only ANSI "color" escape sequences are output in "raw" form.
 Unlike \-r, the screen appearance is maintained correctly in most cases.
 ANSI "color" escape sequences are sequences of the form:
 .sp
-	ESC [ \&...\& m
+    ESC [ \&...\& m
 .sp
 where the "...\&" is zero or more color specification characters
 For the purpose of keeping track of screen appearance,
@@ -1121,31 +1126,31 @@ view them directly:
 .PP
 lessopen.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	case "$1" in
+    case "$1" in
 .br
-	*.Z)	uncompress \-c $1  >/tmp/less.$$  2>/dev/null
+    *.Z)    uncompress \-c $1  >/tmp/less.$$  2>/dev/null
 .br
-		if [ \-s /tmp/less.$$ ]; then
+        if [ \-s /tmp/less.$$ ]; then
 .br
-			echo /tmp/less.$$
+            echo /tmp/less.$$
 .br
-		else
+        else
 .br
-			rm \-f /tmp/less.$$
+            rm \-f /tmp/less.$$
 .br
-		fi
+        fi
 .br
-		;;
+        ;;
 .br
-	esac
+    esac
 .PP
 lessclose.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	rm $2
+    rm $2
 .PP
 To use these scripts, put them both where they can be executed and
 set LESSOPEN="lessopen.sh\ %s", and
@@ -1176,19 +1181,19 @@ previous example scripts:
 .PP
 lesspipe.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	case "$1" in
+    case "$1" in
 .br
-	*.Z)	uncompress \-c $1  2>/dev/null
+    *.Z)    uncompress \-c $1  2>/dev/null
 .br
-	*)	exit 1
+    *)  exit 1
 .br
-		;;
+        ;;
 .br
-	esac
+    esac
 .br
-	exit $?
+    exit $?
 .br
 .PP
 To use this script, put it where it can be executed and set
@@ -1298,25 +1303,25 @@ represent any real character set.)
 This table shows the value of LESSCHARDEF which is equivalent
 to each of the possible values for LESSCHARSET:
 .sp
-	ascii\ 	8bcccbcc18b95.b
+    ascii\  8bcccbcc18b95.b
 .br
-	dos\ \ \ 	8bcccbcc12bc5b95.b.
+    dos\ \ \    8bcccbcc12bc5b95.b.
 .br
-	ebcdic	5bc6bcc7bcc41b.9b7.9b5.b..8b6.10b6.b9.7b
+    ebcdic  5bc6bcc7bcc41b.9b7.9b5.b..8b6.10b6.b9.7b
 .br
-	\ \ \ \ \ \ 	9.8b8.17b3.3b9.7b9.8b8.6b10.b.b.b.
+    \ \ \ \ \ \     9.8b8.17b3.3b9.7b9.8b8.6b10.b.b.b.
 .br
-	IBM-1047	4cbcbc3b9cbccbccbb4c6bcc5b3cbbc4bc4bccbc
+    IBM-1047    4cbcbc3b9cbccbccbb4c6bcc5b3cbbc4bc4bccbc
 .br
-	\ \ \ \ \ \ 	191.b
+    \ \ \ \ \ \     191.b
 .br
-	iso8859	8bcccbcc18b95.33b.
+    iso8859 8bcccbcc18b95.33b.
 .br
-	koi8-r	8bcccbcc18b95.b128.
+    koi8-r  8bcccbcc18b95.b128.
 .br
-	latin1	8bcccbcc18b95.33b.
+    latin1  8bcccbcc18b95.33b.
 .br
-	next\ \ 	8bcccbcc18b95.bb125.bb
+    next\ \     8bcccbcc18b95.bb125.bb
 .PP
 If neither LESSCHARSET nor LESSCHARDEF is set,
 but any of the strings "UTF-8", "UTF8", "utf-8" or "utf8"
@@ -1524,17 +1529,17 @@ Each is broken into two lines here for readability only.
 .nf
 .sp
 ?n?f%f\ .?m(%T\ %i\ of\ %m)\ ..?e(END)\ ?x-\ Next\e:\ %x.:
-	?pB%pB\e%:byte\ %bB?s/%s...%t
+    ?pB%pB\e%:byte\ %bB?s/%s...%t
 .sp
 ?f%f\ .?n?m(%T\ %i\ of\ %m)\ ..?ltlines\ %lt-%lb?L/%L.\ :
-	byte\ %bB?s/%s.\ .?e(END)\ ?x-\ Next\e:\ %x.:?pB%pB\e%..%t
+    byte\ %bB?s/%s.\ .?e(END)\ ?x-\ Next\e:\ %x.:?pB%pB\e%..%t
 .sp
 .fi
 And here is the default message produced by the = command:
 .nf
 .sp
 ?f%f\ .?m(%T\ %i\ of\ %m)\ .?ltlines\ %lt-%lb?L/%L.\ .
-	byte\ %bB?s/%s.\ ?e(END)\ :?pB%pB\e%..%t
+    byte\ %bB?s/%s.\ ?e(END)\ :?pB%pB\e%..%t
 .fi
 .PP
 The prompt expansion features are also used for another purpose:
@@ -1544,7 +1549,7 @@ The LESSEDIT string is expanded in the same way as the prompt strings.
 The default value for LESSEDIT is:
 .nf
 .sp
-	%E\ ?lm+%lm.\ %f
+    %E\ ?lm+%lm.\ %f
 .sp
 .fi
 Note that this expands to the editor name, followed by a + and the
@@ -1735,7 +1740,7 @@ The name of the editor (used for the v command).
 lesskey(1)
 
 .SH COPYRIGHT
-Copyright (C) 1984-2014  Mark Nudelman
+Copyright (C) 1984-2015  Mark Nudelman
 .PP
 less is part of the GNU project and is free software.
 You can redistribute it and/or modify it

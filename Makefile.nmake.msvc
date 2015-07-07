@@ -1,18 +1,38 @@
 # Makefile for less.
 # Windows 32 Visual C++ version
+# nmake version
+
+# `nmake /f Makefile.nmake.msvc`
 
 #### Start of system configuration section. ####
 
 CC = cl
 
-# Normal flags
-## /D "_CRT_SECURE_NO_WARNING" :: suppress "unsafe function" compiler warning
+## ref: [MSVC Compiler Options] https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx @@ https://archive.is/aOAtH
+
+# Normal/usual flags
+## /nologo :: startup without logo display
+## /MT :: static linking
+## /W3 :: set warning level to 3 [1..4, all; increasing level of warning scrutiny]
+## /EHsc :: enable C++ EH (no SEH exceptions) + extern "C" defaults to nothrow (replaces deprecated /GX)
+## /Ox :: maximum optimizations
+## /O2 :: maximize speed
+## /D "WIN32" :: old/extraneous define
+## /D "_CONSOLE" :: old/extraneous define
+## /D "NDEBUG" :: deactivate assert()
+## /D "_CRT_SECURE_NO_WARNING" :: compiler directive == suppress "unsafe function" compiler warning
 ## /wd4996 :: suppress POSIX function name deprecation warning #C4996
-CFLAGS = /nologo /MT /W3 /EHsc /Ox /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS" /wd4996 /WX /c
+## /WX :: treat warnings as errors
+## /c :: compile only
+CFLAGS = /nologo /MT /W3 /EHsc /Ox /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CRT_SECURE_NO_WARNINGS" /wd4996 /WX /c
 LDFLAGS = /nologo /subsystem:console /incremental:no /machine:I386
 
-# Debugging flags
-#CFLAGS = /nologo /MTd /W3 /EHsc /Od /Gm /Zi /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /c
+# DEBUG flags
+## /MTd :: static linking to debug library
+## /Od :: disable optimization
+## /Gm :: enables minimal rebuild
+## /Zi :: generates complete debugging information
+#CFLAGS = /nologo /MTd /W3 /EHsc /Od /Gm /Zi /I "." /D "WIN32" /D "DEBUG" /D "_CONSOLE" /c
 #LDFLAGS = /nologo /subsystem:console /incremental:yes /debug /machine:I386
 
 LD = link
@@ -35,7 +55,7 @@ OBJ = \
 
 all: less.exe lesskey.exe
 
-# This is really horrible, but the command line is too long for 
+# This is really horrible, but the command line is too long for
 # MS-DOS if we try to link ${OBJ}.
 less.exe: $(OBJ)
 	-if EXIST "lesskey.obj" del lesskey.obj
@@ -56,4 +76,8 @@ clean:
 	-if EXIST "less.exe" del less.exe
 	-if EXIST "lesskey.exe" del lesskey.exe
 
-
+build: all
+compile: $(OBJ)
+realclean: clean
+rebuild: clean build
+vclean: realclean

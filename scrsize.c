@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2014  Mark Nudelman
+ * Copyright (C) 1984-2015  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -13,7 +13,7 @@
  */
 
 /*
- * When I wrote this routine, I consulted some part of the source code 
+ * When I wrote this routine, I consulted some part of the source code
  * of the xwininfo utility by X Consortium.
  *
  * Copyright (c) 1987, X Consortium
@@ -46,58 +46,58 @@
 #include <stdio.h>
 
 static int get_winsize(dpy, window, p_width, p_height)
-	Display *dpy;
-	Window window;
-	int *p_width;
-	int *p_height;
+    Display *dpy;
+    Window window;
+    int *p_width;
+    int *p_height;
 {
-	XWindowAttributes win_attributes;
-	XSizeHints hints;
-	long longjunk;
+    XWindowAttributes win_attributes;
+    XSizeHints hints;
+    long longjunk;
 
-	if (!XGetWindowAttributes(dpy, window, &win_attributes))
-		return 1;
-	if (!XGetWMNormalHints(dpy, window, &hints, &longjunk))
-		return 1;
-	if (!(hints.flags & PResizeInc))
-		return 1;
-	if (hints.width_inc == 0 || hints.height_inc == 0)
-		return 1;
-	if (!(hints.flags & (PBaseSize|PMinSize)))
-		return 1;
-	if (hints.flags & PBaseSize)
-	{
-		win_attributes.width -= hints.base_width;
-		win_attributes.height -= hints.base_height;
-	} else
-	{
-		win_attributes.width -= hints.min_width;
-		win_attributes.height -= hints.min_height;
-	}
-	*p_width = win_attributes.width / hints.width_inc;
-	*p_height = win_attributes.height / hints.height_inc;
-	return 0;
+    if (!XGetWindowAttributes(dpy, window, &win_attributes))
+        return 1;
+    if (!XGetWMNormalHints(dpy, window, &hints, &longjunk))
+        return 1;
+    if (!(hints.flags & PResizeInc))
+        return 1;
+    if (hints.width_inc == 0 || hints.height_inc == 0)
+        return 1;
+    if (!(hints.flags & (PBaseSize|PMinSize)))
+        return 1;
+    if (hints.flags & PBaseSize)
+    {
+        win_attributes.width -= hints.base_width;
+        win_attributes.height -= hints.base_height;
+    } else
+    {
+        win_attributes.width -= hints.min_width;
+        win_attributes.height -= hints.min_height;
+    }
+    *p_width = win_attributes.width / hints.width_inc;
+    *p_height = win_attributes.height / hints.height_inc;
+    return 0;
 }
 
 int main(argc, argv)
-	int argc;
-	char *argv[];
+    int argc;
+    char *argv[];
 {
-	char *cp;
-	Display *dpy;
-	int size[2];
+    char *cp;
+    Display *dpy;
+    int size[2];
 
-	_scrsize(size);
-	cp = getenv("WINDOWID");
-	if (cp != NULL)
-	{
-		dpy = XOpenDisplay(NULL);
-		if (dpy != NULL)
-		{
-			get_winsize(dpy, (Window) atol(cp), &size[0], &size[1]);
-			XCloseDisplay(dpy);
-		}
-	}
-	printf("%i %i\n", size[0], size[1]);
-	return (0);
+    _scrsize(size);
+    cp = getenv("WINDOWID");
+    if (cp != NULL)
+    {
+        dpy = XOpenDisplay(NULL);
+        if (dpy != NULL)
+        {
+            get_winsize(dpy, (Window) atol(cp), &size[0], &size[1]);
+            XCloseDisplay(dpy);
+        }
+    }
+    printf("%i %i\n", size[0], size[1]);
+    return (0);
 }

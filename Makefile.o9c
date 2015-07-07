@@ -6,7 +6,7 @@
 CC = cc
 CPPFLAGS = -D_OSK_MWC32 -DDEBUG=0 -DSTRCSPN
 CFLAGS = -k=0 -v=.
-CFLAGS_COMPILE_ONLY = -r 
+CFLAGS_COMPILE_ONLY = -r
 LDFLAGS = -igm=8
 LIBS = -l=/dd/lib/termlib.l
 O = r

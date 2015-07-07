@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2014  Mark Nudelman
+ * Copyright (C) 1984-2015  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -39,43 +39,43 @@ extern long jump_sline_fraction;
  * Interrupt signal handler.
  */
 static RETSIGTYPE u_interrupt(int);
-	/* ARGSUSED*/
-	static RETSIGTYPE
+    /* ARGSUSED*/
+    static RETSIGTYPE
 u_interrupt(type)
-	int type;
+    int type;
 {
-	bell();
+    bell();
 #if OS2
-	LSIGNAL(SIGINT, SIG_ACK);
+    LSIGNAL(SIGINT, SIG_ACK);
 #endif
-	LSIGNAL(SIGINT, u_interrupt);
-	sigs |= S_INTERRUPT;
+    LSIGNAL(SIGINT, u_interrupt);
+    sigs |= S_INTERRUPT;
 #if MSDOS_COMPILER==DJGPPC
-	/*
-	 * If a keyboard has been hit, it must be Ctrl-C
-	 * (as opposed to Ctrl-Break), so consume it.
-	 * (Otherwise, Less will beep when it sees Ctrl-C from keyboard.)
-	 */
-	if (kbhit())
-		getkey();
+    /*
+     * If a keyboard has been hit, it must be Ctrl-C
+     * (as opposed to Ctrl-Break), so consume it.
+     * (Otherwise, Less will beep when it sees Ctrl-C from keyboard.)
+     */
+    if (kbhit())
+        getkey();
 #endif
-	if (reading)
-		intread(); /* May longjmp */
+    if (reading)
+        intread(); /* May longjmp */
 }
 
 #ifdef SIGTSTP
 /*
  * "Stop" (^Z) signal handler.
  */
-	/* ARGSUSED*/
-	static RETSIGTYPE
+    /* ARGSUSED*/
+    static RETSIGTYPE
 stop(type)
-	int type;
+    int type;
 {
-	LSIGNAL(SIGTSTP, stop);
-	sigs |= S_STOP;
-	if (reading)
-		intread();
+    LSIGNAL(SIGTSTP, stop);
+    sigs |= S_STOP;
+    if (reading)
+        intread();
 }
 #endif
 
@@ -83,30 +83,30 @@ stop(type)
 /*
  * "Window" change handler
  */
-	/* ARGSUSED*/
-	public RETSIGTYPE
+    /* ARGSUSED*/
+    public RETSIGTYPE
 winch(type)
-	int type;
+    int type;
 {
-	LSIGNAL(SIGWINCH, winch);
-	sigs |= S_WINCH;
-	if (reading)
-		intread();
+    LSIGNAL(SIGWINCH, winch);
+    sigs |= S_WINCH;
+    if (reading)
+        intread();
 }
 #else
 #ifdef SIGWIND
 /*
  * "Window" change handler
  */
-	/* ARGSUSED*/
-	public RETSIGTYPE
+    /* ARGSUSED*/
+    public RETSIGTYPE
 winch(type)
-	int type;
+    int type;
 {
-	LSIGNAL(SIGWIND, winch);
-	sigs |= S_WINCH;
-	if (reading)
-		intread();
+    LSIGNAL(SIGWIND, winch);
+    sigs |= S_WINCH;
+    if (reading)
+        intread();
 }
 #endif
 #endif
@@ -118,141 +118,141 @@ winch(type)
 #include "windows.h"
 
 static BOOL WINAPI wbreak_handler(DWORD);
-	static BOOL WINAPI 
+    static BOOL WINAPI
 wbreak_handler(dwCtrlType)
-	DWORD dwCtrlType;
+    DWORD dwCtrlType;
 {
-	switch (dwCtrlType)
-	{
-	case CTRL_C_EVENT:
-	case CTRL_BREAK_EVENT:
-		sigs |= S_INTERRUPT;
-		return (TRUE);
-	default:
-		break;
-	}
-	return (FALSE);
+    switch (dwCtrlType)
+    {
+    case CTRL_C_EVENT:
+    case CTRL_BREAK_EVENT:
+        sigs |= S_INTERRUPT;
+        return (TRUE);
+    default:
+        break;
+    }
+    return (FALSE);
 }
 #endif
 
 /*
  * Set up the signal handlers.
  */
-	public void
+    public void
 init_signals(on)
-	int on;
+    int on;
 {
-	if (on)
-	{
-		/*
-		 * Set signal handlers.
-		 */
-		(void) LSIGNAL(SIGINT, u_interrupt);
+    if (on)
+    {
+        /*
+         * Set signal handlers.
+         */
+        (void) LSIGNAL(SIGINT, u_interrupt);
 #if MSDOS_COMPILER==WIN32C
-		SetConsoleCtrlHandler(wbreak_handler, TRUE);
+        SetConsoleCtrlHandler(wbreak_handler, TRUE);
 #endif
 #ifdef SIGTSTP
-		(void) LSIGNAL(SIGTSTP, stop);
+        (void) LSIGNAL(SIGTSTP, stop);
 #endif
 #ifdef SIGWINCH
-		(void) LSIGNAL(SIGWINCH, winch);
+        (void) LSIGNAL(SIGWINCH, winch);
 #endif
 #ifdef SIGWIND
-		(void) LSIGNAL(SIGWIND, winch);
+        (void) LSIGNAL(SIGWIND, winch);
 #endif
 #ifdef SIGQUIT
-		(void) LSIGNAL(SIGQUIT, SIG_IGN);
+        (void) LSIGNAL(SIGQUIT, SIG_IGN);
 #endif
-	} else
-	{
-		/*
-		 * Restore signals to defaults.
-		 */
-		(void) LSIGNAL(SIGINT, SIG_DFL);
+    } else
+    {
+        /*
+         * Restore signals to defaults.
+         */
+        (void) LSIGNAL(SIGINT, SIG_DFL);
 #if MSDOS_COMPILER==WIN32C
-		SetConsoleCtrlHandler(wbreak_handler, FALSE);
+        SetConsoleCtrlHandler(wbreak_handler, FALSE);
 #endif
 #ifdef SIGTSTP
-		(void) LSIGNAL(SIGTSTP, SIG_DFL);
+        (void) LSIGNAL(SIGTSTP, SIG_DFL);
 #endif
 #ifdef SIGWINCH
-		(void) LSIGNAL(SIGWINCH, SIG_IGN);
+        (void) LSIGNAL(SIGWINCH, SIG_IGN);
 #endif
 #ifdef SIGWIND
-		(void) LSIGNAL(SIGWIND, SIG_IGN);
+        (void) LSIGNAL(SIGWIND, SIG_IGN);
 #endif
 #ifdef SIGQUIT
-		(void) LSIGNAL(SIGQUIT, SIG_DFL);
+        (void) LSIGNAL(SIGQUIT, SIG_DFL);
 #endif
-	}
+    }
 }
 
 /*
  * Process any signals we have received.
  * A received signal cause a bit to be set in "sigs".
  */
-	public void
+    public void
 psignals()
 {
-	register int tsignals;
+    register int tsignals;
 
-	if ((tsignals = sigs) == 0)
-		return;
-	sigs = 0;
+    if ((tsignals = sigs) == 0)
+        return;
+    sigs = 0;
 
 #ifdef SIGTSTP
-	if (tsignals & S_STOP)
-	{
-		/*
-		 * Clean up the terminal.
-		 */
+    if (tsignals & S_STOP)
+    {
+        /*
+         * Clean up the terminal.
+         */
 #ifdef SIGTTOU
-		LSIGNAL(SIGTTOU, SIG_IGN);
+        LSIGNAL(SIGTTOU, SIG_IGN);
 #endif
-		clear_bot();
-		deinit();
-		flush();
-		raw_mode(0);
+        clear_bot();
+        deinit();
+        flush();
+        raw_mode(0);
 #ifdef SIGTTOU
-		LSIGNAL(SIGTTOU, SIG_DFL);
+        LSIGNAL(SIGTTOU, SIG_DFL);
 #endif
-		LSIGNAL(SIGTSTP, SIG_DFL);
-		kill(getpid(), SIGTSTP);
-		/*
-		 * ... Bye bye. ...
-		 * Hopefully we'll be back later and resume here...
-		 * Reset the terminal and arrange to repaint the
-		 * screen when we get back to the main command loop.
-		 */
-		LSIGNAL(SIGTSTP, stop);
-		raw_mode(1);
-		init();
-		screen_trashed = 1;
-		tsignals |= S_WINCH;
-	}
+        LSIGNAL(SIGTSTP, SIG_DFL);
+        kill(getpid(), SIGTSTP);
+        /*
+         * ... Bye bye. ...
+         * Hopefully we'll be back later and resume here...
+         * Reset the terminal and arrange to repaint the
+         * screen when we get back to the main command loop.
+         */
+        LSIGNAL(SIGTSTP, stop);
+        raw_mode(1);
+        init();
+        screen_trashed = 1;
+        tsignals |= S_WINCH;
+    }
 #endif
 #ifdef S_WINCH
-	if (tsignals & S_WINCH)
-	{
-		int old_width, old_height;
-		/*
-		 * Re-execute scrsize() to read the new window size.
-		 */
-		old_width = sc_width;
-		old_height = sc_height;
-		get_term();
-		if (sc_width != old_width || sc_height != old_height)
-		{
-			wscroll = (sc_height + 1) / 2;
-			calc_jump_sline();
-			calc_shift_count();
-			screen_trashed = 1;
-		}
-	}
+    if (tsignals & S_WINCH)
+    {
+        int old_width, old_height;
+        /*
+         * Re-execute scrsize() to read the new window size.
+         */
+        old_width = sc_width;
+        old_height = sc_height;
+        get_term();
+        if (sc_width != old_width || sc_height != old_height)
+        {
+            wscroll = (sc_height + 1) / 2;
+            calc_jump_sline();
+            calc_shift_count();
+            screen_trashed = 1;
+        }
+    }
 #endif
-	if (tsignals & S_INTERRUPT)
-	{
-		if (quit_on_intr)
-			quit(QUIT_INTERRUPT);
-	}
+    if (tsignals & S_INTERRUPT)
+    {
+        if (quit_on_intr)
+            quit(QUIT_INTERRUPT);
+    }
 }
