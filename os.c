@@ -187,7 +187,7 @@ intread()
 #if HAVE_TIME
     public time_type
 get_time()
-    {
+{
     time_type t;
 
     time(&t);
