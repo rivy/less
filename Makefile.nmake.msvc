@@ -1,5 +1,8 @@
 # Makefile for less.
 # Windows 32 Visual C++ version
+# nmake version
+
+# `nmake /f Makefile.nmake.msvc`
 
 #### Start of system configuration section. ####
 
@@ -52,7 +55,7 @@ OBJ = \
 
 all: less.exe lesskey.exe
 
-# This is really horrible, but the command line is too long for
+# This is really horrible, but the command line is too long for 
 # MS-DOS if we try to link ${OBJ}.
 less.exe: $(OBJ)
 	-if EXIST "lesskey.obj" del lesskey.obj
@@ -73,4 +76,8 @@ clean:
 	-if EXIST "less.exe" del less.exe
 	-if EXIST "lesskey.exe" del lesskey.exe
 
-
+build: all
+compile: $(OBJ)
+realclean: clean
+rebuild: clean build
+vclean: realclean
