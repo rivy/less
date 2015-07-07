@@ -570,7 +570,9 @@ readfd(fd)
 
 #if HAVE_POPEN
 
+#ifndef MINGW
 FILE *popen();
+#endif
 
 /*
  * Execute a shell command.

@@ -120,7 +120,10 @@ struct keyRecord
 static int keyCount = 0;
 static WORD curr_attr;
 static int pending_scancode = 0;
+
+#ifndef MINGW
 static WORD *whitescreen;
+#endif
 
 static HANDLE con_out_save = INVALID_HANDLE_VALUE; /* previous console */
 static HANDLE con_out_ours = INVALID_HANDLE_VALUE; /* our own */
@@ -2451,7 +2454,12 @@ WIN32getch(tty)
         return ((char)(currentKey.scan & 0x00FF));
     }
 
-    while (win32_kbhit((HANDLE)tty) == FALSE)
+#ifdef MINGW
+    HANDLE tty_h = (HANDLE)_get_osfhandle(tty);
+    while (win32_kbhit(tty_h) == FALSE)
+#else
+    while (win32_kbhit(tty) == FALSE)
+#endif
     {
         Sleep(20);
         if (ABORT_SIGS())

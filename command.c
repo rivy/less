@@ -1013,6 +1013,8 @@ commands()
     IFILE new_ifile;
     char *tagfile;
 
+    c = 0;
+
     search_type = SRCH_FORW;
     wscroll = (sc_height + 1) / 2;
     newaction = A_NOACTION;

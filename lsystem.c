@@ -291,7 +291,9 @@ pipe_data(cmd, spos, epos)
 {
     register FILE *f;
     register int c;
+#ifndef MINGW
     extern FILE *popen();
+#endif
 
     /*
      * This is structured much like lsystem().

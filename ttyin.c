@@ -39,12 +39,23 @@ open_getchr()
     memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.bInheritHandle = TRUE;
+#ifdef MINGW
+    HANDLE tty_h = CreateFile("CONIN$", GENERIC_READ,
+#else
     tty = (int) CreateFile("CONIN$", GENERIC_READ,
+#endif
             FILE_SHARE_READ, &sa,
             OPEN_EXISTING, 0L, NULL);
+#ifdef MINGW
+    tty = _open_osfhandle((intptr_t)tty_h, 0);
+    GetConsoleMode(tty_h, &console_mode);
+    /* Make sure we get Ctrl+C events. */
+    SetConsoleMode(tty_h, ENABLE_PROCESSED_INPUT);
+#else
     GetConsoleMode((HANDLE)tty, &console_mode);
     /* Make sure we get Ctrl+C events. */
     SetConsoleMode((HANDLE)tty, ENABLE_PROCESSED_INPUT);
+#endif
 #else
 #if MSDOS_COMPILER
     extern int fd0;
@@ -88,8 +99,14 @@ open_getchr()
 close_getchr()
 {
 #if MSDOS_COMPILER==WIN32C
+#ifdef MINGW
+    HANDLE tty_h = (HANDLE)_get_osfhandle(tty);
+    SetConsoleMode(tty_h, console_mode);
+    CloseHandle(tty_h);
+#else
     SetConsoleMode((HANDLE)tty, console_mode);
     CloseHandle((HANDLE)tty);
+#endif
 #endif
 }
 

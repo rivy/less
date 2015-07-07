@@ -1,0 +1,65 @@
+# Makefile for less.
+# for mingw gcc compiler
+
+# `make -f Makefile.mingw`
+
+#### Start of system configuration section. ####
+
+CC = gcc
+## -Werror :: warnings treated as errors
+## -Wextra :: enable extra warnings
+## -Wno-comment :: suppress warnings about trailing comments on directive lines
+CFLAGS = -I. -O2 -Wall -Werror -Wno-comment
+CFLAGS_COMPILE_ONLY = -c
+CPPFLAGS =
+LDFLAGS = -g
+
+LIBS =
+
+EXEEXT = .exe
+O = o
+
+CP = copy
+
+DEFINETYPE = mingw
+OBJDEP = defines.h less.h
+
+#### End of system configuration section. ####
+
+# This rule allows us to supply the necessary -D options
+# in addition to whatever the user asks for.
+.c.${O}:
+	${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $<
+
+OBJ = \
+	main.${O} screen.${O} brac.${O} ch.${O} charset.${O} cmdbuf.${O} \
+	command.${O} cvt.${O} decode.${O} edit.${O} filename.${O} forwback.${O} \
+	help.${O} ifile.${O} input.${O} jump.${O} line.${O} linenum.${O} \
+	lsystem.${O} mark.${O} optfunc.${O} option.${O} opttbl.${O} os.${O} \
+	output.${O} pattern.${O} position.${O} prompt.${O} search.${O} signal.${O} \
+	tags.${O} ttyin.${O} version.${O} regexp.${O}
+
+all: less${EXEEXT} lesskey${EXEEXT}
+
+less${EXEEXT}: ${OBJ}
+	${CC} ${CPPFLAGS} ${CFLAGS} ${OBJ} -o $@ ${LDFLAGS} ${LIBS}
+
+lesskey${EXEEXT}: lesskey.${O} version.${O}
+	${CC} ${CPPFLAGS} ${CFLAGS} lesskey.${O} version.${O} -o $@ ${LDFLAGS} ${LIBS}
+
+${OBJ}: ${OBJDEP}
+
+defines.h: defines.${DEFINETYPE}
+	${CP} defines.${DEFINETYPE} defines.h
+
+clean:
+	-if EXIST "*.${O}" del *.${O}
+	-if EXIST "defines.h" del defines.h
+	-if EXIST "less${EXEEXT}" del less${EXEEXT}
+	-if EXIST "lesskey${EXEEXT}" del lesskey${EXEEXT}
+
+build: all
+compile: ${OBJ}
+realclean: clean
+rebuild: clean build
+vclean: realclean

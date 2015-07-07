@@ -22,6 +22,13 @@
 #define DJGPPC      4   /* DJGPP C */
 
 /*
+ * Defined for MinGW
+ */
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#define MINGW
+#endif
+
+/*
  * Include the file of compile-time options.
  * The <> make cc search for it in -I., not srcdir.
  */

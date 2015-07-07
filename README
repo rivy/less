@@ -170,6 +170,30 @@ INSTALLATION (Windows-95, Windows-98 and Windows-NT systems only,
 
 
 =======================================================================
+INSTALLATION (Windows systems only, with MinGW GCC (both 32-bit and 64-bit))
+
+1. Move the distributed source to its own directory.
+
+2. Rename Makefile.mingw to Makefile.
+
+3. Check the Makefile to make sure the definitions look ok.
+
+4. If you wish, you may edit defines.mingw to remove some optional features.
+   If you choose not to include some features in your version, you may
+   wish to edit the manual page less.man and the help page help.c
+   to remove the descriptions of the features which you are removing.
+
+5. Type "make" and watch the fun.
+
+6. If the make succeeds, it will generate the programs "less.exe" and
+   "lesskey.exe" in your current directory.  Test the generated programs.
+
+7. When satisfied that it works, you may wish to install LESS.EXE and
+   LESSKEY.EXE in a directory which is included in your PATH.
+
+
+
+=======================================================================
 INSTALLATION (OS/2 systems only,
               with EMX C)
 
