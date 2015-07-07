@@ -1,6 +1,6 @@
 # Makefile for less.
 # Windows 32 Visual C++ version
-# make (GNU make) version 
+# make (GNU make) version
 
 # `make -f Makefile.make.msvc`
 

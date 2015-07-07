@@ -17,9 +17,9 @@
 #if HAVE_POSIX_REGCOMP
 #include <regex.h>
 #ifdef REG_EXTENDED
-#define	REGCOMP_FLAG	REG_EXTENDED
+#define REGCOMP_FLAG    REG_EXTENDED
 #else
-#define	REGCOMP_FLAG	0
+#define REGCOMP_FLAG    0
 #endif
 #define DEFINE_PATTERN(name)  regex_t *name
 #define CLEAR_PATTERN(name)   name = NULL
@@ -54,6 +54,6 @@ extern int reg_show_error;
 #endif
 
 #if NO_REGEX
-#define DEFINE_PATTERN(name)  
-#define CLEAR_PATTERN(name)   
+#define DEFINE_PATTERN(name)
+#define CLEAR_PATTERN(name)
 #endif
