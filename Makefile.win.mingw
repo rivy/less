@@ -1,7 +1,7 @@
 # Makefile for less.
-# for mingw gcc compiler
+# Windows version; MinGW gcc compiler
 
-# `make -f Makefile.mingw`
+# `make -f Makefile.win.mingw`
 
 #### Start of system configuration section. ####
 

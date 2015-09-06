@@ -1,8 +1,8 @@
 # Makefile for less.
-# Windows 32 Visual C++ version
+# Windows version; MS Visual C++
 # nmake version
 
-# `nmake /f Makefile.nmake.msvc`
+# `nmake /f Makefile.win.msvc.nmake`
 
 #### Start of system configuration section. ####
 
@@ -12,8 +12,10 @@ CC = cl
 
 # Normal/usual flags
 ## /nologo :: startup without logo display
-## /MT :: static linking
 ## /W3 :: set warning level to 3 [1..4, all; increasing level of warning scrutiny]
+## /wd4996 :: suppress POSIX function name deprecation warning #C4996
+## /WX :: treat warnings as errors
+## /MT :: static linking
 ## /EHsc :: enable C++ EH (no SEH exceptions) + extern "C" defaults to nothrow (replaces deprecated /GX)
 ## /Ox :: maximum optimizations
 ## /O2 :: maximize speed
@@ -21,10 +23,8 @@ CC = cl
 ## /D "_CONSOLE" :: old/extraneous define
 ## /D "NDEBUG" :: deactivate assert()
 ## /D "_CRT_SECURE_NO_WARNING" :: compiler directive == suppress "unsafe function" compiler warning
-## /wd4996 :: suppress POSIX function name deprecation warning #C4996
-## /WX :: treat warnings as errors
 ## /c :: compile only
-CFLAGS = /nologo /MT /W3 /EHsc /Ox /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS" /wd4996 /WX /c
+CFLAGS = /nologo /W3 /wd4996 /WX /MT /EHsc /Ox /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS" /c
 LDFLAGS = /nologo /subsystem:console /incremental:no /machine:I386
 
 # DEBUG flags
@@ -32,7 +32,7 @@ LDFLAGS = /nologo /subsystem:console /incremental:no /machine:I386
 ## /Od :: disable optimization
 ## /Gm :: enables minimal rebuild
 ## /Zi :: generates complete debugging information
-#CFLAGS = /nologo /MTd /W3 /EHsc /Od /Gm /Zi /I "." /D "WIN32" /D "DEBUG" /D "_CONSOLE" /c
+#CFLAGS = /nologo /W3 /MTd /EHsc /Od /Gm /Zi /I "." /D "WIN32" /D "DEBUG" /D "_CONSOLE" /c
 #LDFLAGS = /nologo /subsystem:console /incremental:yes /debug /machine:I386
 
 LD = link

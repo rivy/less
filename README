@@ -146,11 +146,11 @@ INSTALLATION (Windows-95, Windows-98 and Windows-NT systems only,
 
 1. Move the distributed source to its own directory.
 
-2. If you are using Borland C, rename Makefile.wnb to Makefile.
-   If you are using Microsoft Visual C++, rename Makefile.wnm to Makefile.
-   If you are using Microsoft Visual C++, rename Makefile.msvc to Makefile.
-   If you are using Microsoft Visual C++ and NMAKE, rename Makefile.nmake.msvc
-   to Makefile.
+2. If you are using Borland C, rename Makefile.win.borland to Makefile.
+   If you are using Microsoft Visual C++, rename Makefile.win.msvc to
+   Makefile.
+   If you are using Microsoft Visual C++ and NMAKE, rename
+   Makefile.win.msvc.nmake to Makefile.
 
 3. Check the Makefile to make sure the definitions look ok.
 
