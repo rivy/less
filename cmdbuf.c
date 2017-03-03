@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -149,20 +149,18 @@ cmd_putstr(s)
 	while (*s != '\0')
 	{
 		char *ns = s;
+		int width;
 		ch = step_char(&ns, +1, endline);
 		while (s < ns)
 			putchr(*s++);
 		if (!utf_mode)
-		{
-			cmd_col++;
-			prompt_col++;
-		} else if (!is_composing_char(ch) &&
-		           !is_combining_char(prev_ch, ch))
-		{
-			int width = is_wide_char(ch) ? 2 : 1;
-			cmd_col += width;
-			prompt_col += width;
-		}
+			width = 1;
+		else if (is_composing_char(ch) || is_combining_char(prev_ch, ch))
+			width = 0;
+		else
+			width = is_wide_char(ch) ? 2 : 1;
+		cmd_col += width;
+		prompt_col += width;
 		prev_ch = ch;
 	}
 }
@@ -187,6 +185,8 @@ len_cmdbuf()
 
 /*
  * Common part of cmd_step_right() and cmd_step_left().
+ * {{ Returning pwidth and bswidth separately is a historical artifact
+ *    since they're always the same. Maybe clean this up someday. }}
  */
 	static char *
 cmd_step_common(p, ch, len, pwidth, bswidth)
@@ -197,58 +197,32 @@ cmd_step_common(p, ch, len, pwidth, bswidth)
 	int *bswidth;
 {
 	char *pr;
+	int width;
 
 	if (len == 1)
 	{
 		pr = prchar((int) ch);
-		if (pwidth != NULL || bswidth != NULL)
-		{
-			int len = (int) strlen(pr);
-			if (pwidth != NULL)
-				*pwidth = len;
-			if (bswidth != NULL)
-				*bswidth = len;
-		}
+		width = (int) strlen(pr);
 	} else
 	{
 		pr = prutfchar(ch);
-		if (pwidth != NULL || bswidth != NULL)
+		if (is_composing_char(ch))
+			width = 0;
+		else if (is_ubin_char(ch))
+			width = (int) strlen(pr);
+		else
 		{
-			if (is_composing_char(ch))
-			{
-				if (pwidth != NULL)
-					*pwidth = 0;
-				if (bswidth != NULL)
-					*bswidth = 0;
-			} else if (is_ubin_char(ch))
-			{
-				int len = (int) strlen(pr);
-				if (pwidth != NULL)
-					*pwidth = len;
-				if (bswidth != NULL)
-					*bswidth = len;
-			} else
-			{
-				LWCHAR prev_ch = step_char(&p, -1, cmdbuf);
-				if (is_combining_char(prev_ch, ch))
-				{
-					if (pwidth != NULL)
-						*pwidth = 0;
-					if (bswidth != NULL)
-						*bswidth = 0;
-				} else
-				{
-					if (pwidth != NULL)
-						*pwidth	= is_wide_char(ch)
-							?	2
-							:	1;
-					if (bswidth != NULL)
-						*bswidth = 1;
-				}
-			}
+			LWCHAR prev_ch = step_char(&p, -1, cmdbuf);
+			if (is_combining_char(prev_ch, ch))
+				width = 0;
+			else
+				width = is_wide_char(ch) ? 2 : 1;
 		}
 	}
-
+	if (pwidth != NULL)
+		*pwidth	= width;
+	if (bswidth != NULL)
+		*bswidth = width;
 	return (pr);
 }
 

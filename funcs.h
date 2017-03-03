@@ -181,6 +181,7 @@
 	public void null_line ();
 	public POSITION forw_raw_line ();
 	public POSITION back_raw_line ();
+	public int rrshift ();
 	public void clr_linenum ();
 	public void add_lnum ();
 	public LINENUM find_linenum ();
@@ -274,8 +275,8 @@
 	public POSITION next_unfiltered ();
 	public POSITION prev_unfiltered ();
 	public int is_hilited ();
-	public void chg_caseless ();
 	public void chg_hilite ();
+	public void chg_caseless ();
 	public int search ();
 	public void prep_hilite ();
 	public void set_filter_pattern ();

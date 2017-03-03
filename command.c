@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -1776,6 +1776,16 @@ commands()
 				number = (shift_count > 0) ?
 					shift_count : sc_width / 2;
 			hshift += number;
+			screen_trashed = 1;
+			break;
+
+		case A_LLSHIFT:
+			hshift = 0;
+			screen_trashed = 1;
+			break;
+
+		case A_RRSHIFT:
+			hshift = rrshift();
 			screen_trashed = 1;
 			break;
 

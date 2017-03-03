@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -64,6 +64,8 @@ struct cs_alias {
 	char *oname;
 } cs_aliases[] = {
 	{ "UTF-8",		"utf-8" },
+	{ "utf8",		"utf-8" },
+	{ "UTF8",		"utf-8" },
 	{ "ANSI_X3.4-1968",	"ascii" },
 	{ "US-ASCII",		"ascii" },
 	{ "latin1",		"iso8859" },

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -16,6 +16,7 @@
 
 #include "less.h"
 #include "charset.h"
+#include "position.h"
 
 static char *linebuf = NULL;	/* Buffer which holds the current output line */
 static char *attr = NULL;	/* Extension of linebuf to hold attributes */
@@ -215,7 +216,7 @@ plinenum(pos)
 		sprintf(linebuf+curr, "%*s ", n, buf);
 		n++;  /* One space after the line number. */
 		for (i = 0; i < n; i++)
-			attr[curr+i] = AT_NORMAL;
+			attr[curr+i] = AT_BOLD;
 		curr += n;
 		column += n;
 		lmargin += n;
@@ -1254,4 +1255,31 @@ back_raw_line(curr_pos, linep, line_lenp)
 	if (line_lenp != NULL)
 		*line_lenp = size_linebuf - 1 - n;
 	return (new_pos);
+}
+
+/*
+ * Find the shift necessary to show the end of the longest displayed line.
+ */
+	public int
+rrshift()
+{
+	POSITION pos;
+	int save_width;
+	int line;
+	int longest = 0;
+
+	save_width = sc_width;
+	sc_width = INT_MAX;
+	hshift = 0;
+	pos = position(TOP);
+	for (line = 0; line < sc_height && pos != NULL_POSITION; line++)
+	{
+		pos = forw_line(pos);
+		if (column > longest)
+			longest = column;
+	}
+	sc_width = save_width;
+	if (longest < sc_width)
+		return 0;
+	return longest - sc_width;
 }
