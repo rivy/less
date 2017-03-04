@@ -37,6 +37,7 @@ extern int bo_fg_color, bo_bg_color;
 extern int ul_fg_color, ul_bg_color;
 extern int so_fg_color, so_bg_color;
 extern int bl_fg_color, bl_bg_color;
+extern int sgr_mode;
 #endif
 
 /*
@@ -491,11 +492,18 @@ flush()
                     if (!is_ansi_end(*p) || p == p_next)
                         break;
                     /* same order/priority as in screen.c within at_enter() */
+                    /*
+                     * In SGR mode, the ANSI sequence is
+                     * always honored; otherwise if an attr
+                     * is used by itself ("\e[1m" versus
+                     * "\e[1;33m", for example), set the
+                     * color assigned to that attribute.
+                     */
                     f = fg;
                     b = bg;
                     if (at & 4)
                     {
-                        if (ul_fg_color >= 0)
+                        if (!sgr_mode && (ul_fg_color >= 0))
                         {
                             f = ul_fg_color;
                             b = ul_bg_color;
@@ -505,7 +513,7 @@ flush()
                     }
                     if (at & 1)
                     {
-                        if (bo_fg_color >= 0)
+                        if (!sgr_mode && (bo_fg_color >= 0))
                         {
                             f = bo_fg_color;
                             b = bo_bg_color;
@@ -515,7 +523,7 @@ flush()
                     }
                     if (at & 8)
                     {
-                        if (bl_fg_color >= 0)
+                        if (!sgr_mode && (bl_fg_color >= 0))
                         {
                             f = bl_fg_color;
                             b = bl_bg_color;
@@ -525,7 +533,7 @@ flush()
                     }
                     if (at & 2)
                     {
-                        if (so_fg_color >= 0)
+                        if (!sgr_mode && (so_fg_color >= 0))
                         {
                             f = so_fg_color;
                             b = so_bg_color;

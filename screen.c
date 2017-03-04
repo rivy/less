@@ -154,6 +154,7 @@ public int bl_fg_color;     /* Color of blinking text */
 public int bl_bg_color;
 static int sy_fg_color;     /* Color of system text (before less) */
 static int sy_bg_color;
+public int sgr_mode;        /* Honor ANSI sequences rather than using above */
 
 #else
 
@@ -1110,6 +1111,7 @@ get_term()
     so_bg_color = -1;
     bl_fg_color = -1;
     bl_bg_color = -1;
+    sgr_mode = 0;
 
     /*
      * Get size of the screen.
@@ -2213,7 +2215,7 @@ at_enter(attr)
 
     if (attr & AT_UNDERLINE)
     {
-        if (ul_fg_color >= 0)
+        if (!sgr_mode && (ul_fg_color >= 0))
         {
             fg = ul_fg_color;
             bg = ul_bg_color;
@@ -2223,7 +2225,7 @@ at_enter(attr)
     }
     if (attr & AT_BOLD)
     {
-        if (bo_fg_color >= 0)
+        if (!sgr_mode && (bo_fg_color >= 0))
         {
             fg = bo_fg_color;
             bg = bo_bg_color;
@@ -2233,7 +2235,7 @@ at_enter(attr)
     }
     if (attr & AT_BLINK)
     {
-        if (bl_fg_color >= 0)
+        if (!sgr_mode && (bl_fg_color >= 0))
         {
             fg = bl_fg_color;
             bg = bl_bg_color;
@@ -2243,7 +2245,7 @@ at_enter(attr)
     }
     if (attr & AT_STANDOUT)
     {
-        if (so_fg_color >= 0)
+        if (!sgr_mode && (so_fg_color >= 0))
         {
             fg = so_fg_color;
             bg = so_bg_color;
