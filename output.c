@@ -226,9 +226,11 @@ flush()
 
             // reset FG/BG colors (? is this per line?)
             // fixes fg/bg reset between escape sequences
-            fg = nm_fg_color;
-            bg = nm_bg_color;
-
+            if (fg == 0 && bg == 0)
+            {
+                fg = nm_fg_color;
+                bg = nm_bg_color;
+            }
             for (anchor = p_next = obuf;
                  (p_next = memchr(p_next, ESC, ob - p_next)) != NULL; )
             {
@@ -312,8 +314,6 @@ flush()
                      * Select foreground/background colors
                      * based on the escape sequence.
                      */
-                    // fg = nm_fg_color;
-                    // bg = nm_bg_color;
                     while (!is_ansi_end(*p))
                     {
                         char *q;
