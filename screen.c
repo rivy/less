@@ -1101,14 +1101,15 @@ get_term()
 #endif
     nm_fg_color = sy_fg_color;
     nm_bg_color = sy_bg_color;
-    bo_fg_color = 11;
-    bo_bg_color = 0;
-    ul_fg_color = 9;
-    ul_bg_color = 0;
-    so_fg_color = 15;
-    so_bg_color = 9;
-    bl_fg_color = 15;
-    bl_bg_color = 0;
+
+    bo_fg_color = -1;
+    bo_bg_color = -1;
+    ul_fg_color = -1;
+    ul_bg_color = -1;
+    so_fg_color = -1;
+    so_bg_color = -1;
+    bl_fg_color = -1;
+    bl_bg_color = -1;
 
     /*
      * Get size of the screen.
@@ -2190,6 +2191,8 @@ clear_bot()
 at_enter(attr)
     int attr;
 {
+    int fg, bg;
+
     attr = apply_at_specials(attr);
 
 #if !MSDOS_COMPILER
@@ -2204,22 +2207,57 @@ at_enter(attr)
         tputs(sc_s_in, 1, putchr);
 #else
     flush();
-    /* The one with the most priority is first.  */
+
+    fg = nm_fg_color;
+    bg = nm_bg_color;
+
+    if (attr & AT_UNDERLINE)
+    {
+        if (ul_fg_color >= 0)
+        {
+            fg = ul_fg_color;
+            bg = ul_bg_color;
+        }
+        else
+            bg |= 8;
+    }
+    if (attr & AT_BOLD)
+    {
+        if (bo_fg_color >= 0)
+        {
+            fg = bo_fg_color;
+            bg = bo_bg_color;
+        }
+        else
+            fg |= 8;
+    }
+    if (attr & AT_BLINK)
+    {
+        if (bl_fg_color >= 0)
+        {
+            fg = bl_fg_color;
+            bg = bl_bg_color;
+        }
+        else
+            fg |= 8;
+    }
     if (attr & AT_STANDOUT)
     {
-        SETCOLORS(so_fg_color, so_bg_color);
-    } else if (attr & AT_BLINK)
-    {
-        SETCOLORS(bl_fg_color, bl_bg_color);
+        if (so_fg_color >= 0)
+        {
+            fg = so_fg_color;
+            bg = so_bg_color;
+        }
+        else
+           {
+           int t = fg;
+           fg = bg;
+           bg = t;
+           }
     }
-    else if (attr & AT_BOLD)
-    {
-        SETCOLORS(bo_fg_color, bo_bg_color);
-    }
-    else if (attr & AT_UNDERLINE)
-    {
-        SETCOLORS(ul_fg_color, ul_bg_color);
-    }
+    fg &= 0xf;
+    bg &= 0xf;
+    SETCOLORS(fg, bg);
 #endif
 
     attrmode = attr;

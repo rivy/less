@@ -73,6 +73,82 @@ put_line()
     at_exit();
 }
 
+    public long
+map_rgb_to_ANSI16( r, g, b )
+    long r; /* [0..255] */
+    long g; /* [0..255] */
+    long b; /* [0..255] */
+{
+    long color = 0;
+
+    const int MAX_RGB_COLOR_VALUE = 0xff;
+    const int COLOR_INTENSE = 0x8;
+    const int COLOR_RED = 0x1;      // ANSI16 "RED"
+    const int COLOR_GREEN = 0x2;    // ANSI16 "GREEN"
+    const int COLOR_BLUE = 0x4;     // ANSI16 "BLUE"
+    const int COLOR_GRAY = COLOR_RED|COLOR_GREEN|COLOR_BLUE;
+    const int COLOR_DARKGRAY = COLOR_INTENSE|0;
+    const int COLOR_WHITE = COLOR_INTENSE|COLOR_GRAY;
+
+    // partition color-space into [off, on (dark), on(intense)]
+    long color_partition_value = MAX_RGB_COLOR_VALUE / 3;
+    long color_threshold = color_partition_value;
+    long intensity_threshold = color_partition_value * 2;
+
+    long combined_intensity_threshold;
+    long combined_intensity = 0;
+    int contributing_colors = 0;
+    int intensity_contributors = 0;
+
+    // combine intensities of contributing colors
+    if ( r >= color_threshold ) { color |= COLOR_RED; contributing_colors++; combined_intensity += r; }
+    if ( g >= color_threshold ) { color |= COLOR_GREEN; contributing_colors++; combined_intensity += g; }
+    if ( b >= color_threshold ) { color |= COLOR_BLUE; contributing_colors++; combined_intensity += b; }
+    // combine all intensities if two or more colors contribute (heuristic)
+    if ( contributing_colors >= 2 ) { combined_intensity = r + g + b; }
+
+    combined_intensity_threshold = contributing_colors * intensity_threshold;
+
+    // heuristic to spread the colors more evenly
+    if ( contributing_colors == 2 ) { combined_intensity_threshold += (color_partition_value/2); }
+
+    if (( contributing_colors > 0 ) && (combined_intensity >= combined_intensity_threshold )) { color |= COLOR_INTENSE; }
+
+//    // add "intense black" == "dark gray" (replacing some "white")
+//    // NOTE: this causes a visual change to the "usual" 6 x 6 x 6 color cube
+//    //   ... but this evens color distributions and allows some rgb values to downsample to "intense black"
+//    if ( ( color == COLOR_WHITE ) && ( (r < intensity_threshold) || (g < intensity_threshold) || (b < intensity_threshold) )) { color = COLOR_DARKGRAY; }
+
+    return color;
+}
+
+    public long
+map_xterm256_to_ANSI16( n )
+    long n; /* [0..255] */
+{
+    long color = 0;
+
+    if ( n < 16 ) { color = n; }
+    else if ( n > 231 )
+    {
+        if ( n < 238 ) { color = 0x0; } /* black */
+        else if ( n < 244 ) { color = 0x8; } /* dark gray */
+        else if ( n < 250 ) { color = 0x7; } /* gray */
+        else color = 0xf; /* white */
+    }
+    else
+    { /* 6 x 6 x 6 color increments */
+        // ref: http://www.mudpedia.org/mediawiki/index.php/Xterm_256_colors @@ https://archive.is/dtVov
+        // unsigned char color_level[] = { 0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff }; // commonly used xterm256 RGB values
+        unsigned char color_level[] = { 0x00, 0x33, 0x66, 0x99, 0xcc, 0xff };    // improves down-mapped color distribution
+        long r = color_level[ ((n - 16) / 36) % 6 ];
+        long g = color_level[ ((n - 16) / 6) % 6 ];
+        long b = color_level[ (n - 16) % 6 ];
+        color = map_rgb_to_ANSI16( r, g, b );
+    }
+    return color;
+}
+
 static char obuf[OUTBUF_SIZE];
 static char *ob = obuf;
 
@@ -126,8 +202,9 @@ flush()
              * the -D command-line option.
              */
             char *anchor, *p, *p_next;
-            unsigned char fg, bg;
+            static unsigned char fg, bg;
             static unsigned char at;
+            unsigned char f, b;
 #if MSDOS_COMPILER==WIN32C
             /* Screen colors used by 3x and 4x SGR commands. */
             static unsigned char screen_color[] = {
@@ -146,6 +223,11 @@ flush()
                 BLUE, MAGENTA, CYAN, LIGHTGRAY
             };
 #endif
+
+            // reset FG/BG colors (? is this per line?)
+            // fixes fg/bg reset between escape sequences
+            fg = nm_fg_color;
+            bg = nm_bg_color;
 
             for (anchor = p_next = obuf;
                  (p_next = memchr(p_next, ESC, ob - p_next)) != NULL; )
@@ -173,6 +255,9 @@ flush()
                          */
                         p++;
                         anchor = p_next = p;
+                        // ESC [ m  == Clear / reset styling (attributes and color)
+                        fg = nm_fg_color;
+                        bg = nm_bg_color;
                         at = 0;
                         WIN32setcolors(nm_fg_color, nm_bg_color);
                         continue;
@@ -180,11 +265,55 @@ flush()
                     p_next = p;
 
                     /*
+                    ## character attributes
+                    at: 1 == bold => high-intensity foreground
+                    at: 2 == italic / inverse => reverse fg / bg
+                    at: 4 == underline => high-intensity background
+                    at: 8 == blink => high-intensity background
+                    at: 16 == concealed => fg <= bg
+                    */
+                    /*
+                    ## ANSI SGR (Select Graphic Rendition)
+                    ESC [ m          == Clear / reset styling (attributes and color)
+                    ESC [ 0 m        == Clear / reset styling (attributes and color)
+                    ESC [ 1 m        == Set bright / bold => high-intensity foreground
+                    ESC [ 2 m        == Set dim => UNset bright or bold (from ConEMU)
+                    ESC [ 3 m        == Set italic or inverse => reversed foreground and background
+                    ESC [ 4 m        == Set underline => high-intensity background
+                    ESC [ 5 m        == Set blink (slow) => high-intensity background
+                    ESC [ 6 m        == Set blink (fast) => high-intensity background
+                    ESC [ 7 m        == Set reverse video => reversed foreground and background
+                    ESC [ 8 m        == Set concealed video => foreground color taken from background
+                    ESC [ 21 m       == UNset bright / bold
+                    ESC [ 22 m       == UNset bright / bold and UNset dim (neither bright/bold nor dim)
+                    ESC [ 23 m       == UNset italic or inverse (from ConEMU)
+                    ESC [ 24 m       == UNset underline
+                    ESC [ 25 m       == UNset blink
+                    ESC [ 27 m       == UNset reverse video (normal video)
+                    ESC [ 28 m       == UNset concealed video
+                    ESC [ 30..37 m   == Set ANSI foreground color
+                    ESC [ 38;2;R;G;B == Set xterm 24-bit foreground color, R,G,B are [0..255]
+                    ESC [ 38;5;N     == Set xterm foreground color, N is color index [0..255]
+                    ESC [ 39 m       == Reset foreground to default color (no attribute changes)
+                    ESC [ 40..47 m   == Set ANSI background color
+                    ESC [ 48;2;R;G;B == Set xterm 24-bit background color, R,G,B are [0..255]
+                    ESC [ 48;5;N     == Set xterm background color, N is color index [0..255]
+                    ESC [ 49 m       == Reset background to default color (no attribute changes)
+                    ESC [ 90..97 m   == Set ANSI high-intensity foreground color
+                    ESC [ 100..107 m == Set ANSI high-intensity background color
+                    ## refs
+                    [ANSICON sequences] https://raw.githubusercontent.com/adoxa/ansicon/master/sequences.txt @@ https://archive.is/ZRC1T
+                    [ConEMU ANSI Escape Codes] https://conemu.github.io/en/AnsiEscapeCodes.html @@ https://archive.is/66HC7
+                    [bash ANSI sequences] http://misc.flogisoft.com/bash/tip_colors_and_formatting @@ https://archive.is/LAw2i
+                    [ANSI escape code] https://en.wikipedia.org/wiki/ANSI_escape_code @@ https://archive.is/ZRC1T
+                    */
+
+                    /*
                      * Select foreground/background colors
                      * based on the escape sequence.
                      */
-                    fg = nm_fg_color;
-                    bg = nm_bg_color;
+                    // fg = nm_fg_color;
+                    // bg = nm_bg_color;
                     while (!is_ansi_end(*p))
                     {
                         char *q;
@@ -205,7 +334,7 @@ flush()
                         }
 
                         if (q == p ||
-                            code > 49 || code < 0 ||
+                            code > 107 || code < 0 ||
                             (!is_ansi_end(*q) && *q != ';'))
                         {
                             p_next = q;
@@ -216,7 +345,8 @@ flush()
 
                         switch (code)
                         {
-                        default:
+                        default: break;
+                        case 0:
                         /* case 0: all attrs off */
                             fg = nm_fg_color;
                             bg = nm_bg_color;
@@ -224,6 +354,9 @@ flush()
                             break;
                         case 1: /* bold on */
                             at |= 1;
+                            break;
+                        case 2: /* bold off */
+                            at &= ~1;
                             break;
                         case 3: /* italic on */
                         case 7: /* inverse on */
@@ -237,7 +370,7 @@ flush()
                             at |= 8;
                             break;
                         case 8: /* concealed on */
-                            fg = (bg & 7) | 8;
+                            at |= 16;
                             break;
                         case 22: /* bold off */
                             at &= ~1;
@@ -249,10 +382,50 @@ flush()
                         case 24: /* underline off */
                             at &= ~4;
                             break;
+                        case 25: /* blink off  */
+                            at &= ~8;
+                            break;
+                        case 28: /* concealed off */
+                            at &= ~16;
+                            break;
                         case 30: case 31: case 32:
                         case 33: case 34: case 35:
                         case 36: case 37:
-                            fg = (fg & 8) | (screen_color[code - 30]);
+                            fg = screen_color[code - 30];
+                            break;
+                        case 38:
+                            {
+                            /* set foreground color */
+                            /* ;2;R;G;B */
+                            /* ;5;N (xterm) */
+                            long color_spec = strtol( q, &q, 10 );
+                            int color = 0;
+                            if (*q == '\0') { break; }
+                            if (*q == ';') { q++; }
+                            if (color_spec == 2)
+                            {
+                                long r, g, b;
+                                r = strtol( q, &q, 10 );
+                                if (*q == '\0') { break; }
+                                if (*q == ';') { q++; }
+                                g = strtol( q, &q, 10 );
+                                if (*q == '\0') { break; }
+                                if (*q == ';') { q++; }
+                                b = strtol( q, &q, 10 );
+                                if (*q == '\0') { break; }
+                                if (*q == ';') { q++; }
+                                color = map_rgb_to_ANSI16( r, g, b );
+                            }
+                            else if (color_spec == 5)
+                            {
+                                long n = strtol( q, &q, 10 );
+                                if (*q == '\0') { break; }
+                                if (*q == ';') { q++; }
+                                color = map_xterm256_to_ANSI16( n );
+                            }
+                            fg = screen_color[ color & 0x7 ];
+                            if ( color & 0x8 ) { at |= 1; } else { at &= ~1; }
+                            }
                             break;
                         case 39: /* default fg */
                             fg = nm_fg_color;
@@ -260,53 +433,114 @@ flush()
                         case 40: case 41: case 42:
                         case 43: case 44: case 45:
                         case 46: case 47:
-                            bg = (bg & 8) | (screen_color[code - 40]);
+                            bg = screen_color[code - 40];
                             break;
-                        case 49: /* default fg */
+                        case 48:
+                            {
+                            /* set background color */
+                            /* ;2;R;G;B */
+                            /* ;5;N (xterm) */
+                            long color_spec = strtol( q, &q, 10 );
+                            int color = 0;
+                            if (*q == '\0') { break; }
+                            if (*q == ';') { q++; }
+                            if (color_spec == 2)
+                            {
+                                long r, g, b;
+                                r = strtol( q, &q, 10 );
+                                if (*q == '\0') { break; }
+                                if (*q == ';') { q++; }
+                                g = strtol( q, &q, 10 );
+                                if (*q == '\0') { break; }
+                                if (*q == ';') { q++; }
+                                b = strtol( q, &q, 10 );
+                                if (*q == '\0') { break; }
+                                if (*q == ';') { q++; }
+                                color = map_rgb_to_ANSI16( r, g, b );
+                            }
+                            else if (color_spec == 5)
+                            {
+                                long n = strtol( q, &q, 10 );
+                                if (*q == '\0') { break; }
+                                if (*q == ';') { q++; }
+                                color = map_xterm256_to_ANSI16( n );
+                            }
+                            bg = screen_color[ color & 0x7 ];
+                            if ( color & 0x8 ) { at |= 4; } else { at &= ~4; }
+                            }
+                            break;
+                        case 49: /* default bg */
                             bg = nm_bg_color;
+                            break;
+                        case 90: case 91: case 92:
+                        case 93: case 94: case 95:
+                        case 96: case 97:
+                            /* bash ANSI: set high-intensity foreground */
+                            fg = screen_color[code - 90];
+                            at |= 1;
+                            break;
+                        case 100: case 101: case 102:
+                        case 103: case 104: case 105:
+                        case 106: case 107:
+                            /* bash ANSI: set high-intensity background */
+                            bg = screen_color[code - 100];
+                            at |= 4;
                             break;
                         }
                         p = q;
                     }
                     if (!is_ansi_end(*p) || p == p_next)
                         break;
+                    /* same order/priority as in screen.c within at_enter() */
+                    f = fg;
+                    b = bg;
+                    if (at & 4)
+                    {
+                        if (ul_fg_color >= 0)
+                        {
+                            f = ul_fg_color;
+                            b = ul_bg_color;
+                        }
+                        else
+                            b |= 8;
+                    }
                     if (at & 1)
                     {
-                        /*
-                         * If \e[1m use defined bold
-                         * color, else set intensity.
-                         */
-                        if (p[-2] == '[')
+                        if (bo_fg_color >= 0)
                         {
-#if MSDOS_COMPILER==WIN32C
-                            fg |= FOREGROUND_INTENSITY;
-                            bg |= BACKGROUND_INTENSITY;
-#else
-                            fg = bo_fg_color;
-                            bg = bo_bg_color;
-#endif
-                        } else
-                            fg |= 8;
-                    } else if (at & 2)
-                    {
-                        fg = so_fg_color;
-                        bg = so_bg_color;
-                    } else if (at & 4)
-                    {
-#if MSDOS_COMPILER==WIN32C
-                            bg |= BACKGROUND_INTENSITY;
-#else
-                            fg = ul_fg_color;
-                            bg = ul_bg_color;
-#endif
-                    } else if (at & 8)
-                    {
-                        fg = bl_fg_color;
-                        bg = bl_bg_color;
+                            f = bo_fg_color;
+                            b = bo_bg_color;
+                        }
+                        else
+                            f |= 8;
                     }
-                    fg &= 0xf;
-                    bg &= 0xf;
-                    WIN32setcolors(fg, bg);
+                    if (at & 8)
+                    {
+                        if (bl_fg_color >= 0)
+                        {
+                            f = bl_fg_color;
+                            b = bl_bg_color;
+                        }
+                        else
+                            b |= 8;
+                    }
+                    if (at & 2)
+                    {
+                        if (so_fg_color >= 0)
+                        {
+                            f = so_fg_color;
+                            b = so_bg_color;
+                        }
+                        else
+                            f |= 8;
+                    }
+                    if (at & 16)
+                    {
+                        f = b;
+                    }
+                    f &= 0xf;
+                    b &= 0xf;
+                    WIN32setcolors(f, b);
                     p_next = anchor = p + 1;
                 } else
                     p_next++;
@@ -325,6 +559,7 @@ flush()
         screen_trashed = 1;
     ob = obuf;
 }
+
 
 /*
  * Output a character.
