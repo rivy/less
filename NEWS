@@ -11,7 +11,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 458 and 478
+    Major changes between "less" versions 458 and 481
 
 * Don't overwrite history file; just append to it.
 
@@ -43,6 +43,8 @@
 * Fix bugs and improve performance in ampersand filtering.
 
 * Automate construction of Unicode tables from Unicode database.
+
+* Allow %% escape sequence in LESSOPEN variable.
 
 ======================================================================
 
