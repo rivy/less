@@ -86,9 +86,9 @@ map_rgb_to_ANSI16( r, g, b )
     const int COLOR_RED = 0x1;      // ANSI16 "RED"
     const int COLOR_GREEN = 0x2;    // ANSI16 "GREEN"
     const int COLOR_BLUE = 0x4;     // ANSI16 "BLUE"
-    const int COLOR_GRAY = COLOR_RED|COLOR_GREEN|COLOR_BLUE;
-    const int COLOR_DARKGRAY = COLOR_INTENSE|0;
-    const int COLOR_WHITE = COLOR_INTENSE|COLOR_GRAY;
+    // const int COLOR_GRAY = COLOR_RED|COLOR_GREEN|COLOR_BLUE;
+    // const int COLOR_DARKGRAY = COLOR_INTENSE|0;
+    // const int COLOR_WHITE = COLOR_INTENSE|COLOR_GRAY;
 
     // partition color-space into [off, on (dark), on(intense)]
     long color_partition_value = MAX_RGB_COLOR_VALUE / 3;
@@ -98,7 +98,6 @@ map_rgb_to_ANSI16( r, g, b )
     long combined_intensity_threshold;
     long combined_intensity = 0;
     int contributing_colors = 0;
-    int intensity_contributors = 0;
 
     // combine intensities of contributing colors
     if ( r >= color_threshold ) { color |= COLOR_RED; contributing_colors++; combined_intensity += r; }
