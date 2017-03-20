@@ -286,7 +286,8 @@ flush()
                     ESC [ 6 m        == Set blink (fast) => high-intensity background
                     ESC [ 7 m        == Set reverse video => reversed foreground and background
                     ESC [ 8 m        == Set concealed video => foreground color taken from background
-                    ESC [ 21 m       == UNset bright / bold
+                    ESC [ 20 m       == Clear / reset attributes (alternatively / not implemented: Fraktur attribute)
+                    ESC [ 21 m       == UNset bright / bold (alternatively / not implemented: double underline)
                     ESC [ 22 m       == UNset bright / bold and UNset dim (neither bright/bold nor dim)
                     ESC [ 23 m       == UNset italic or inverse (from ConEMU)
                     ESC [ 24 m       == UNset underline
@@ -296,13 +297,13 @@ flush()
                     ESC [ 30..37 m   == Set ANSI foreground color
                     ESC [ 38;2;R;G;B == Set xterm 24-bit foreground color, R,G,B are [0..255]
                     ESC [ 38;5;N     == Set xterm foreground color, N is color index [0..255]
-                    ESC [ 39 m       == Reset foreground to default color (no attribute changes)
+                    ESC [ 39 m       == Reset foreground to default color (no attribute changes; note: "implementation defined")
                     ESC [ 40..47 m   == Set ANSI background color
                     ESC [ 48;2;R;G;B == Set xterm 24-bit background color, R,G,B are [0..255]
                     ESC [ 48;5;N     == Set xterm background color, N is color index [0..255]
-                    ESC [ 49 m       == Reset background to default color (no attribute changes)
-                    ESC [ 90..97 m   == Set ANSI high-intensity foreground color
-                    ESC [ 100..107 m == Set ANSI high-intensity background color
+                    ESC [ 49 m       == Reset background to default color (no attribute changes; note: "implementation defined")
+                    ESC [ 90..97 m   == Set ANSI high-intensity foreground color (aixterm / bash'ism)
+                    ESC [ 100..107 m == Set ANSI high-intensity background color (aixterm / bash'ism)
                     ## refs
                     [ANSICON sequences] https://raw.githubusercontent.com/adoxa/ansicon/master/sequences.txt @@ https://archive.is/ZRC1T
                     [ConEMU ANSI Escape Codes] https://conemu.github.io/en/AnsiEscapeCodes.html @@ https://archive.is/66HC7
@@ -347,7 +348,7 @@ flush()
                         {
                         default: break;
                         case 0:
-                        /* case 0: all attrs off */
+                        /* case 0: all attrs off + color reset to default */
                             fg = nm_fg_color;
                             bg = nm_bg_color;
                             at = 0;
@@ -355,7 +356,7 @@ flush()
                         case 1: /* bold on */
                             at |= 1;
                             break;
-                        case 2: /* bold off */
+                        case 2: /* dim on => bold off */
                             at &= ~1;
                             break;
                         case 3: /* italic on */
@@ -372,7 +373,11 @@ flush()
                         case 8: /* concealed on */
                             at |= 16;
                             break;
-                        case 22: /* bold off */
+                        case 20: /* attrs off */
+                            at = 0;
+                            break;
+                        case 21: /* bold off */
+                        case 22: /* bold off + dim off */
                             at &= ~1;
                             break;
                         case 23: /* italic off */
