@@ -144,17 +144,8 @@ static void win32_deinit_term();
 #if MSDOS_COMPILER
 public int nm_fg_color;     /* Color of normal text */
 public int nm_bg_color;
-public int bo_fg_color;     /* Color of bold text */
-public int bo_bg_color;
-public int ul_fg_color;     /* Color of underlined text */
-public int ul_bg_color;
-public int so_fg_color;     /* Color of standout text */
-public int so_bg_color;
-public int bl_fg_color;     /* Color of blinking text */
-public int bl_bg_color;
 static int sy_fg_color;     /* Color of system text (before less) */
 static int sy_bg_color;
-public int sgr_mode;        /* Honor ANSI sequences rather than using above */
 
 #else
 
@@ -186,6 +177,16 @@ static char
     *sc_init,       /* Startup terminal initialization */
     *sc_deinit;     /* Exit terminal de-initialization */
 #endif
+
+public int bo_fg_color;     /* Color of bold text */
+public int bo_bg_color;
+public int ul_fg_color;     /* Color of underlined text */
+public int ul_bg_color;
+public int so_fg_color;     /* Color of standout text */
+public int so_bg_color;
+public int bl_fg_color;     /* Color of blinking text */
+public int bl_bg_color;
+public int sgr_mode;        /* Honor ANSI sequences rather than using above */
 
 static int init_done = 0;
 
@@ -1058,6 +1059,16 @@ special_key_str(key)
     public void
 get_term()
 {
+    bo_fg_color = -1;
+    bo_bg_color = -1;
+    ul_fg_color = -1;
+    ul_bg_color = -1;
+    so_fg_color = -1;
+    so_bg_color = -1;
+    bl_fg_color = -1;
+    bl_bg_color = -1;
+    sgr_mode = 0;
+
 #if MSDOS_COMPILER
     auto_wrap = 1;
     ignaw = 0;
@@ -1102,16 +1113,6 @@ get_term()
 #endif
     nm_fg_color = sy_fg_color;
     nm_bg_color = sy_bg_color;
-
-    bo_fg_color = -1;
-    bo_bg_color = -1;
-    ul_fg_color = -1;
-    ul_bg_color = -1;
-    so_fg_color = -1;
-    so_bg_color = -1;
-    bl_fg_color = -1;
-    bl_bg_color = -1;
-    sgr_mode = 0;
 
     /*
      * Get size of the screen.
@@ -1255,10 +1256,15 @@ get_term()
     } else
         can_goto_line = 1;
 
-    tmodes("so", "se", &sc_s_in, &sc_s_out, "", "", &sp);
-    tmodes("us", "ue", &sc_u_in, &sc_u_out, sc_s_in, sc_s_out, &sp);
-    tmodes("md", "me", &sc_b_in, &sc_b_out, sc_s_in, sc_s_out, &sp);
-    tmodes("mb", "me", &sc_bl_in, &sc_bl_out, sc_s_in, sc_s_out, &sp);
+    // in *inx, the current term colors are not portably knowable, so setting a specific color for an attribute means returning to *default* (note: not prior) colors
+    // "sc" / "rc" are not very portable and return the cursor to the initial location (only *possibly*, additionally restoring the SGR setting)
+    if (sgr_mode)
+    {
+        tmodes("so", "se", &sc_s_in, &sc_s_out, "", "", &sp);
+        tmodes("us", "ue", &sc_u_in, &sc_u_out, sc_s_in, sc_s_out, &sp);
+        tmodes("md", "me", &sc_b_in, &sc_b_out, sc_s_in, sc_s_out, &sp);
+        tmodes("mb", "me", &sc_bl_in, &sc_bl_out, sc_s_in, sc_s_out, &sp);
+    } else {}
 
     sc_visual_bell = ltgetstr("vb", &sp);
     if (sc_visual_bell == NULL)
