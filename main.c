@@ -110,8 +110,8 @@ main(argc, argv)
      * Command line arguments override environment arguments.
      */
     is_tty = isatty(1);
-    get_term();
-    init_cmds();
+    init_cmds();    /* Read the lesskey file, e.g. ~/.less */ 
+    get_term();     /* Get the LESS_TERMCAP_* from lesskey file or from environment */
     init_charset();
     init_line();
     init_cmdhist();
