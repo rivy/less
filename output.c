@@ -201,6 +201,7 @@ flush()
              * the -D command-line option.
              */
             char *anchor, *p, *p_next;
+            static int statics_initialized;
             static unsigned char fg, bg;
             static unsigned char at;
             unsigned char f, b;
@@ -223,10 +224,13 @@ flush()
             };
 #endif
 
-            // reset FG/BG colors (? is this per line?)
-            // fixes fg/bg reset between escape sequences
-            fg = nm_fg_color;
-            bg = nm_bg_color;
+            // initialize static variables which have non-constant initial values
+            if (statics_initialized == 0)
+            {
+                fg = nm_fg_color;
+                bg = nm_bg_color;
+                statics_initialized = 1;
+            }
 
             for (anchor = p_next = obuf;
                  (p_next = memchr(p_next, ESC, ob - p_next)) != NULL; )
