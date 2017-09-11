@@ -2249,11 +2249,7 @@ at_enter(attr)
             bg = so_bg_color;
         }
         else
-           {
-           int t = fg;
-           fg = bg;
-           bg = t;
-           }
+            fg |= 8;
     }
     fg &= 0xf;
     bg &= 0xf;

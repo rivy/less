@@ -540,11 +540,16 @@ colordesc(s, fg_color, bg_color)
     int fg, bg;
     int err;
 
-    fg = getnum(&s, "D", &err);
-    if (err)
+    if (*s == '.')
+        fg = nm_fg_color;
+    else
     {
-        error("Missing fg color in -D", NULL_PARG);
-        return;
+        fg = getnum(&s, "D", &err);
+        if (err)
+        {
+            error("Missing fg color in -D", NULL_PARG);
+            return;
+        }
     }
     if (*s != '.')
         bg = nm_bg_color;
