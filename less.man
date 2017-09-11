@@ -527,7 +527,9 @@ LESS(1)                     General Commands Manual                    LESS(1)
               [4mcolor[24m  is  a  pair  of numbers separated by a period.  The first
               number selects the foreground color and the second  selects  the
               background  color of the text.  A single number [4mN[24m is the same as
-              [4mN.M[24m, where [4mM[24m is the normal background color.
+              [4mN.M[24m,  where [4mM[24m is the normal background color.  A  single number,
+              with a leading '.', [4m.M[24m is the same as [4mN.M[24m, where [4mN[24m is the normal
+              foreground color.
 
 
        -e or --quit-at-eof
