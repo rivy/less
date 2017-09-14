@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -37,6 +37,7 @@ extern int bo_fg_color, bo_bg_color;
 extern int ul_fg_color, ul_bg_color;
 extern int so_fg_color, so_bg_color;
 extern int bl_fg_color, bl_bg_color;
+extern int sgr_mode;
 #endif
 
 /*
@@ -202,7 +203,7 @@ flush()
              */
             char *anchor, *p, *p_next;
             static int statics_initialized;
-            static unsigned char fg, bg;
+            static unsigned char fg, fgi, bg, bgi;
             static unsigned char at;
             unsigned char f, b;
 #if MSDOS_COMPILER==WIN32C
@@ -227,8 +228,10 @@ flush()
             // initialize static variables which have non-constant initial values
             if (statics_initialized == 0)
             {
-                fg = nm_fg_color;
-                bg = nm_bg_color;
+                fg  = nm_fg_color & 7;
+                fgi = nm_fg_color & 8;
+                bg  = nm_bg_color & 7;
+                bgi = nm_bg_color & 8;
                 statics_initialized = 1;
             }
 
@@ -259,13 +262,16 @@ flush()
                         p++;
                         anchor = p_next = p;
                         // ESC [ m  == Clear / reset styling (attributes and color)
-                        fg = nm_fg_color;
-                        bg = nm_bg_color;
-                        at = 0;
+                        fg  = nm_fg_color & 7;
+                        fgi = nm_fg_color & 8;
+                        bg  = nm_bg_color & 7;
+                        bgi = nm_bg_color & 8;
+                        at  = 0;
                         WIN32setcolors(nm_fg_color, nm_bg_color);
                         continue;
                     }
                     p_next = p;
+                    at &= ~32;
 
                     /*
                     ## character attributes
@@ -274,6 +280,7 @@ flush()
                     at: 4 == underline => high-intensity background
                     at: 8 == blink => high-intensity background
                     at: 16 == concealed => set fg equal to value from bg
+                    at: 32 == found compound_SGR_sequence (current SGR code is part of a longer sequence; eg, "\e[1;..." not "\e[1m")
                     */
                     /*
                     ## ANSI SGR (Select Graphic Rendition)
@@ -316,8 +323,6 @@ flush()
                      * Select foreground/background colors
                      * based on the escape sequence.
                      */
-                    // fg = nm_fg_color;
-                    // bg = nm_bg_color;
                     while (!is_ansi_end(*p))
                     {
                         char *q;
@@ -345,18 +350,36 @@ flush()
                             break;
                         }
                         if (*q == ';')
+                        {
                             q++;
+                            at |= 32;
+                        }
 
                         switch (code)
                         {
                         default: break;
                         case 0:
                         /* case 0: all attrs off + color reset to default */
-                            fg = nm_fg_color;
-                            bg = nm_bg_color;
-                            at = 0;
+                            fg = nm_fg_color & 7;
+                            bg = nm_bg_color & 7;
+                            at &= 32;
+                            /*
+                             * \e[0m use normal
+                             * intensities, but
+                             * \e[0;...m resets them
+                             */
+                            if (at & 32)
+                            {// "\e[0m"
+                                fgi = 0;
+                                bgi = 0;
+                            } else
+                            {// "\e[...0;...m"
+                                fgi = nm_fg_color & 8;
+                                bgi = nm_bg_color & 8;
+                            }
                             break;
                         case 1: /* bold on */
+                            fgi = 8;
                             at |= 1;
                             break;
                         case 2: /* dim on => bold off */
@@ -367,10 +390,12 @@ flush()
                             at |= 2;
                             break;
                         case 4: /* underline on */
+                            bgi = 8;
                             at |= 4;
                             break;
                         case 5: /* slow blink on */
                         case 6: /* fast blink on */
+                            bgi = 8;
                             at |= 8;
                             break;
                         case 8: /* concealed on */
@@ -381,6 +406,7 @@ flush()
                             break;
                         case 21: /* bold off */
                         case 22: /* bold off + dim off */
+                            fgi = 0;
                             at &= ~1;
                             break;
                         case 23: /* italic off */
@@ -388,6 +414,7 @@ flush()
                             at &= ~2;
                             break;
                         case 24: /* underline off */
+                            bgi = 0;
                             at &= ~4;
                             break;
                         case 25: /* blink off  */
@@ -400,6 +427,7 @@ flush()
                         case 33: case 34: case 35:
                         case 36: case 37:
                             fg = screen_color[code - 30];
+                            at |= 32;
                             break;
                         case 38:
                             {
@@ -434,14 +462,17 @@ flush()
                             fg = screen_color[ color & 0x7 ];
                             if ( color & 0x8 ) { at |= 1; } else { at &= ~1; }
                             }
+                            at |= 32;
                             break;
                         case 39: /* default fg */
                             fg = nm_fg_color;
+                            at |= 32;
                             break;
                         case 40: case 41: case 42:
                         case 43: case 44: case 45:
                         case 46: case 47:
                             bg = screen_color[code - 40];
+                            at |= 32;
                             break;
                         case 48:
                             {
@@ -476,9 +507,11 @@ flush()
                             bg = screen_color[ color & 0x7 ];
                             if ( color & 0x8 ) { at |= 4; } else { at &= ~4; }
                             }
+                            at |= 32;
                             break;
                         case 49: /* default bg */
-                            bg = nm_bg_color;
+                            bg = nm_bg_color & 7;
+                            at |= 32;
                             break;
                         case 90: case 91: case 92:
                         case 93: case 94: case 95:
@@ -486,6 +519,7 @@ flush()
                             /* bash ANSI: set high-intensity foreground */
                             fg = screen_color[code - 90];
                             at |= 1;
+                            at |= 32;
                             break;
                         case 100: case 101: case 102:
                         case 103: case 104: case 105:
@@ -493,18 +527,26 @@ flush()
                             /* bash ANSI: set high-intensity background */
                             bg = screen_color[code - 100];
                             at |= 4;
+                            at |= 32;
                             break;
                         }
                         p = q;
                     }
                     if (!is_ansi_end(*p) || p == p_next)
                         break;
+                    /*                    /*
+                     * In SGR mode, the ANSI sequence is
+                     * always honored; otherwise if an attr
+                     * is used by itself ("\e[1m" versus
+                     * "\e[1;33m", for example), set the
+                     * color assigned to that attribute.
+                     */
                     /* same order/priority as in screen.c within at_enter() */
-                    f = fg;
-                    b = bg;
+                    f = fg | fgi;
+                    b = bg | bgi;
                     if (at & 4)
                     {
-                        if (ul_fg_color >= 0)
+                        if (!(sgr_mode || (at & 32)) && ul_fg_color >= 0)
                         {
                             f = ul_fg_color;
                             b = ul_bg_color;
@@ -514,7 +556,7 @@ flush()
                     }
                     if (at & 1)
                     {
-                        if (bo_fg_color >= 0)
+                        if (!(sgr_mode || (at & 32)) && bo_fg_color >= 0)
                         {
                             f = bo_fg_color;
                             b = bo_bg_color;
@@ -524,7 +566,7 @@ flush()
                     }
                     if (at & 8)
                     {
-                        if (bl_fg_color >= 0)
+                        if (!(sgr_mode || (at & 32)) && bl_fg_color >= 0)
                         {
                             f = bl_fg_color;
                             b = bl_bg_color;
@@ -534,13 +576,16 @@ flush()
                     }
                     if (at & 2)
                     {
-                        if (so_fg_color >= 0)
+                        if (!(sgr_mode || (at & 32)) && so_fg_color >= 0)
                         {
                             f = so_fg_color;
                             b = so_bg_color;
+                        } else
+                        {
+                            unsigned char t = f;
+                            f = b;
+                            b = t;
                         }
-                        else
-                            f |= 8;
                     }
                     if (at & 16)
                     {
