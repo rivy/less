@@ -280,6 +280,7 @@ flush()
                     at: 4 == underline => high-intensity background
                     at: 8 == blink => high-intensity background
                     at: 16 == concealed => set fg equal to value from bg
+                    at: 32 == found compound_SGR_sequence (current SGR code is part of a longer sequence; eg, "\e[1;..." not "\e[1m")
                     */
                     /*
                     ## ANSI SGR (Select Graphic Rendition)
