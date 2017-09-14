@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -1753,56 +1753,66 @@ commands()
             break;
 #endif
 
-        case A_B_BRACKET:
-        case A_F_BRACKET:
-            start_mca(action, "Brackets: ", (void*)NULL, 0);
-            c = getcc();
-            goto again;
+		case A_B_BRACKET:
+		case A_F_BRACKET:
+			start_mca(action, "Brackets: ", (void*)NULL, 0);
+			c = getcc();
+			goto again;
 
-        case A_LSHIFT:
-            if (number > 0)
-                shift_count = number;
-            else
-                number = (shift_count > 0) ?
-                    shift_count : sc_width / 2;
-            if (number > hshift)
-                number = hshift;
-            hshift -= number;
-            screen_trashed = 1;
-            break;
+		case A_LSHIFT:
+			if (number > 0)
+				shift_count = number;
+			else
+				number = (shift_count > 0) ?
+					shift_count : sc_width / 2;
+			if (number > hshift)
+				number = hshift;
+			hshift -= number;
+			screen_trashed = 1;
+			break;
 
-        case A_RSHIFT:
-            if (number > 0)
-                shift_count = number;
-            else
-                number = (shift_count > 0) ?
-                    shift_count : sc_width / 2;
-            hshift += number;
-            screen_trashed = 1;
-            break;
+		case A_RSHIFT:
+			if (number > 0)
+				shift_count = number;
+			else
+				number = (shift_count > 0) ?
+					shift_count : sc_width / 2;
+			hshift += number;
+			screen_trashed = 1;
+			break;
 
-        case A_PREFIX:
-            /*
-             * The command is incomplete (more chars are needed).
-             * Display the current char, so the user knows
-             * what's going on, and get another character.
-             */
-            if (mca != A_PREFIX)
-            {
-                cmd_reset();
-                start_mca(A_PREFIX, " ", (void*)NULL,
-                    CF_QUIT_ON_ERASE);
-                (void) cmd_char(c);
-            }
-            c = getcc();
-            goto again;
+		case A_LLSHIFT:
+			hshift = 0;
+			screen_trashed = 1;
+			break;
 
-        case A_NOACTION:
-            break;
+		case A_RRSHIFT:
+			hshift = rrshift();
+			screen_trashed = 1;
+			break;
 
-        default:
-            bell();
-            break;
-        }
-    }
+		case A_PREFIX:
+			/*
+			 * The command is incomplete (more chars are needed).
+			 * Display the current char, so the user knows
+			 * what's going on, and get another character.
+			 */
+			if (mca != A_PREFIX)
+			{
+				cmd_reset();
+				start_mca(A_PREFIX, " ", (void*)NULL,
+					CF_QUIT_ON_ERASE);
+				(void) cmd_char(c);
+			}
+			c = getcc();
+			goto again;
+
+		case A_NOACTION:
+			break;
+
+		default:
+			bell();
+			break;
+		}
+	}
 }

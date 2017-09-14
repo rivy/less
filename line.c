@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -16,6 +16,7 @@
 
 #include "less.h"
 #include "charset.h"
+#include "position.h"
 
 static char *linebuf = NULL;    /* Buffer which holds the current output line */
 static char *attr = NULL;   /* Extension of linebuf to hold attributes */
@@ -169,67 +170,67 @@ prewind()
 plinenum(pos)
     POSITION pos;
 {
-    register LINENUM linenum = 0;
-    register int i;
+	register LINENUM linenum = 0;
+	register int i;
 
-    if (linenums == OPT_ONPLUS)
-    {
-        /*
-         * Get the line number and put it in the current line.
-         * {{ Note: since find_linenum calls forw_raw_line,
-         *    it may seek in the input file, requiring the caller
-         *    of plinenum to re-seek if necessary. }}
-         * {{ Since forw_raw_line modifies linebuf, we must
-         *    do this first, before storing anything in linebuf. }}
-         */
-        linenum = find_linenum(pos);
-    }
+	if (linenums == OPT_ONPLUS)
+	{
+		/*
+		 * Get the line number and put it in the current line.
+		 * {{ Note: since find_linenum calls forw_raw_line,
+		 *    it may seek in the input file, requiring the caller
+		 *    of plinenum to re-seek if necessary. }}
+		 * {{ Since forw_raw_line modifies linebuf, we must
+		 *    do this first, before storing anything in linebuf. }}
+		 */
+		linenum = find_linenum(pos);
+	}
 
-    /*
-     * Display a status column if the -J option is set.
-     */
-    if (status_col)
-    {
-        linebuf[curr] = ' ';
-        if (start_attnpos != NULL_POSITION &&
-            pos >= start_attnpos && pos < end_attnpos)
-            attr[curr] = AT_NORMAL|AT_HILITE;
-        else
-            attr[curr] = AT_NORMAL;
-        curr++;
-        column++;
-    }
-    /*
-     * Display the line number at the start of each line
-     * if the -N option is set.
-     */
-    if (linenums == OPT_ONPLUS)
-    {
-        char buf[INT_STRLEN_BOUND(pos) + 2];
-        int n;
+	/*
+	 * Display a status column if the -J option is set.
+	 */
+	if (status_col)
+	{
+		linebuf[curr] = ' ';
+		if (start_attnpos != NULL_POSITION &&
+		    pos >= start_attnpos && pos < end_attnpos)
+			attr[curr] = AT_NORMAL|AT_HILITE;
+		else
+			attr[curr] = AT_NORMAL;
+		curr++;
+		column++;
+	}
+	/*
+	 * Display the line number at the start of each line
+	 * if the -N option is set.
+	 */
+	if (linenums == OPT_ONPLUS)
+	{
+		char buf[INT_STRLEN_BOUND(pos) + 2];
+		int n;
 
-        linenumtoa(linenum, buf);
-        n = (int) strlen(buf);
-        if (n < MIN_LINENUM_WIDTH)
-            n = MIN_LINENUM_WIDTH;
-        sprintf(linebuf+curr, "%*s ", n, buf);
-        n++;  /* One space after the line number. */
-        for (i = 0; i < n; i++)
-            attr[curr+i] = AT_NORMAL;
-        curr += n;
-        column += n;
-        lmargin += n;
-    }
+		linenumtoa(linenum, buf);
+		n = (int) strlen(buf);
+		if (n < MIN_LINENUM_WIDTH)
+			n = MIN_LINENUM_WIDTH;
+		sprintf(linebuf+curr, "%*s ", n, buf);
+		n++;  /* One space after the line number. */
+		for (i = 0; i < n; i++)
+			attr[curr+i] = AT_BOLD;
+		curr += n;
+		column += n;
+		lmargin += n;
+	}
 
-    /*
-     * Append enough spaces to bring us to the lmargin.
-     */
-    while (column < lmargin)
-    {
-        linebuf[curr] = ' ';
-        attr[curr++] = AT_NORMAL;
-        column++;
-    }
+	/*
+	 * Append enough spaces to bring us to the lmargin.
+	 */
+	while (column < lmargin)
+	{
+		linebuf[curr] = ' ';
+		attr[curr++] = AT_NORMAL;
+		column++;
+	}
 }
 
 /*
@@ -1254,4 +1255,31 @@ back_raw_line(curr_pos, linep, line_lenp)
     if (line_lenp != NULL)
         *line_lenp = size_linebuf - 1 - n;
     return (new_pos);
+}
+
+/*
+ * Find the shift necessary to show the end of the longest displayed line.
+ */
+	public int
+rrshift()
+{
+	POSITION pos;
+	int save_width;
+	int line;
+	int longest = 0;
+
+	save_width = sc_width;
+	sc_width = INT_MAX;
+	hshift = 0;
+	pos = position(TOP);
+	for (line = 0; line < sc_height && pos != NULL_POSITION; line++)
+	{
+		pos = forw_line(pos);
+		if (column > longest)
+			longest = column;
+	}
+	sc_width = save_width;
+	if (longest < sc_width)
+		return 0;
+	return longest - sc_width;
 }

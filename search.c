@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -1015,27 +1015,6 @@ hilite_line(linepos, line, line_len, chpos, sp, ep, cvt_ops)
 }
 #endif
 
-/*
- * Change the caseless-ness of searches.
- * Updates the internal search state to reflect a change in the -i flag.
- */
-    public void
-chg_caseless()
-{
-    if (!is_ucase_pattern)
-        /*
-         * Pattern did not have uppercase.
-         * Just set the search caselessness to the global caselessness.
-         */
-        is_caseless = caseless;
-    else
-        /*
-         * Pattern did have uppercase.
-         * Discard the pattern; we can't change search caselessness now.
-         */
-        clear_pattern(&search_info);
-}
-
 #if HILITE_SEARCH
 /*
  * Find matching text which is currently on screen and highlight it.
@@ -1079,90 +1058,90 @@ chg_hilite()
 search_pos(search_type)
     int search_type;
 {
-    POSITION pos;
-    int linenum;
+	POSITION pos;
+	int linenum;
 
-    if (empty_screen())
-    {
-        /*
-         * Start at the beginning (or end) of the file.
-         * The empty_screen() case is mainly for
-         * command line initiated searches;
-         * for example, "+/xyz" on the command line.
-         * Also for multi-file (SRCH_PAST_EOF) searches.
-         */
-        if (search_type & SRCH_FORW)
-        {
-            pos = ch_zero();
-        } else
-        {
-            pos = ch_length();
-            if (pos == NULL_POSITION)
-            {
-                (void) ch_end_seek();
-                pos = ch_length();
-            }
-        }
-        linenum = 0;
-    } else
-    {
-        int add_one = 0;
+	if (empty_screen())
+	{
+		/*
+		 * Start at the beginning (or end) of the file.
+		 * The empty_screen() case is mainly for
+		 * command line initiated searches;
+		 * for example, "+/xyz" on the command line.
+		 * Also for multi-file (SRCH_PAST_EOF) searches.
+		 */
+		if (search_type & SRCH_FORW)
+		{
+			pos = ch_zero();
+		} else
+		{
+			pos = ch_length();
+			if (pos == NULL_POSITION)
+			{
+				(void) ch_end_seek();
+				pos = ch_length();
+			}
+		}
+		linenum = 0;
+	} else
+	{
+		int add_one = 0;
 
-        if (how_search == OPT_ON)
-        {
-            /*
-             * Search does not include current screen.
-             */
-            if (search_type & SRCH_FORW)
-                linenum = BOTTOM_PLUS_ONE;
-            else
-                linenum = TOP;
-        } else if (how_search == OPT_ONPLUS && !(search_type & SRCH_AFTER_TARGET))
-        {
-            /*
-             * Search includes all of displayed screen.
-             */
-            if (search_type & SRCH_FORW)
-                linenum = TOP;
-            else
-                linenum = BOTTOM_PLUS_ONE;
-        } else
-        {
-            /*
-             * Search includes the part of current screen beyond the jump target.
-             * It starts at the jump target (if searching backwards),
-             * or at the jump target plus one (if forwards).
-             */
-            linenum = adjsline(jump_sline);
-            if (search_type & SRCH_FORW)
-                add_one = 1;
-        }
-        pos = position(linenum);
-        if (add_one)
-            pos = forw_raw_line(pos, (char **)NULL, (int *)NULL);
-    }
+		if (how_search == OPT_ON)
+		{
+			/*
+			 * Search does not include current screen.
+			 */
+			if (search_type & SRCH_FORW)
+				linenum = sc_height-1; /* BOTTOM_PLUS_ONE */
+			else
+				linenum = 0; /* TOP */
+		} else if (how_search == OPT_ONPLUS && !(search_type & SRCH_AFTER_TARGET))
+		{
+			/*
+			 * Search includes all of displayed screen.
+			 */
+			if (search_type & SRCH_FORW)
+				linenum = 0; /* TOP */
+			else
+				linenum = sc_height-1; /* BOTTOM_PLUS_ONE */
+		} else
+		{
+			/*
+			 * Search includes the part of current screen beyond the jump target.
+			 * It starts at the jump target (if searching backwards),
+			 * or at the jump target plus one (if forwards).
+			 */
+			linenum = adjsline(jump_sline);
+			if (search_type & SRCH_FORW)
+				add_one = 1;
+		}
+		pos = position(linenum);
+		if (add_one)
+			pos = forw_raw_line(pos, (char **)NULL, (int *)NULL);
+	}
 
-    /*
-     * If the line is empty, look around for a plausible starting place.
-     */
-    if (search_type & SRCH_FORW)
-    {
-        while (pos == NULL_POSITION)
-        {
-            if (++linenum >= sc_height)
-                break;
-            pos = position(linenum);
-        }
-    } else
-    {
-        while (pos == NULL_POSITION)
-        {
-            if (--linenum < 0)
-                break;
-            pos = position(linenum);
-        }
-    }
-    return (pos);
+	/*
+	 * If the line is empty, look around for a plausible starting place.
+	 */
+	if (search_type & SRCH_FORW)
+	{
+		while (pos == NULL_POSITION)
+		{
+			if (++linenum >= sc_height)
+				break;
+			pos = position(linenum);
+		}
+	} else
+	{
+		while (pos == NULL_POSITION)
+		{
+			if (--linenum < 0)
+				break;
+			pos = position(linenum);
+		}
+	}
+	return (pos);
 }
 
 /*
@@ -1378,6 +1357,30 @@ hist_pattern(search_type)
 #else /* CMD_HISTORY */
     return (0);
 #endif /* CMD_HISTORY */
+}
+
+/*
+ * Change the caseless-ness of searches.
+ * Updates the internal search state to reflect a change in the -i flag.
+ */
+	public void
+chg_caseless()
+{
+	if (!is_ucase_pattern)
+		/*
+		 * Pattern did not have uppercase.
+		 * Just set the search caselessness to the global caselessness.
+		 */
+		is_caseless = caseless;
+	else
+	{
+		/*
+		 * Pattern did have uppercase.
+		 * Regenerate the pattern using the new state.
+		 */
+		clear_pattern(&search_info);
+		hist_pattern(search_info.search_type);
+	}
 }
 
 /*

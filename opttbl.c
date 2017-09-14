@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -175,14 +175,14 @@ static struct loption option[] =
         }
     },
 #if MSDOS_COMPILER
-    { 'D', &D__optname,
-        STRING|REPAINT|NO_QUERY, 0, NULL, opt_D,
-        {
-            "color desc: ",
-            "Ddknsu0123456789.",
-            NULL
-        }
-    },
+	{ 'D', &D__optname,
+		STRING|REPAINT, 0, NULL, opt_D,
+		{
+			"color desc: ",
+			"Dadknsu0123456789.",
+			NULL
+		}
+	},
 #endif
     { 'e', &e_optname,
         TRIPLE, OPT_OFF, &quit_at_eof, NULL,

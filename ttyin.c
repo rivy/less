@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2015  Mark Nudelman
+ * Copyright (C) 1984-2016  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -150,36 +150,36 @@ getchr()
         }
 #endif
 #if 0 /* allow entering arbitrary hex chars for testing */
-        /* ctrl-A followed by two hex chars makes a byte */
-    {
-        int hex_in = 0;
-        int hex_value = 0;
-        if (c == CONTROL('A'))
-        {
-            hex_in = 2;
-            result = 0;
-            continue;
-        }
-        if (hex_in > 0)
-        {
-            int v;
-            if (c >= '0' && c <= '9')
-                v = c - '0';
-            else if (c >= 'a' && c <= 'f')
-                v = c - 'a' + 10;
-            else if (c >= 'A' && c <= 'F')
-                v = c - 'A' + 10;
-            else
-                hex_in = 0;
-            hex_value = (hex_value << 4) | v;
-            if (--hex_in > 0)
-            {
-                result = 0;
-                continue;
-            }
-            c = hex_value;
-        }
-    }
+		/* ctrl-A followed by two hex chars makes a byte */
+	{
+		static int hex_in = 0;
+		static int hex_value = 0;
+		if (c == CONTROL('A'))
+		{
+			hex_in = 2;
+			result = 0;
+			continue;
+		}
+		if (hex_in > 0)
+		{
+			int v;
+			if (c >= '0' && c <= '9')
+				v = c - '0';
+			else if (c >= 'a' && c <= 'f')
+				v = c - 'a' + 10;
+			else if (c >= 'A' && c <= 'F')
+				v = c - 'A' + 10;
+			else
+				hex_in = 0;
+			hex_value = (hex_value << 4) | v;
+			if (--hex_in > 0)
+			{
+				result = 0;
+				continue;
+			}
+			c = hex_value;
+		}
+	}
 #endif
         /*
          * Various parts of the program cannot handle
