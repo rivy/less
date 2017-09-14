@@ -117,18 +117,18 @@ jump_back(linenum)
     public void
 repaint()
 {
-	struct scrpos scrpos;
-	/*
-	 * Start at the line currently at the top of the screen
-	 * and redisplay the screen.
-	 */
-	get_scrpos(&scrpos);
-	pos_clear();
-	if (scrpos.pos == NULL_POSITION)
-		/* Screen hasn't been drawn yet. */
-		jump_loc(0, 0);
-	else
-		jump_loc(scrpos.pos, scrpos.ln);
+    struct scrpos scrpos;
+    /*
+     * Start at the line currently at the top of the screen
+     * and redisplay the screen.
+     */
+    get_scrpos(&scrpos);
+    pos_clear();
+    if (scrpos.pos == NULL_POSITION)
+        /* Screen hasn't been drawn yet. */
+        jump_loc(0, 0);
+    else
+        jump_loc(scrpos.pos, scrpos.ln);
 }
 
 /*

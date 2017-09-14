@@ -11,7 +11,7 @@
 
 ======================================================================
 
-	Major changes between "less" versions 481 and 487
+    Major changes between "less" versions 481 and 487
 
 * New commands ESC-{ and ESC-} to shift to start/end of displayed lines.
 
@@ -31,7 +31,7 @@
 
 ======================================================================
 
-	Major changes between "less" versions 458 and 481
+    Major changes between "less" versions 458 and 481
 
 * Don't overwrite history file; just append to it.
 

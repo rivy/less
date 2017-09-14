@@ -143,26 +143,26 @@ clear_cmd()
 cmd_putstr(s)
     char *s;
 {
-	LWCHAR prev_ch = 0;
-	LWCHAR ch;
-	char *endline = s + strlen(s);
-	while (*s != '\0')
-	{
-		char *ns = s;
-		int width;
-		ch = step_char(&ns, +1, endline);
-		while (s < ns)
-			putchr(*s++);
-		if (!utf_mode)
-			width = 1;
-		else if (is_composing_char(ch) || is_combining_char(prev_ch, ch))
-			width = 0;
-		else
-			width = is_wide_char(ch) ? 2 : 1;
-		cmd_col += width;
-		prompt_col += width;
-		prev_ch = ch;
-	}
+    LWCHAR prev_ch = 0;
+    LWCHAR ch;
+    char *endline = s + strlen(s);
+    while (*s != '\0')
+    {
+        char *ns = s;
+        int width;
+        ch = step_char(&ns, +1, endline);
+        while (s < ns)
+            putchr(*s++);
+        if (!utf_mode)
+            width = 1;
+        else if (is_composing_char(ch) || is_combining_char(prev_ch, ch))
+            width = 0;
+        else
+            width = is_wide_char(ch) ? 2 : 1;
+        cmd_col += width;
+        prompt_col += width;
+        prev_ch = ch;
+    }
 }
 
 /*
@@ -196,34 +196,34 @@ cmd_step_common(p, ch, len, pwidth, bswidth)
     int *pwidth;
     int *bswidth;
 {
-	char *pr;
-	int width;
+    char *pr;
+    int width;
 
-	if (len == 1)
-	{
-		pr = prchar((int) ch);
-		width = (int) strlen(pr);
-	} else
-	{
-		pr = prutfchar(ch);
-		if (is_composing_char(ch))
-			width = 0;
-		else if (is_ubin_char(ch))
-			width = (int) strlen(pr);
-		else
-		{
-			LWCHAR prev_ch = step_char(&p, -1, cmdbuf);
-			if (is_combining_char(prev_ch, ch))
-				width = 0;
-			else
-				width = is_wide_char(ch) ? 2 : 1;
-		}
-	}
-	if (pwidth != NULL)
-		*pwidth	= width;
-	if (bswidth != NULL)
-		*bswidth = width;
-	return (pr);
+    if (len == 1)
+    {
+        pr = prchar((int) ch);
+        width = (int) strlen(pr);
+    } else
+    {
+        pr = prutfchar(ch);
+        if (is_composing_char(ch))
+            width = 0;
+        else if (is_ubin_char(ch))
+            width = (int) strlen(pr);
+        else
+        {
+            LWCHAR prev_ch = step_char(&p, -1, cmdbuf);
+            if (is_combining_char(prev_ch, ch))
+                width = 0;
+            else
+                width = is_wide_char(ch) ? 2 : 1;
+        }
+    }
+    if (pwidth != NULL)
+        *pwidth = width;
+    if (bswidth != NULL)
+        *bswidth = width;
+    return (pr);
 }
 
 /*

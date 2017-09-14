@@ -517,15 +517,15 @@ opt__V(type, s)
 #if !HAVE_GNU_REGEX && !HAVE_POSIX_REGCOMP && !HAVE_PCRE && !HAVE_RE_COMP && !HAVE_REGCMP && !HAVE_V8_REGCOMP
         putstr("no ");
 #endif
-		putstr("regular expressions)\n");
-		putstr("Copyright (C) 1984-2016  Mark Nudelman\n\n");
-		putstr("less comes with NO WARRANTY, to the extent permitted by law.\n");
-		putstr("For information about the terms of redistribution,\n");
-		putstr("see the file named README in the less distribution.\n");
-		putstr("Homepage: http://www.greenwoodsoftware.com/less\n");
-		quit(QUIT_OK);
-		break;
-	}
+        putstr("regular expressions)\n");
+        putstr("Copyright (C) 1984-2016  Mark Nudelman\n\n");
+        putstr("less comes with NO WARRANTY, to the extent permitted by law.\n");
+        putstr("For information about the terms of redistribution,\n");
+        putstr("see the file named README in the less distribution.\n");
+        putstr("Homepage: http://www.greenwoodsoftware.com/less\n");
+        quit(QUIT_OK);
+        break;
+    }
 }
 
 #if MSDOS_COMPILER
@@ -579,47 +579,47 @@ opt_D(type, s)
     int type;
     char *s;
 {
-	PARG p;
+    PARG p;
 
-	switch (type)
-	{
-	case INIT:
-	case TOGGLE:
-		switch (*s++)
-		{
-		case 'n':
-			colordesc(s, &nm_fg_color, &nm_bg_color);
-			break;
-		case 'd':
-			colordesc(s, &bo_fg_color, &bo_bg_color);
-			break;
-		case 'u':
-			colordesc(s, &ul_fg_color, &ul_bg_color);
-			break;
-		case 'k':
-			colordesc(s, &bl_fg_color, &bl_bg_color);
-			break;
-		case 's':
-			colordesc(s, &so_fg_color, &so_bg_color);
-			break;
-		case 'a':
-			sgr_mode = !sgr_mode;
-			break;
-		default:
-			error("-D must be followed by n, d, u, k, s or a", NULL_PARG);
-			break;
-		}
-		if (type == TOGGLE)
-		{
-			at_enter(AT_STANDOUT);
-			at_exit();
-		}
-		break;
-	case QUERY:
-		p.p_string = (sgr_mode) ? "on" : "off";
-		error("SGR mode is %s", &p);
-		break;
-	}
+    switch (type)
+    {
+    case INIT:
+    case TOGGLE:
+        switch (*s++)
+        {
+        case 'n':
+            colordesc(s, &nm_fg_color, &nm_bg_color);
+            break;
+        case 'd':
+            colordesc(s, &bo_fg_color, &bo_bg_color);
+            break;
+        case 'u':
+            colordesc(s, &ul_fg_color, &ul_bg_color);
+            break;
+        case 'k':
+            colordesc(s, &bl_fg_color, &bl_bg_color);
+            break;
+        case 's':
+            colordesc(s, &so_fg_color, &so_bg_color);
+            break;
+        case 'a':
+            sgr_mode = !sgr_mode;
+            break;
+        default:
+            error("-D must be followed by n, d, u, k, s or a", NULL_PARG);
+            break;
+        }
+        if (type == TOGGLE)
+        {
+            at_enter(AT_STANDOUT);
+            at_exit();
+        }
+        break;
+    case QUERY:
+        p.p_string = (sgr_mode) ? "on" : "off";
+        error("SGR mode is %s", &p);
+        break;
+    }
 }
 #endif
 

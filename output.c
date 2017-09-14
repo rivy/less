@@ -188,24 +188,24 @@ flush()
     }
 #else
 #if MSDOS_COMPILER==WIN32C || MSDOS_COMPILER==BORLANDC || MSDOS_COMPILER==DJGPPC
-	if (is_tty && any_display)
-	{
-		*ob = '\0';
-		if (ctldisp != OPT_ONPLUS)
-			WIN32textout(obuf, ob - obuf);
-		else
-		{
-			/*
-			 * Look for SGR escape sequences, and convert them
-			 * to color commands.  Replace bold, underline,
-			 * and italic escapes into colors specified via
-			 * the -D command-line option.
-			 */
-			char *anchor, *p, *p_next;
+    if (is_tty && any_display)
+    {
+        *ob = '\0';
+        if (ctldisp != OPT_ONPLUS)
+            WIN32textout(obuf, ob - obuf);
+        else
+        {
+            /*
+             * Look for SGR escape sequences, and convert them
+             * to color commands.  Replace bold, underline,
+             * and italic escapes into colors specified via
+             * the -D command-line option.
+             */
+            char *anchor, *p, *p_next;
             static int statics_initialized;
-			static unsigned char fg, fgi, bg, bgi;
-			static unsigned char at;
-			unsigned char f, b;
+            static unsigned char fg, fgi, bg, bgi;
+            static unsigned char at;
+            unsigned char f, b;
 #if MSDOS_COMPILER==WIN32C
             /* Screen colors used by 3x and 4x SGR commands. */
             static unsigned char screen_color[] = {

@@ -154,7 +154,7 @@ public int bl_fg_color;     /* Color of blinking text */
 public int bl_bg_color;
 static int sy_fg_color;     /* Color of system text (before less) */
 static int sy_bg_color;
-public int sgr_mode;		/* Honor ANSI sequences rather than using above */
+public int sgr_mode;        /* Honor ANSI sequences rather than using above */
 
 #else
 
@@ -1456,9 +1456,9 @@ _settextposition(int row, int col)
 initcolor()
 {
 #if MSDOS_COMPILER==BORLANDC || MSDOS_COMPILER==DJGPPC
-	intensevideo();
+    intensevideo();
 #endif
-	SETCOLORS(nm_fg_color, nm_bg_color);
+    SETCOLORS(nm_fg_color, nm_bg_color);
 #if 0
     /*
      * This clears the screen at startup.  This is different from
@@ -2421,71 +2421,71 @@ putbs()
 win32_kbhit(tty)
     HANDLE tty;
 {
-	INPUT_RECORD ip;
-	DWORD read;
+    INPUT_RECORD ip;
+    DWORD read;
 
-	if (keyCount > 0)
-		return (TRUE);
+    if (keyCount > 0)
+        return (TRUE);
 
-	currentKey.ascii = 0;
-	currentKey.scan = 0;
+    currentKey.ascii = 0;
+    currentKey.scan = 0;
 
-	/*
-	 * Wait for a real key-down event, but
-	 * ignore SHIFT and CONTROL key events.
-	 */
-	do
-	{
-		PeekConsoleInput(tty, &ip, 1, &read);
-		if (read == 0)
-			return (FALSE);
-		ReadConsoleInput(tty, &ip, 1, &read);
-	} while (ip.EventType != KEY_EVENT ||
-		ip.Event.KeyEvent.bKeyDown != TRUE ||
-		ip.Event.KeyEvent.wVirtualScanCode == 0 ||
-		ip.Event.KeyEvent.wVirtualKeyCode == VK_SHIFT ||
-		ip.Event.KeyEvent.wVirtualKeyCode == VK_CONTROL ||
-		ip.Event.KeyEvent.wVirtualKeyCode == VK_MENU);
+    /*
+     * Wait for a real key-down event, but
+     * ignore SHIFT and CONTROL key events.
+     */
+    do
+    {
+        PeekConsoleInput(tty, &ip, 1, &read);
+        if (read == 0)
+            return (FALSE);
+        ReadConsoleInput(tty, &ip, 1, &read);
+    } while (ip.EventType != KEY_EVENT ||
+        ip.Event.KeyEvent.bKeyDown != TRUE ||
+        ip.Event.KeyEvent.wVirtualScanCode == 0 ||
+        ip.Event.KeyEvent.wVirtualKeyCode == VK_SHIFT ||
+        ip.Event.KeyEvent.wVirtualKeyCode == VK_CONTROL ||
+        ip.Event.KeyEvent.wVirtualKeyCode == VK_MENU);
 
-	currentKey.ascii = ip.Event.KeyEvent.uChar.AsciiChar;
-	currentKey.scan = ip.Event.KeyEvent.wVirtualScanCode;
-	keyCount = ip.Event.KeyEvent.wRepeatCount;
+    currentKey.ascii = ip.Event.KeyEvent.uChar.AsciiChar;
+    currentKey.scan = ip.Event.KeyEvent.wVirtualScanCode;
+    keyCount = ip.Event.KeyEvent.wRepeatCount;
 
-	if (ip.Event.KeyEvent.dwControlKeyState &
-		(LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
-	{
-		switch (currentKey.scan)
-		{
-		case PCK_ALT_E:     /* letter 'E' */
-			currentKey.ascii = 0;
-			break;
-		}
-	} else if (ip.Event.KeyEvent.dwControlKeyState &
-		(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
-	{
-		switch (currentKey.scan)
-		{
-		case PCK_RIGHT: /* right arrow */
-			currentKey.scan = PCK_CTL_RIGHT;
-			break;
-		case PCK_LEFT: /* left arrow */
-			currentKey.scan = PCK_CTL_LEFT;
-			break;
-		case PCK_DELETE: /* delete */
-			currentKey.scan = PCK_CTL_DELETE;
-			break;
-		}
-	} else if (ip.Event.KeyEvent.dwControlKeyState & SHIFT_PRESSED)
-	{
-		switch (currentKey.scan)
-		{
-		case PCK_SHIFT_TAB: /* tab */
-			currentKey.ascii = 0;
-			break;
-		}
-	}
+    if (ip.Event.KeyEvent.dwControlKeyState &
+        (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
+    {
+        switch (currentKey.scan)
+        {
+        case PCK_ALT_E:     /* letter 'E' */
+            currentKey.ascii = 0;
+            break;
+        }
+    } else if (ip.Event.KeyEvent.dwControlKeyState &
+        (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
+    {
+        switch (currentKey.scan)
+        {
+        case PCK_RIGHT: /* right arrow */
+            currentKey.scan = PCK_CTL_RIGHT;
+            break;
+        case PCK_LEFT: /* left arrow */
+            currentKey.scan = PCK_CTL_LEFT;
+            break;
+        case PCK_DELETE: /* delete */
+            currentKey.scan = PCK_CTL_DELETE;
+            break;
+        }
+    } else if (ip.Event.KeyEvent.dwControlKeyState & SHIFT_PRESSED)
+    {
+        switch (currentKey.scan)
+        {
+        case PCK_SHIFT_TAB: /* tab */
+            currentKey.ascii = 0;
+            break;
+        }
+    }
 
-	return (TRUE);
+    return (TRUE);
 }
 
 /*
