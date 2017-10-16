@@ -465,7 +465,7 @@ flush()
                             at |= 32;
                             break;
                         case 39: /* default fg */
-                            fg = nm_fg_color;
+                            fg  = nm_fg_color;
                             at |= 32;
                             break;
                         case 40: case 41: case 42:
@@ -510,23 +510,21 @@ flush()
                             at |= 32;
                             break;
                         case 49: /* default bg */
-                            bg = nm_bg_color & 7;
+                            bg  = nm_bg_color;
                             at |= 32;
                             break;
                         case 90: case 91: case 92:
                         case 93: case 94: case 95:
                         case 96: case 97:
                             /* bash ANSI: set high-intensity foreground */
-                            fg = screen_color[code - 90];
-                            at |= 1;
+                            fg = (screen_color[code - 90] | 0x8);
                             at |= 32;
                             break;
                         case 100: case 101: case 102:
                         case 103: case 104: case 105:
                         case 106: case 107:
                             /* bash ANSI: set high-intensity background */
-                            bg = screen_color[code - 100];
-                            at |= 4;
+                            bg = (screen_color[code - 100] | 0x8);
                             at |= 32;
                             break;
                         }
