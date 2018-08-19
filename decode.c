@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2016  Mark Nudelman
+ * Copyright (C) 1984-2017  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -140,6 +140,8 @@ static unsigned char cmdtable[] =
 	ESC,'N',0,			A_T_REVERSE_SEARCH,
 	'&',0,				A_FILTER,
 	'm',0,				A_SETMARK,
+	'M',0,				A_SETMARKBOT,
+	ESC,'m',0,			A_CLRMARK,
 	'\'',0,				A_GOMARK,
 	CONTROL('X'),CONTROL('X'),0,	A_GOMARK,
 	'E',0,				A_EXAMINE,
@@ -237,9 +239,9 @@ expand_special_keys(table, len)
 	char *table;
 	int len;
 {
-	register char *fm;
-	register char *to;
-	register int a;
+	char *fm;
+	char *to;
+	int a;
 	char *repl;
 	int klen;
 
@@ -291,6 +293,33 @@ expand_special_keys(table, len)
 }
 
 /*
+ * Expand special key abbreviations in a list of command tables.
+ */
+	static void
+expand_cmd_table(tlist)
+	struct tablelist *tlist;
+{
+	struct tablelist *t;
+	for (t = tlist;  t != NULL;  t = t->t_next)
+	{
+		expand_special_keys(t->t_start, t->t_end - t->t_start);
+	}
+}
+
+/*
+ * Expand special key abbreviations in all command tables.
+ */
+	public void
+expand_cmd_tables()
+{
+	expand_cmd_table(list_fcmd_tables);
+	expand_cmd_table(list_ecmd_tables);
+	expand_cmd_table(list_var_tables);
+	expand_cmd_table(list_sysvar_tables);
+}
+
+
+/*
  * Initialize the command lists.
  */
 	public void
@@ -329,7 +358,7 @@ add_cmd_table(tlist, buf, len)
 	char *buf;
 	int len;
 {
-	register struct tablelist *t;
+	struct tablelist *t;
 
 	if (len == 0)
 		return (0);
@@ -342,7 +371,6 @@ add_cmd_table(tlist, buf, len)
 	{
 		return (-1);
 	}
-	expand_special_keys(buf, len);
 	t->t_start = buf;
 	t->t_end = buf + len;
 	t->t_next = *tlist;
@@ -397,9 +425,9 @@ cmd_search(cmd, table, endtable, sp)
 	char *endtable;
 	char **sp;
 {
-	register char *p;
-	register char *q;
-	register int a;
+	char *p;
+	char *q;
+	int a;
 
 	*sp = NULL;
 	for (p = table, q = cmd;  p < endtable;  p++, q++)
@@ -488,8 +516,8 @@ cmd_decode(tlist, cmd, sp)
 	char *cmd;
 	char **sp;
 {
-	register struct tablelist *t;
-	register int action = A_INVALID;
+	struct tablelist *t;
+	int action = A_INVALID;
 
 	/*
 	 * Search thru all the command tables.
@@ -599,8 +627,8 @@ new_lesskey(buf, len, sysvar)
 	int sysvar;
 {
 	char *p;
-	register int c;
-	register int n;
+	int c;
+	int n;
 
 	/*
 	 * New-style lesskey file.
@@ -651,19 +679,17 @@ lesskey(filename, sysvar)
 	char *filename;
 	int sysvar;
 {
-	register char *buf;
-	register POSITION len;
-	register long n;
-	register int f;
+	char *buf;
+	POSITION len;
+	long n;
+	int f;
 
 	if (secure)
 		return (1);
 	/*
 	 * Try to open the lesskey file.
 	 */
-	filename = shell_unquote(filename);
 	f = open(filename, OPEN_READ);
-	free(filename);
 	if (f < 0)
 		return (1);
 

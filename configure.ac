@@ -251,6 +251,11 @@ AC_TRY_COMPILE([#include <sys/types.h>
   [struct stat s; dev_t dev = s.st_dev; ino_t ino = s.st_ino;],
   [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_STAT_INO)], [AC_MSG_RESULT(no)])
 
+# Checks for ANSI function prototypes.
+AC_MSG_CHECKING(for ANSI function prototypes)
+AC_TRY_COMPILE([], [int f(int a) { return a; }],
+  [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ANSI_PROTOS)], [AC_MSG_RESULT(no)])
+
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS([fsync popen _setjmp sigprocmask sigsetmask snprintf stat system fchmod])
@@ -621,6 +626,11 @@ AH_TOP([
 #define TGETENT_OK  1
 
 /*
+ * HAVE_ANSI_PROTOS	is 1 if your compiler supports ANSI function prototypes.
+ */
+#define HAVE_ANSI_PROTOS	1
+
+/*
  * HAVE_SYS_TYPES_H is 1 if your system has <sys/types.h>.
  */
 #define HAVE_SYS_TYPES_H	1
@@ -649,7 +659,7 @@ AH_TOP([
 /*
  * Default shell metacharacters and meta-escape character.
  */
-#define	DEF_METACHARS	"; *?\t\n'\"()<>[]|&^`#\\$%=~"
+#define	DEF_METACHARS	"; *?\t\n'\"()<>[]|&^`#\\$%=~{},"
 #define	DEF_METAESCAPE	"\\"
 
 /* 
