@@ -130,7 +130,11 @@
 /*
  * HAVE_ANSI_PROTOS	is 1 if your compiler supports ANSI function prototypes.
  */
+#ifdef __clang__
+#define HAVE_ANSI_PROTOS	0
+#else
 #define HAVE_ANSI_PROTOS	1
+#endif
 
 /*
  * HAVE_SYS_TYPES_H is 1 if your system has <sys/types.h>.
@@ -350,8 +354,29 @@
 
 #define	popen	_popen
 #define	pclose	_pclose
+
 #if !defined(_MSC_VER) || (_MSC_VER < 1900)
 #define snprintf	_snprintf
+#endif
+
+#ifdef __clang__
+#define	close	_close
+#define	creat	_creat
+#define	dup	    _dup
+#define	fileno	_fileno
+#define	isatty	_isatty
+#define	lseek	_lseek
+#define	open	_open
+#define	putenv	_putenv
+#define	read	_read
+#define	setmode	_setmode
+#define	write	_write
+#endif
+
+#ifdef __clang__
+/* fix: find a better way to add *user32.lib* (ie, *user32.dll*) for use of `MessageBeep()` in *screen.c* */
+/* see <https://stackoverflow.com/questions/9198787/how-do-i-compile-a-window-api-program-using-cl/9199083#9199083> @@ <https://archive.is/goUzN> */
+#pragma comment(lib, "user32")
 #endif
 
 #pragma warning(disable:4996)
