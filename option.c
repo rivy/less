@@ -69,8 +69,8 @@ propt(c)
 scan_option(s)
     char *s;
 {
-	struct loption *o;
-	int optc;
+    struct loption *o;
+    int optc;
     char *optname;
     char *printopt;
     char *str;
@@ -305,7 +305,7 @@ toggle_option(o, lower, s, how_toggle)
     char *s;
     int how_toggle;
 {
-	int num;
+    int num;
     int no_prompt;
     int err;
     PARG parg;
@@ -568,8 +568,8 @@ optstring(s, p_str, printopt, validchars)
     char *printopt;
     char *validchars;
 {
-	char *p;
-	char *out;
+    char *p;
+    char *out;
 
     if (*s == '\0')
     {
@@ -632,9 +632,9 @@ getnum(sp, printopt, errp)
     char *printopt;
     int *errp;
 {
-	char *s;
-	int n;
-	int neg;
+    char *s;
+    int n;
+    int neg;
 
     s = skipsp(*sp);
     neg = FALSE;
@@ -669,7 +669,7 @@ getfraction(sp, printopt, errp)
     char *printopt;
     int *errp;
 {
-	char *s;
+    char *s;
     long frac = 0;
     int fraclen = 0;
 

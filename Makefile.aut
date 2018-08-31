@@ -46,7 +46,7 @@ release: .FORCE
 
 .FORCE:
 
-help.c: less.hlp 
+help.c: less.hlp
 	-mv -f ${srcdir}/help.c ${srcdir}/help.c.old
 	rm -rf help.c
 	${srcdir}/mkhelp.pl < less.hlp > help.c

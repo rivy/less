@@ -65,7 +65,7 @@ cvt_text(odst, osrc, chpos, lenp, ops)
     char *dst;
     char *edst = odst;
     char *src;
-	char *src_end;
+    char *src_end;
     LWCHAR ch;
 
     if (lenp != NULL)
@@ -83,7 +83,7 @@ cvt_text(odst, osrc, chpos, lenp, ops)
             /* Delete backspace and preceding char. */
             do {
                 dst--;
-			} while (dst > odst && utf_mode &&
+            } while (dst > odst && utf_mode &&
                 !IS_ASCII_OCTET(*dst) && !IS_UTF8_LEAD(*dst));
         } else if ((ops & CVT_ANSI) && IS_CSI_START(ch))
         {

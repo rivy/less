@@ -62,10 +62,10 @@ extern int sigs;
     public int
 iread(fd, buf, len)
     int fd;
-	unsigned char *buf;
+    unsigned char *buf;
     unsigned int len;
 {
-	int n;
+    int n;
 
 start:
 #if MSDOS_COMPILER==WIN32C
@@ -226,8 +226,8 @@ strerror(err)
 errno_message(filename)
     char *filename;
 {
-	char *p;
-	char *m;
+    char *p;
+    char *m;
     int len;
 #if HAVE_ERRNO
 #if MUST_DEFINE_ERRNO
@@ -271,8 +271,8 @@ muldiv(val, num, den)
  */
     public int
 percentage(num, den)
-	POSITION num;
-	POSITION den;
+    POSITION num;
+    POSITION den;
 {
     return (int) muldiv(num,  (POSITION) 100, den);
 }

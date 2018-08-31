@@ -140,8 +140,8 @@ static unsigned char cmdtable[] =
     ESC,'N',0,          A_T_REVERSE_SEARCH,
     '&',0,              A_FILTER,
     'm',0,              A_SETMARK,
-	'M',0,				A_SETMARKBOT,
-	ESC,'m',0,			A_CLRMARK,
+    'M',0,				A_SETMARKBOT,
+    ESC,'m',0,			A_CLRMARK,
     '\'',0,             A_GOMARK,
     CONTROL('X'),CONTROL('X'),0,    A_GOMARK,
     'E',0,              A_EXAMINE,
@@ -239,9 +239,9 @@ expand_special_keys(table, len)
     char *table;
     int len;
 {
-	char *fm;
-	char *to;
-	int a;
+    char *fm;
+    char *to;
+    int a;
     char *repl;
     int klen;
 
@@ -295,27 +295,27 @@ expand_special_keys(table, len)
 /*
  * Expand special key abbreviations in a list of command tables.
  */
-	static void
+    static void
 expand_cmd_table(tlist)
-	struct tablelist *tlist;
+    struct tablelist *tlist;
 {
-	struct tablelist *t;
-	for (t = tlist;  t != NULL;  t = t->t_next)
-	{
-		expand_special_keys(t->t_start, t->t_end - t->t_start);
-	}
+    struct tablelist *t;
+    for (t = tlist;  t != NULL;  t = t->t_next)
+    {
+        expand_special_keys(t->t_start, t->t_end - t->t_start);
+    }
 }
 
 /*
  * Expand special key abbreviations in all command tables.
  */
-	public void
+    public void
 expand_cmd_tables()
 {
-	expand_cmd_table(list_fcmd_tables);
-	expand_cmd_table(list_ecmd_tables);
-	expand_cmd_table(list_var_tables);
-	expand_cmd_table(list_sysvar_tables);
+    expand_cmd_table(list_fcmd_tables);
+    expand_cmd_table(list_ecmd_tables);
+    expand_cmd_table(list_var_tables);
+    expand_cmd_table(list_sysvar_tables);
 }
 
 
@@ -358,7 +358,7 @@ add_cmd_table(tlist, buf, len)
     char *buf;
     int len;
 {
-	struct tablelist *t;
+    struct tablelist *t;
 
     if (len == 0)
         return (0);
@@ -425,9 +425,9 @@ cmd_search(cmd, table, endtable, sp)
     char *endtable;
     char **sp;
 {
-	char *p;
-	char *q;
-	int a;
+    char *p;
+    char *q;
+    int a;
 
     *sp = NULL;
     for (p = table, q = cmd;  p < endtable;  p++, q++)
@@ -516,8 +516,8 @@ cmd_decode(tlist, cmd, sp)
     char *cmd;
     char **sp;
 {
-	struct tablelist *t;
-	int action = A_INVALID;
+    struct tablelist *t;
+    int action = A_INVALID;
 
     /*
      * Search thru all the command tables.
@@ -627,8 +627,8 @@ new_lesskey(buf, len, sysvar)
     int sysvar;
 {
     char *p;
-	int c;
-	int n;
+    int c;
+    int n;
 
     /*
      * New-style lesskey file.
@@ -679,10 +679,10 @@ lesskey(filename, sysvar)
     char *filename;
     int sysvar;
 {
-	char *buf;
-	POSITION len;
-	long n;
-	int f;
+    char *buf;
+    POSITION len;
+    long n;
+    int f;
 
     if (secure)
         return (1);

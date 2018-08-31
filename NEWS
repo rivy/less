@@ -11,7 +11,7 @@
 
 ======================================================================
 
-	Major changes between "less" versions 487 and 530
+    Major changes between "less" versions 487 and 530
 
 * Don't output terminal init sequence if using -F and file fits on one screen.
 
@@ -28,9 +28,9 @@
 
 * A second ESC-u command will clear search match markers in the status column.
 
-* Do same ANSI escape code filtering for tag matching that we do for 
+* Do same ANSI escape code filtering for tag matching that we do for
   searching, to help when viewing syntax-highlighted code.
-  
+
 * Catch SIGTERM and clean up before exiting.
 
 * Fix bug initializing default charset on Windows.

@@ -394,9 +394,9 @@ protochar(c, where, iseditproto)
  */
     static constant char *
 skipcond(p)
-	constant char *p;
+    constant char *p;
 {
-	int iflevel;
+    int iflevel;
 
     /*
      * We came in here after processing a ? or :,
@@ -464,7 +464,7 @@ wherechar(p, wp)
         case 'm':   *wp = MIDDLE;       break;
         case 'b':   *wp = BOTTOM;       break;
         case 'B':   *wp = BOTTOM_PLUS_ONE;  break;
-		case 'j':   *wp = sindex_from_sline(jump_sline); break;
+        case 'j':   *wp = sindex_from_sline(jump_sline); break;
         default:    *wp = TOP;  p--;        break;
         }
     }
@@ -479,8 +479,8 @@ pr_expand(proto, maxwidth)
     constant char *proto;
     int maxwidth;
 {
-	constant char *p;
-	int c;
+    constant char *p;
+    int c;
     int where;
 
     mp = message;

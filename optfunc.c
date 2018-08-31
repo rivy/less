@@ -88,7 +88,7 @@ opt_o(type, s)
     char *s;
 {
     PARG parg;
-	char *filename;
+    char *filename;
 
     if (secure)
     {
@@ -114,9 +114,9 @@ opt_o(type, s)
         s = skipsp(s);
         if (namelogfile != NULL)
             free(namelogfile);
-		filename = lglob(s);
-		namelogfile = shell_unquote(filename);
-		free(filename);
+        filename = lglob(s);
+        namelogfile = shell_unquote(filename);
+        free(filename);
         use_logfile(namelogfile);
         sync_logfile();
         break;
@@ -190,7 +190,7 @@ opt_j(type, s)
         } else
         {
 
-			sprintf(buf, ".%06ld", jump_sline_fraction);
+            sprintf(buf, ".%06ld", jump_sline_fraction);
             len = (int) strlen(buf);
             while (len > 2 && buf[len-1] == '0')
                 len--;
@@ -255,7 +255,7 @@ opt_shift(type, s)
         } else
         {
 
-			sprintf(buf, ".%06ld", shift_count_fraction);
+            sprintf(buf, ".%06ld", shift_count_fraction);
             len = (int) strlen(buf);
             while (len > 2 && buf[len-1] == '0')
                 len--;
@@ -346,7 +346,7 @@ opt__T(type, s)
     char *s;
 {
     PARG parg;
-	char *filename;
+    char *filename;
 
     switch (type)
     {
@@ -357,9 +357,9 @@ opt__T(type, s)
         s = skipsp(s);
         if (tags != NULL && tags != ztags)
             free(tags);
-		filename = lglob(s);
-		tags = shell_unquote(filename);
-		free(filename);
+        filename = lglob(s);
+        tags = shell_unquote(filename);
+        free(filename);
         break;
     case QUERY:
         parg.p_string = tags;
@@ -375,7 +375,7 @@ opt__T(type, s)
     public void
 opt_p(type, s)
     int type;
-	char *s;
+    char *s;
 {
     switch (type)
     {
@@ -411,9 +411,9 @@ opt_p(type, s)
     public void
 opt__P(type, s)
     int type;
-	char *s;
+    char *s;
 {
-	char **proto;
+    char **proto;
     PARG parg;
 
     switch (type)
@@ -531,7 +531,7 @@ opt__V(type, s)
         putstr("no ");
 #endif
         putstr("regular expressions)\n");
-		putstr("Copyright (C) 1984-2017  Mark Nudelman\n\n");
+        putstr("Copyright (C) 1984-2017  Mark Nudelman\n\n");
         putstr("less comes with NO WARRANTY, to the extent permitted by law.\n");
         putstr("For information about the terms of redistribution,\n");
         putstr("see the file named README in the less distribution.\n");
@@ -559,25 +559,25 @@ colordesc(s, fg_color, bg_color)
     else
     {
 #if MSDOS_COMPILER==WIN32C
-		int ul = 0;
- 	
-		if (*s == 'u')
-		{
-			ul = COMMON_LVB_UNDERSCORE;
-			++s;
-		}
+        int ul = 0;
+
+        if (*s == 'u')
+        {
+            ul = COMMON_LVB_UNDERSCORE;
+            ++s;
+        }
 #endif
         fg = getnum(&s, "D", &err);
         if (err)
         {
 #if MSDOS_COMPILER==WIN32C
-		if (ul)
-			fg = nm_fg_color;
-		else
+        if (ul)
+            fg = nm_fg_color;
+        else
 #endif
-		{
-			error("Missing fg color in -D", NULL_PARG);
-			return;
+        {
+            error("Missing fg color in -D", NULL_PARG);
+            return;
         }
     }
     if (*s != '.')
@@ -593,12 +593,12 @@ colordesc(s, fg_color, bg_color)
         }
     }
 #if MSDOS_COMPILER==WIN32C
-	if (*s == 'u')
-	{
-		ul = COMMON_LVB_UNDERSCORE;
-		++s;
-	}
-	fg |= ul;
+    if (*s == 'u')
+    {
+        ul = COMMON_LVB_UNDERSCORE;
+        ++s;
+    }
+    fg |= ul;
 #endif
     if (*s != '\0')
         error("Extra characters at end of -D option", NULL_PARG);
@@ -665,7 +665,7 @@ opt_D(type, s)
     public void
 opt_x(type, s)
     int type;
-	char *s;
+    char *s;
 {
     extern int tabstops[];
     extern int ntabstops;
@@ -723,7 +723,7 @@ opt_x(type, s)
     public void
 opt_quote(type, s)
     int type;
-	char *s;
+    char *s;
 {
     char buf[3];
     PARG parg;
@@ -761,35 +761,35 @@ opt_quote(type, s)
 /*
  * Handler for the --rscroll option.
  */
-	/*ARGSUSED*/
-	public void
+    /*ARGSUSED*/
+    public void
 opt_rscroll(type, s)
-	int type;
-	char *s;
+    int type;
+    char *s;
 {
-	PARG p;
+    PARG p;
 
-	switch (type)
-	{
-	case INIT:
-	case TOGGLE: {
-		char *fmt;
-		int attr = AT_STANDOUT;
-		setfmt(s, &fmt, &attr, "*s>");
-		if (strcmp(fmt, "-") == 0)
-		{
-			rscroll_char = 0;
-		} else
-		{
-			rscroll_char = *fmt ? *fmt : '>';
-			rscroll_attr = attr;
-		}
-		break; }
-	case QUERY: {
-		p.p_string = rscroll_char ? prchar(rscroll_char) : "-";
-		error("rscroll char is %s", &p);
-		break; }
-	}
+    switch (type)
+    {
+    case INIT:
+    case TOGGLE: {
+        char *fmt;
+        int attr = AT_STANDOUT;
+        setfmt(s, &fmt, &attr, "*s>");
+        if (strcmp(fmt, "-") == 0)
+        {
+            rscroll_char = 0;
+        } else
+        {
+            rscroll_char = *fmt ? *fmt : '>';
+            rscroll_attr = attr;
+        }
+        break; }
+    case QUERY: {
+        p.p_string = rscroll_char ? prchar(rscroll_char) : "-";
+        error("rscroll char is %s", &p);
+        break; }
+    }
 }
 
 /*

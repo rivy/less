@@ -124,7 +124,7 @@ squish_check()
  */
     public void
 forw(n, pos, force, only_last, nblank)
-	int n;
+    int n;
     POSITION pos;
     int force;
     int only_last;
@@ -285,7 +285,7 @@ forw(n, pos, force, only_last, nblank)
         forw_prompt = 1;
     }
 
-	if (nlines == 0 && !ignore_eoi && same_pos_bell)
+    if (nlines == 0 && !ignore_eoi && same_pos_bell)
         eof_bell();
     else if (do_repaint)
         repaint();
@@ -298,7 +298,7 @@ forw(n, pos, force, only_last, nblank)
  */
     public void
 back(n, pos, force, only_last)
-	int n;
+    int n;
     POSITION pos;
     int force;
     int only_last;
@@ -449,16 +449,16 @@ get_back_scroll()
  * Return number of displayable lines in the file.
  * Stop counting at screen height + 1.
  */
-	public int
+    public int
 get_line_count()
 {
-	int nlines;
-	POSITION pos = ch_zero();
+    int nlines;
+    POSITION pos = ch_zero();
 
-	for (nlines = 0;  nlines <= sc_height;  nlines++)
-	{
-		pos = forw_line(pos);
-		if (pos == NULL_POSITION) break;
-	}
-	return nlines;
+    for (nlines = 0;  nlines <= sc_height;  nlines++)
+    {
+        pos = forw_line(pos);
+        if (pos == NULL_POSITION) break;
+    }
+    return nlines;
 }

@@ -37,21 +37,21 @@ extern int sc_width, sc_height;
  */
     public POSITION
 position(sindex)
-	int sindex;
+    int sindex;
 {
-	switch (sindex)
+    switch (sindex)
     {
     case BOTTOM:
-		sindex = sc_height - 2;
+        sindex = sc_height - 2;
         break;
     case BOTTOM_PLUS_ONE:
-		sindex = sc_height - 1;
+        sindex = sc_height - 1;
         break;
     case MIDDLE:
-		sindex = (sc_height - 1) / 2;
-		break;
+        sindex = (sc_height - 1) / 2;
+        break;
     }
-	return (table[sindex]);
+    return (table[sindex]);
 }
 
 /*
@@ -61,7 +61,7 @@ position(sindex)
 add_forw_pos(pos)
     POSITION pos;
 {
-	int i;
+    int i;
 
     /*
      * Scroll the position table up.
@@ -78,7 +78,7 @@ add_forw_pos(pos)
 add_back_pos(pos)
     POSITION pos;
 {
-	int i;
+    int i;
 
     /*
      * Scroll the position table down.
@@ -94,7 +94,7 @@ add_back_pos(pos)
     public void
 pos_clear()
 {
-	int i;
+    int i;
 
     for (i = 0;  i < sc_height;  i++)
         table[i] = NULL_POSITION;
@@ -116,7 +116,7 @@ pos_init()
      */
     if (table != NULL)
     {
-		get_scrpos(&scrpos, TOP);
+        get_scrpos(&scrpos, TOP);
         free((char*)table);
     } else
         scrpos.pos = NULL_POSITION;
@@ -136,7 +136,7 @@ pos_init()
 onscreen(pos)
     POSITION pos;
 {
-	int i;
+    int i;
 
     if (pos < table[0])
         return (-1);
@@ -160,7 +160,7 @@ empty_lines(s, e)
     int s;
     int e;
 {
-	int i;
+    int i;
 
     for (i = s;  i <= e;  i++)
         if (table[i] != NULL_POSITION && table[i] != 0)
@@ -179,32 +179,32 @@ empty_lines(s, e)
     public void
 get_scrpos(scrpos, where)
     struct scrpos *scrpos;
-	int where;
+    int where;
 {
-	int i;
-	int dir;
-	int last;
+    int i;
+    int dir;
+    int last;
 
-	switch (where)
-	{
-	case TOP: i = 0; dir = +1; last = sc_height-2; break;
-	default:  i = sc_height-2; dir = -1; last = 0; break;
-	}
+    switch (where)
+    {
+    case TOP: i = 0; dir = +1; last = sc_height-2; break;
+    default:  i = sc_height-2; dir = -1; last = 0; break;
+    }
 
     /*
      * Find the first line on the screen which has something on it,
      * and return the screen line number and the file position.
      */
-	for (;; i += dir)
-	{
+    for (;; i += dir)
+    {
         if (table[i] != NULL_POSITION)
         {
             scrpos->ln = i+1;
             scrpos->pos = table[i];
             return;
-		}
-		if (i == last) break;
-		}
+        }
+        if (i == last) break;
+        }
     /*
      * The screen is empty.
      */
@@ -231,12 +231,12 @@ sindex_from_sline(sline)
     if (sline < 0)
         sline += sc_height;
     /*
-	 * Can't be less than 1 or greater than sc_height-1.
+     * Can't be less than 1 or greater than sc_height-1.
      */
     if (sline <= 0)
         sline = 1;
-	if (sline > sc_height)
-		sline = sc_height;
+    if (sline > sc_height)
+        sline = sc_height;
     /*
      * Return zero-based line number, not one-based.
      */

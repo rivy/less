@@ -42,10 +42,10 @@ lsystem(cmd, donemsg)
     char *cmd;
     char *donemsg;
 {
-	int inp;
+    int inp;
 #if HAVE_SHELL
-	char *shell;
-	char *p;
+    char *shell;
+    char *p;
 #endif
     IFILE save_ifile;
 #if MSDOS_COMPILER && MSDOS_COMPILER!=WIN32C
@@ -289,8 +289,8 @@ pipe_data(cmd, spos, epos)
     POSITION spos;
     POSITION epos;
 {
-	FILE *f;
-	int c;
+    FILE *f;
+    int c;
 #ifndef MINGW
     extern FILE *popen();
 #endif

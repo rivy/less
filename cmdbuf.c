@@ -141,14 +141,14 @@ clear_cmd()
  */
     public void
 cmd_putstr(s)
-	constant char *s;
+    constant char *s;
 {
     LWCHAR prev_ch = 0;
     LWCHAR ch;
-	constant char *endline = s + strlen(s);
+    constant char *endline = s + strlen(s);
     while (*s != '\0')
     {
-		char *ns = (char *) s;
+        char *ns = (char *) s;
         int width;
         ch = step_char(&ns, +1, endline);
         while (s < ns)
@@ -262,7 +262,7 @@ cmd_step_left(pp, pwidth, bswidth)
  */
     static void
 cmd_repaint(old_cp)
-	constant char *old_cp;
+    constant char *old_cp;
 {
     /*
      * Repaint the line from the current position.
@@ -427,8 +427,8 @@ cmd_right()
 cmd_left()
 {
     char *ncp;
-	int width = 0;
-	int bswidth = 0;
+    int width = 0;
+    int bswidth = 0;
 
     if (cp <= cmdbuf)
     {
@@ -494,7 +494,7 @@ cmd_ichar(cs, clen)
     static int
 cmd_erase()
 {
-	char *s;
+    char *s;
     int clen;
 
     if (cp == cmdbuf)
@@ -662,7 +662,7 @@ set_mlist(mlist, cmdflags)
 cmd_updown(action)
     int action;
 {
-	constant char *s;
+    constant char *s;
     struct mlist *ml;
 
     if (curr_mlist == NULL)
@@ -724,7 +724,7 @@ cmd_updown(action)
     public void
 cmd_addhist(mlist, cmd, modified)
     struct mlist *mlist;
-	constant char *cmd;
+    constant char *cmd;
     int modified;
 {
 #if CMD_HISTORY
@@ -941,7 +941,7 @@ delimit_word()
     char *p;
     int delim_quoted = 0;
     int meta_quoted = 0;
-	constant char *esc = get_meta_escape();
+    constant char *esc = get_meta_escape();
     int esclen = (int) strlen(esc);
 #endif
 
@@ -1225,11 +1225,11 @@ cmd_char(c)
             if (IS_ASCII_OCTET(c))
                 cmd_mbc_buf_len = 1;
 #if MSDOS_COMPILER || OS2
-			else if (c == (unsigned char) '\340' && IS_ASCII_OCTET(peekcc()))
-			{
-				/* Assume a special key. */
-				cmd_mbc_buf_len = 1;
-			}
+            else if (c == (unsigned char) '\340' && IS_ASCII_OCTET(peekcc()))
+            {
+                /* Assume a special key. */
+                cmd_mbc_buf_len = 1;
+            }
 #endif
             else if (IS_UTF8_LEAD(c))
             {

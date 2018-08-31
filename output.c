@@ -52,8 +52,8 @@ extern int have_ul;
     public void
 put_line()
 {
-	int c;
-	int i;
+    int c;
+    int i;
     int a;
 
     if (ABORT_SIGS())
@@ -177,8 +177,8 @@ static char *ob = obuf;
     public void
 flush()
 {
-	int n;
-	int fd;
+    int n;
+    int fd;
 
     n = (int) (ob - obuf);
     if (n == 0)
@@ -209,9 +209,9 @@ flush()
              */
             char *anchor, *p, *p_next;
             static int statics_initialized;
-			static int fg, fgi, bg, bgi;
-			static int at;
-			int f, b;
+            static int fg, fgi, bg, bgi;
+            static int at;
+            int f, b;
 #if MSDOS_COMPILER==WIN32C
             /* Screen colors used by 3x and 4x SGR commands. */
             static unsigned char screen_color[] = {
@@ -395,13 +395,13 @@ flush()
                         case 7: /* inverse on */
                             at |= 2;
                             break;
-						case 4:	/* underline on */
+                        case 4:	/* underline on */
 #if MSDOS_COMPILER==WIN32C
-							if (have_ul)
-								bgi = COMMON_LVB_UNDERSCORE >> 4;
-							else
+                            if (have_ul)
+                                bgi = COMMON_LVB_UNDERSCORE >> 4;
+                            else
 #endif
-							bgi = 8;
+                            bgi = 8;
                             at |= 4;
                             break;
                         case 5: /* slow blink on */
@@ -604,9 +604,9 @@ flush()
                     }
                     f &= 0xf;
 #if MSDOS_COMPILER==WIN32C
-					b &= 0xf | (COMMON_LVB_UNDERSCORE >> 4);
+                    b &= 0xf | (COMMON_LVB_UNDERSCORE >> 4);
 #else
-					b &= 0xf;
+                    b &= 0xf;
 #endif
                     WIN32setcolors(f, b);
                     p_next = anchor = p + 1;
@@ -688,7 +688,7 @@ putchr(c)
  */
     public void
 putstr(s)
-	constant char *s;
+    constant char *s;
 {
     while (*s != '\0')
         putchr(*s++);
@@ -705,7 +705,7 @@ void funcname(num, buf) \
 { \
     int neg = (num < 0); \
     char tbuf[INT_STRLEN_BOUND(num)+2]; \
-	char *s = tbuf + sizeof(tbuf); \
+    char *s = tbuf + sizeof(tbuf); \
     if (neg) num = -num; \
     *--s = '\0'; \
     do { \
@@ -753,11 +753,11 @@ iprint_linenum(num)
  */
     static int
 less_printf(fmt, parg)
-	char *fmt;
+    char *fmt;
     PARG *parg;
 {
-	char *s;
-	int col;
+    char *s;
+    int col;
 
     col = 0;
     while (*fmt != '\0')
@@ -787,9 +787,9 @@ less_printf(fmt, parg)
             case 'n':
                 col += iprint_linenum(parg->p_linenum);
                 parg++;
-				break;
-			case '%':
-				putchr('%');
+                break;
+            case '%':
+                putchr('%');
                 break;
             }
         }
@@ -855,7 +855,7 @@ error(fmt, parg)
 
     get_return();
     lower_left();
-	clear_eol();
+    clear_eol();
 
     if (col >= sc_width)
         /*
@@ -900,7 +900,7 @@ query(fmt, parg)
     char *fmt;
     PARG *parg;
 {
-	int c;
+    int c;
     int col = 0;
 
     if (any_display && is_tty)

@@ -547,8 +547,8 @@ LESS(1)                     General Commands Manual                    LESS(1)
               [4mN.M[24m,  where [4mM[24m is the normal background color.  A  single number,
               with a leading '.', [4m.M[24m is the same as [4mN.M[24m, where [4mN[24m is the normal
               foreground  color.  The color may start or end with [1mu [22mto use underline (with the normal
-	      color,  if by  itself),  if  the  system supports it (Windows only).  [1mx [22m may  also  be
-	      [1ma [22m to  toggle  strict  ANSI sequence rendering (SGR mode).
+          color,  if by  itself),  if  the  system supports it (Windows only).  [1mx [22m may  also  be
+          [1ma [22m to  toggle  strict  ANSI sequence rendering (SGR mode).
 
        -e or --quit-at-eof
               Causes [4mless[24m to automatically exit the  second  time  it  reaches

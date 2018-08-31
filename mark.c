@@ -62,7 +62,7 @@ getumark(c)
 getmark(c)
     int c;
 {
-	struct mark *m;
+    struct mark *m;
     static struct mark sm;
 
     switch (c)
@@ -87,7 +87,7 @@ getmark(c)
         }
         m = &sm;
         m->m_scrpos.pos = ch_tell();
-		m->m_scrpos.ln = sc_height;
+        m->m_scrpos.ln = sc_height;
         m->m_ifile = curr_ifile;
         break;
     case '.':
@@ -95,7 +95,7 @@ getmark(c)
          * Current position in the current file.
          */
         m = &sm;
-		get_scrpos(&m->m_scrpos, TOP);
+        get_scrpos(&m->m_scrpos, TOP);
         m->m_ifile = curr_ifile;
         break;
     case '\'':
@@ -137,15 +137,15 @@ badmark(c)
     public void
 setmark(c, where)
     int c;
-	int where;
+    int where;
 {
-	struct mark *m;
+    struct mark *m;
     struct scrpos scrpos;
 
     m = getumark(c);
     if (m == NULL)
         return;
-	get_scrpos(&scrpos, where);
+    get_scrpos(&scrpos, where);
     m->m_scrpos = scrpos;
     m->m_ifile = curr_ifile;
 }
@@ -153,16 +153,16 @@ setmark(c, where)
 /*
  * Clear a user-defined mark.
  */
-	public void
+    public void
 clrmark(c)
-	int c;
+    int c;
 {
-	struct mark *m;
+    struct mark *m;
 
-	m = getumark(c);
-	if (m == NULL)
-		return;
-	m->m_scrpos.pos = NULL_POSITION;
+    m = getumark(c);
+    if (m == NULL)
+        return;
+    m->m_scrpos.pos = NULL_POSITION;
 }
 
 /*
@@ -175,7 +175,7 @@ lastmark()
 
     if (ch_getflags() & CH_HELPFILE)
         return;
-	get_scrpos(&scrpos, TOP);
+    get_scrpos(&scrpos, TOP);
     if (scrpos.pos == NULL_POSITION)
         return;
     marks[LASTMARK].m_scrpos = scrpos;
@@ -189,7 +189,7 @@ lastmark()
 gomark(c)
     int c;
 {
-	struct mark *m;
+    struct mark *m;
     struct scrpos scrpos;
 
     m = getmark(c);
@@ -237,7 +237,7 @@ gomark(c)
 markpos(c)
     int c;
 {
-	struct mark *m;
+    struct mark *m;
 
     m = getmark(c);
     if (m == NULL)
@@ -254,22 +254,22 @@ markpos(c)
 /*
  * Return the mark associated with a given position, if any.
  */
-	public char
+    public char
 posmark(pos)
-	POSITION pos;
+    POSITION pos;
 {
-	int i;
+    int i;
 
-	/* Only lower case and upper case letters */
-	for (i = 0;  i < 26*2;  i++)
-	{
-		if (marks[i].m_ifile == curr_ifile && marks[i].m_scrpos.pos == pos)
-		{
-			if (i < 26) return 'a' + i;
-			return 'A' + i - 26;
-		}
-	}
-	return 0;
+    /* Only lower case and upper case letters */
+    for (i = 0;  i < 26*2;  i++)
+    {
+        if (marks[i].m_ifile == curr_ifile && marks[i].m_scrpos.pos == pos)
+        {
+            if (i < 26) return 'a' + i;
+            return 'A' + i - 26;
+        }
+    }
+    return 0;
 }
 
 /*

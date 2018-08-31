@@ -143,7 +143,7 @@ static void win32_deinit_term();
 #define MAKEATTR(fg,bg)     ((WORD)((fg)|((bg)<<4)))
 #define SETCOLORS(fg,bg)    { curr_attr = MAKEATTR(fg,bg); \
                 if (SetConsoleTextAttribute(con_out, curr_attr) == 0) \
-				error("SETCOLORS failed", NULL_PARG); }
+                error("SETCOLORS failed", NULL_PARG); }
 #endif
 
 #if MSDOS_COMPILER
@@ -707,7 +707,7 @@ ltgetstr(capname, pp)
     public void
 scrsize()
 {
-	char *s;
+    char *s;
     int sys_height;
     int sys_width;
 #if !MSDOS_COMPILER
@@ -1134,7 +1134,7 @@ get_term()
 #else /* !MSDOS_COMPILER */
 
     char *sp;
-	char *t1, *t2;
+    char *t1, *t2;
     char *term;
     char termbuf[TERMBUF_SIZE];
 
@@ -1223,7 +1223,7 @@ get_term()
     sc_e_keypad = ltgetstr("ke", &sp);
     if (sc_e_keypad == NULL)
         sc_e_keypad = "";
-	kent = ltgetstr("@8", &sp);
+    kent = ltgetstr("@8", &sp);
 
     sc_init = ltgetstr("ti", &sp);
     if (sc_init == NULL)
@@ -1512,7 +1512,7 @@ win32_init_term()
 
     if (con_out_ours == INVALID_HANDLE_VALUE)
     {
-		DWORD output_mode;
+        DWORD output_mode;
 
         /*
          * Create our own screen buffer, so that we
@@ -1524,12 +1524,12 @@ win32_init_term()
             (LPSECURITY_ATTRIBUTES) NULL,
             CONSOLE_TEXTMODE_BUFFER,
             (LPVOID) NULL);
-		/*
-		 * Enable underline, if available.
-		 */
-		GetConsoleMode(con_out_ours, &output_mode);
-		have_ul = SetConsoleMode(con_out_ours,
-			    output_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+        /*
+         * Enable underline, if available.
+         */
+        GetConsoleMode(con_out_ours, &output_mode);
+        have_ul = SetConsoleMode(con_out_ours,
+                output_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     }
 
     size.X = scr.srWindow.Right - scr.srWindow.Left + 1;
@@ -1562,9 +1562,9 @@ win32_deinit_term()
 init()
 {
 #if !MSDOS_COMPILER
-	if (quit_if_one_screen && line_count >= sc_height)
-		quit_if_one_screen = FALSE;
-	if (!no_init && !quit_if_one_screen)
+    if (quit_if_one_screen && line_count >= sc_height)
+        quit_if_one_screen = FALSE;
+    if (!no_init && !quit_if_one_screen)
         tputs(sc_init, sc_height, putchr);
     if (!no_keypad)
         tputs(sc_s_keypad, sc_height, putchr);
@@ -1604,7 +1604,7 @@ deinit()
 #if !MSDOS_COMPILER
     if (!no_keypad)
         tputs(sc_e_keypad, sc_height, putchr);
-	if (!no_init && !quit_if_one_screen)
+    if (!no_init && !quit_if_one_screen)
         tputs(sc_deinit, sc_height, putchr);
 #else
     /* Restore system colors. */
@@ -1850,8 +1850,8 @@ win32_scroll_up(n)
     public void
 lower_left()
 {
-	if (!init_done)
-		return;
+    if (!init_done)
+        return;
 #if !MSDOS_COMPILER
     tputs(sc_lower_left, 1, putchr);
 #else
@@ -1927,13 +1927,13 @@ check_winch()
  */
     public void
 goto_line(sindex)
-	int sindex;
+    int sindex;
 {
 #if !MSDOS_COMPILER
-	tputs(tgoto(sc_move, 0, sindex), 1, putchr);
+    tputs(tgoto(sc_move, 0, sindex), 1, putchr);
 #else
     flush();
-	_settextposition(sindex+1, 1);
+    _settextposition(sindex+1, 1);
 #endif
 }
 
@@ -1974,7 +1974,7 @@ create_flash()
     }
 #else
 #if MSDOS_COMPILER==BORLANDC
-	int n;
+    int n;
 
     whitescreen = (unsigned short *)
         malloc(sc_width * sc_height * sizeof(short));
@@ -1984,7 +1984,7 @@ create_flash()
         whitescreen[n] = 0x7020;
 #else
 #if MSDOS_COMPILER==WIN32C
-	int n;
+    int n;
 
     whitescreen = (WORD *)
         malloc(sc_height * sc_width * sizeof(WORD));
@@ -2570,18 +2570,18 @@ WIN32textout(text, len)
 {
 #if MSDOS_COMPILER==WIN32C
     DWORD written;
-	if (utf_mode == 2)
-	{
-		/*
-		 * We've got UTF-8 text in a non-UTF-8 console.  Convert it to
-		 * wide and use WriteConsoleW.
-		 */
-		WCHAR wtext[1024];
-		len = MultiByteToWideChar(CP_UTF8, 0, text, len, wtext,
-					  sizeof(wtext)/sizeof(*wtext));
-		WriteConsoleW(con_out, wtext, len, &written, NULL);
-	} else
-	WriteConsole(con_out, text, len, &written, NULL);
+    if (utf_mode == 2)
+    {
+        /*
+         * We've got UTF-8 text in a non-UTF-8 console.  Convert it to
+         * wide and use WriteConsoleW.
+         */
+        WCHAR wtext[1024];
+        len = MultiByteToWideChar(CP_UTF8, 0, text, len, wtext,
+                      sizeof(wtext)/sizeof(*wtext));
+        WriteConsoleW(con_out, wtext, len, &written, NULL);
+    } else
+    WriteConsole(con_out, text, len, &written, NULL);
 #else
     char c = text[len];
     text[len] = '\0';

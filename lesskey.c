@@ -99,7 +99,7 @@ struct cmdname cmdnames[] =
     { "back-scroll",          A_B_SCROLL },
     { "back-search",          A_B_SEARCH },
     { "back-window",          A_B_WINDOW },
-	{ "clear-mark",           A_CLRMARK },
+    { "clear-mark",           A_CLRMARK },
     { "debug",                A_DEBUG },
     { "digit",                A_DIGIT },
     { "display-flag",         A_DISP_OPTION },
@@ -147,7 +147,7 @@ struct cmdname cmdnames[] =
     { "reverse-search-all",   A_T_REVERSE_SEARCH },
     { "right-scroll",         A_RSHIFT },
     { "set-mark",             A_SETMARK },
-	{ "set-mark-bottom",      A_SETMARKBOT },
+    { "set-mark-bottom",      A_SETMARKBOT },
     { "shell",                A_SHELL },
     { "status",               A_STAT },
     { "toggle-flag",          A_OPT_TOGGLE },
@@ -363,9 +363,9 @@ tstr(pp, xlate)
     char **pp;
     int xlate;
 {
-	char *p;
-	char ch;
-	int i;
+    char *p;
+    char ch;
+    int i;
     static char buf[10];
     static char tstr_control_k[] =
         { SK_SPECIAL_KEY, SK_CONTROL_K, 6, 1, 1, 1, '\0' };
@@ -425,7 +425,7 @@ tstr(pp, xlate)
                 case 'e': ch = SK_END; break;
                 case 'x': ch = SK_DELETE; break;
                 default:
-					error("illegal char after \\k", NULL_PARG);
+                    error("illegal char after \\k", NULL_PARG);
                     *pp = p+1;
                     return ("");
                 }
@@ -476,7 +476,7 @@ tstr(pp, xlate)
  */
     public char *
 skipsp(s)
-	char *s;
+    char *s;
 {
     while (*s == ' ' || *s == '\t')
         s++;
@@ -488,7 +488,7 @@ skipsp(s)
  */
     public char *
 skipnsp(s)
-	char *s;
+    char *s;
 {
     while (*s != '\0' && *s != ' ' && *s != '\t')
         s++;
@@ -503,7 +503,7 @@ skipnsp(s)
 clean_line(s)
     char *s;
 {
-	int i;
+    int i;
 
     s = skipsp(s);
     for (i = 0;  s[i] != '\n' && s[i] != '\r' && s[i] != '\0';  i++)
@@ -522,7 +522,7 @@ add_cmd_char(c)
 {
     if (currtable->pbuffer >= currtable->buffer + MAX_USERCMD)
     {
-		error("too many commands", NULL_PARG);
+        error("too many commands", NULL_PARG);
         exit(1);
     }
     *(currtable->pbuffer)++ = c;
@@ -622,18 +622,18 @@ findaction(actname)
     for (i = 0;  currtable->names[i].cn_name != NULL;  i++)
         if (strcmp(currtable->names[i].cn_name, actname) == 0)
             return (currtable->names[i].cn_action);
-	error("unknown action", NULL_PARG);
+    error("unknown action", NULL_PARG);
     return (A_INVALID);
 }
 
     void
 error(s, parg)
     char *s;
-	PARG *parg;
+    PARG *parg;
 {
     fprintf(stderr, "line %d: %s\n", linenum, s);
     errors++;
-	(void) parg;
+    (void) parg;
 }
 
 
@@ -656,7 +656,7 @@ parse_cmdline(p)
         s = tstr(&p, 1);
         cmdlen += (int) strlen(s);
         if (cmdlen > MAX_CMDLEN)
-			error("command too long", NULL_PARG);
+            error("command too long", NULL_PARG);
         else
             add_cmd_str(s);
     } while (*p != ' ' && *p != '\t' && *p != '\0');
@@ -673,7 +673,7 @@ parse_cmdline(p)
     p = skipsp(p);
     if (*p == '\0')
     {
-		error("missing action", NULL_PARG);
+        error("missing action", NULL_PARG);
         return;
     }
     actname = p;
@@ -726,7 +726,7 @@ parse_varline(p)
     p = skipsp(p);
     if (*p++ != '=')
     {
-		error("missing =", NULL_PARG);
+        error("missing =", NULL_PARG);
         return;
     }
 

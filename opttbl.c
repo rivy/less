@@ -459,10 +459,10 @@ static struct loption option[] =
             NULL
         }
     },
-	{ OLETTER_NONE, &rscroll_optname,
-		STRING|REPAINT|INIT_HANDLER, 0, NULL, opt_rscroll,
-		{ "right scroll character: ", NULL, NULL }
-	},
+    { OLETTER_NONE, &rscroll_optname,
+        STRING|REPAINT|INIT_HANDLER, 0, NULL, opt_rscroll,
+        { "right scroll character: ", NULL, NULL }
+    },
     { '\0', NULL, NOVAR, 0, NULL, NULL, { NULL, NULL, NULL } }
 };
 
@@ -473,7 +473,7 @@ static struct loption option[] =
     public void
 init_option()
 {
-	struct loption *o;
+    struct loption *o;
     char *p;
 
     p = lgetenv("LESS_IS_MORE");
@@ -499,7 +499,7 @@ init_option()
 findopt(c)
     int c;
 {
-	struct loption *o;
+    struct loption *o;
 
     for (o = option;  o->oletter != '\0';  o++)
     {
@@ -540,9 +540,9 @@ findopt_name(p_optname, p_oname, p_err)
     int *p_err;
 {
     char *optname = *p_optname;
-	struct loption *o;
-	struct optname *oname;
-	int len;
+    struct loption *o;
+    struct optname *oname;
+    int len;
     int uppercase;
     struct loption *maxo = NULL;
     struct optname *maxoname = NULL;

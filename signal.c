@@ -81,7 +81,7 @@ stop(type)
 
 #undef SIG_LESSWINDOW
 #ifdef SIGWINCH
-	/* ARGSUSED*/
+    /* ARGSUSED*/
 #define SIG_LESSWINDOW SIGWINCH
 #else
 #ifdef SIGWIND
@@ -98,7 +98,7 @@ stop(type)
 winch(type)
     int type;
 {
-	LSIGNAL(SIG_LESSWINDOW, winch);
+    LSIGNAL(SIG_LESSWINDOW, winch);
     sigs |= S_WINCH;
     if (reading)
         intread();
@@ -129,11 +129,11 @@ wbreak_handler(dwCtrlType)
 }
 #endif
 
-	static RETSIGTYPE
+    static RETSIGTYPE
 terminate(type)
-	int type;
+    int type;
 {
-	quit(15);
+    quit(15);
 }
 
 /*
@@ -165,7 +165,7 @@ init_signals(on)
         (void) LSIGNAL(SIGQUIT, SIG_IGN);
 #endif
 #ifdef SIGTERM
-		(void) LSIGNAL(SIGTERM, terminate);
+        (void) LSIGNAL(SIGTERM, terminate);
 #endif
     } else
     {
@@ -189,7 +189,7 @@ init_signals(on)
         (void) LSIGNAL(SIGQUIT, SIG_DFL);
 #endif
 #ifdef SIGTERM
-		(void) LSIGNAL(SIGTERM, SIG_DFL);
+        (void) LSIGNAL(SIGTERM, SIG_DFL);
 #endif
     }
 }
@@ -201,7 +201,7 @@ init_signals(on)
     public void
 psignals()
 {
-	int tsignals;
+    int tsignals;
 
     if ((tsignals = sigs) == 0)
         return;
