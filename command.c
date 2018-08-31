@@ -812,13 +812,11 @@ getccu(VOID_PARAM)
     if (ungot == NULL)
     {
         /*
-         * Normal case: no ungotten chars, so get one from the user.
+          Normal case: no ungotten chars.
+         * Get char from the user.
          */
         c = getchr();
     } else
-    /*
-     * Return the next ungotten char.
-     */
     {
         /* Ungotten chars available:
          * Take the top of stack (most recent). */
@@ -856,19 +854,17 @@ getcc_repl(orig, repl, gr_getc, gr_ungetc)
         keys[ki] = c;
         if (c != orig[ki] || ki >= sizeof(keys)-1)
         {
-                 * We have a number but no command.  Treat as #g.
-                 */
+            /* This is not orig we have been receiving.
              * If we have stashed chars in keys[],
-                /*
-                 * We have "/string" but no newline.  Add the \n.
+             * unget them and return the first one */
             while (ki > 0)
                 (*gr_ungetc)(keys[ki--]);
             return keys[0];
         }
         if (orig[++ki] == '\0')
         {
-                 * Some other incomplete command.  Let user complete it.
-                 */
+            /* We've received the full orig sequence.
+             * Return the repl sequence. */
             ki = strlen(repl)-1;
             while (ki > 0)
                 (*gr_ungetc)(repl[ki--]);
@@ -1754,7 +1750,7 @@ commands()
 
         case A_DISP_OPTION:
             /*
-             * Report a flag setting.
+             * Report the setting of an option.
              */
             optflag = OPT_NO_TOGGLE;
             optgetname = FALSE;
@@ -1814,7 +1810,7 @@ commands()
 
         case A_GOMARK:
             /*
-             * Go to a mark.
+             * Jump to a marked position.
              */
             start_mca(A_GOMARK, "goto mark: ", (void*)NULL, 0);
             c = getcc();

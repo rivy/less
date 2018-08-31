@@ -553,14 +553,15 @@ colordesc(s, fg_color, bg_color)
 {
     int fg, bg;
     int err;
+#if MSDOS_COMPILER==WIN32C
+    int ul = 0;
+#endif
 
     if (*s == '.')
         fg = nm_fg_color;
     else
     {
 #if MSDOS_COMPILER==WIN32C
-        int ul = 0;
-
         if (*s == 'u')
         {
             ul = COMMON_LVB_UNDERSCORE;
@@ -578,6 +579,7 @@ colordesc(s, fg_color, bg_color)
         {
             error("Missing fg color in -D", NULL_PARG);
             return;
+        }
         }
     }
     if (*s != '.')

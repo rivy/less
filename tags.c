@@ -465,12 +465,6 @@ ctagsearch()
 
         if (ctldisp != OPT_ONPLUS)
         {
-         * Test the line to see if we have a match.
-         * Use strncmp because the pattern may be
-         * truncated (in the tags file) if it is too long.
-         * If tagendline is set, make sure we match all
-         * the way to end of line (no extra chars after the match).
-         */
             if (curtag_match(line, linepos))
                 found = 1;
         } else
