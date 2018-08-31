@@ -1,0 +1,4 @@
+# NOTE: GLOBSTAR syntax [see `git help gitignore`]
+
+# ignore localized VSCode settings
+.vscode/c_cpp_properties.json
