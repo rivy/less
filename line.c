@@ -182,7 +182,7 @@ set_linebuf(n, ch, a)
     LWCHAR ch;
     char a;
 {
-    linebuf[n] = ch;
+    linebuf[n] = (char) ch;
     attr[n] = a;
 }
 

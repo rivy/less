@@ -129,6 +129,7 @@ wbreak_handler(dwCtrlType)
 }
 #endif
 
+static RETSIGTYPE terminate(int);
     static RETSIGTYPE
 terminate(type)
     int type;
