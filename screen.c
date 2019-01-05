@@ -2530,7 +2530,7 @@ WIN32getch(tty)
     HANDLE tty_h = (HANDLE)_get_osfhandle(tty);
     while (win32_kbhit(tty_h) == FALSE)
 #else
-    while (win32_kbhit(tty) == FALSE)
+    while (win32_kbhit((HANDLE)tty) == FALSE)
 #endif
     {
         Sleep(20);
