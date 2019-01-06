@@ -121,10 +121,6 @@ static int keyCount = 0;
 static WORD curr_attr;
 static int pending_scancode = 0;
 
-#ifndef MINGW
-static WORD *whitescreen;
-#endif
-
 static HANDLE con_out_save = INVALID_HANDLE_VALUE; /* previous console */
 static HANDLE con_out_ours = INVALID_HANDLE_VALUE; /* our own */
 HANDLE con_out = INVALID_HANDLE_VALUE;             /* current console */
