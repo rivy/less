@@ -852,7 +852,7 @@ getcc_repl(orig, repl, gr_getc, gr_ungetc)
     for (;;)
             {
         keys[ki] = c;
-        if (c != orig[ki] || ki >= sizeof(keys)-1)
+        if (c != (LWCHAR)orig[ki] || ki >= sizeof(keys)-1)
         {
             /* This is not orig we have been receiving.
              * If we have stashed chars in keys[],

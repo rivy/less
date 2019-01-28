@@ -121,10 +121,6 @@ static int keyCount = 0;
 static WORD curr_attr;
 static int pending_scancode = 0;
 
-#ifndef MINGW
-static WORD *whitescreen;
-#endif
-
 static HANDLE con_out_save = INVALID_HANDLE_VALUE; /* previous console */
 static HANDLE con_out_ours = INVALID_HANDLE_VALUE; /* our own */
 HANDLE con_out = INVALID_HANDLE_VALUE;             /* current console */
@@ -2530,7 +2526,7 @@ WIN32getch(tty)
     HANDLE tty_h = (HANDLE)_get_osfhandle(tty);
     while (win32_kbhit(tty_h) == FALSE)
 #else
-    while (win32_kbhit(tty) == FALSE)
+    while (win32_kbhit((HANDLE)tty) == FALSE)
 #endif
     {
         Sleep(20);
