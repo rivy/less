@@ -179,7 +179,7 @@ INSTALLATION (Windows systems only, with MinGW GCC (both 32-bit and 64-bit))
 
 3. Check the Makefile to make sure the definitions look ok.
 
-4. If you wish, you may edit defines.mingw to remove some optional features.
+4. If you wish, you may edit defines.wn to remove some optional features.
    If you choose not to include some features in your version, you may
    wish to edit the manual page less.man and the help page help.c
    to remove the descriptions of the features which you are removing.
