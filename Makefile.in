@@ -122,3 +122,7 @@ distclean: clean
 realclean: distclean
 	rm -f TAGS
 
+build: all
+compile: ${OBJ}
+rebuild: clean build
+veryclean: realclean
