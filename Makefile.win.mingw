@@ -6,10 +6,13 @@
 #### Start of system configuration section. ####
 
 CC = gcc
+## -O<n> :: <n> == [0 .. 3], increasing level of optimization (see <https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html> @@ <https://archive.vn/7YtdI>)
+## -pedantic-errors :: error on use of compiler language extensions
 ## -Werror :: warnings treated as errors
+## -Wall :: enable all (usual) warnings
 ## -Wextra :: enable extra warnings
 ## -Wno-comment :: suppress warnings about trailing comments on directive lines
-CFLAGS = -I. -O2 -Wall -Werror -Wno-comment
+CFLAGS = -I. -O3 -pedantic-errors -Werror -Wall -Wno-comment
 CFLAGS_COMPILE_ONLY = -c
 CPPFLAGS =
 LDFLAGS = -g
@@ -21,7 +24,7 @@ O = o
 
 CP = copy
 
-DEFINETYPE = mingw
+DEFINETYPE = wn
 OBJDEP = defines.h less.h
 
 #### End of system configuration section. ####

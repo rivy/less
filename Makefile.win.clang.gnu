@@ -48,7 +48,7 @@ O = o
 
 CP = copy
 
-DEFINETYPE = mingw
+DEFINETYPE = wn
 OBJDEP = defines.h less.h
 
 #### End of system configuration section. ####
