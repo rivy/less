@@ -1774,6 +1774,36 @@ win32_clear()
 }
 
 /*
+ * Clear the screen (with inverted foreground and background colors).
+ */
+    static void
+win32_clear_inverted()
+{
+    /*
+     * This will clear only the currently visible rows of the NT
+     * console buffer, which means none of the precious scrollback
+     * rows are touched making for faster scrolling.  Note that, if
+     * the window has fewer columns than the console buffer (i.e.
+     * there is a horizontal scrollbar as well), the entire width
+     * of the visible rows will be cleared.
+     */
+    COORD topleft;
+    DWORD nchars;
+    DWORD winsz;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    /* get the number of cells in the current buffer */
+    GetConsoleScreenBufferInfo(con_out, &csbi);
+    winsz = csbi.dwSize.X * (csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
+    topleft.X = 0;
+    topleft.Y = csbi.srWindow.Top;
+
+    curr_attr = MAKEATTR(nm_bg_color, nm_fg_color);
+    FillConsoleOutputCharacter(con_out, ' ', winsz, topleft, &nchars);
+    FillConsoleOutputAttribute(con_out, curr_attr, winsz, topleft, &nchars);
+}
+
+/*
  * Remove the n topmost lines and scroll everything below it in the
  * window upward.
  */
@@ -1979,17 +2009,6 @@ create_flash()
     for (n = 0;  n < sc_width * sc_height;  n++)
         whitescreen[n] = 0x7020;
 #else
-#if MSDOS_COMPILER==WIN32C
-    int n;
-
-    whitescreen = (WORD *)
-        malloc(sc_height * sc_width * sizeof(WORD));
-    if (whitescreen == NULL)
-        return;
-    /* Invert the standard colors. */
-    for (n = 0;  n < sc_width * sc_height;  n++)
-        whitescreen[n] = (WORD)((nm_fg_color << 4) | nm_bg_color);
-#endif
 #endif
 #endif
     flash_created = 1;
@@ -2046,7 +2065,7 @@ vbell()
 #else
 #if MSDOS_COMPILER==WIN32C
     /* paint screen with an inverse color */
-    clear();
+    win32_clear_inverted();
 
     /* leave it displayed for 100 msec. */
     Sleep(100);
