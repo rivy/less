@@ -117,7 +117,7 @@ lsystem(cmd, donemsg)
 #else
     if (open("/dev/tty", OPEN_READ) < 0)
 #endif
-        dup(inp);
+        (void)! dup(inp);
 #endif
 
     /*
@@ -151,7 +151,7 @@ lsystem(cmd, donemsg)
         else
             p = save(cmd);
     }
-    system(p);
+    (void)! system(p);
     free(p);
 #else
 #if MSDOS_COMPILER==DJGPPC
@@ -176,7 +176,7 @@ lsystem(cmd, donemsg)
      * Restore standard input, reset signals, raw mode, etc.
      */
     close(0);
-    dup(inp);
+    (void)! dup(inp);
     close(inp);
 #endif
 
