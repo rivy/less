@@ -48,8 +48,13 @@
  */
 #if HAVE_ANSI_PROTOS
 #define LESSPARAMS(a) a
+/* follow K&R promotion rules for parameters of old-style function definitions */
+#define PARAM_char           int
+#define PARAM_unsigned_char  unsigned int
 #else
 #define LESSPARAMS(a) ()
+#define PARAM_char           char
+#define PARAM_unsigned_char  unsigned char
 #endif
 #if HAVE_VOID
 #define VOID_POINTER    void *
