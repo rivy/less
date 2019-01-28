@@ -802,7 +802,7 @@ flush_mbc_buf(pos)
  */
     public int
 pappend(c, pos)
-    unsigned char c;
+    PARAM_unsigned_char c;
     POSITION pos;
 {
     int r;
@@ -1172,7 +1172,7 @@ pdone(endline, chopped, forw)
  */
     public void
 set_status_col(c)
-    char c;
+    PARAM_char c;
 {
     set_linebuf(0, c, AT_NORMAL|AT_HILITE);
 }
