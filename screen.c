@@ -911,6 +911,8 @@ special_key_str(key)
     static char k_pagedown[]    = { '\340', PCK_PAGEDOWN, 0 };
     static char k_pageup[]      = { '\340', PCK_PAGEUP, 0 };
     static char k_f1[]      = { '\340', PCK_F1, 0 };
+    static char k_caps_lock[]     = {'\340', PCK_CAPS_LOCK, 0};
+    static char k_num_lock[]      = {'\340', PCK_NUM_LOCK, 0};
 #endif
 #if !MSDOS_COMPILER
     char *sp = tbuf;
@@ -1011,6 +1013,12 @@ special_key_str(key)
         break;
     case SK_BACKTAB:
         s = k_backtab;
+        break;
+    case SK_CAPS_LOCK:
+        s = k_caps_lock;
+        break;
+    case SK_NUM_LOCK:
+        s = k_num_lock;
         break;
 #else
     case SK_RIGHT_ARROW:

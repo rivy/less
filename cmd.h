@@ -135,4 +135,6 @@
 #define SK_F1			14
 #define SK_BACKTAB		15
 #define SK_CTL_BACKSPACE	16
+#define SK_CAPS_LOCK	17
+#define SK_NUM_LOCK	18
 #define SK_CONTROL_K		40
