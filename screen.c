@@ -911,6 +911,8 @@ special_key_str(key)
     static char k_pagedown[]    = { '\340', PCK_PAGEDOWN, 0 };
     static char k_pageup[]      = { '\340', PCK_PAGEUP, 0 };
     static char k_f1[]      = { '\340', PCK_F1, 0 };
+    static char k_caps_lock[]     = {'\340', PCK_CAPS_LOCK, 0};
+    static char k_num_lock[]      = {'\340', PCK_NUM_LOCK, 0};
 #endif
 #if !MSDOS_COMPILER
     char *sp = tbuf;
@@ -1011,6 +1013,12 @@ special_key_str(key)
         break;
     case SK_BACKTAB:
         s = k_backtab;
+        break;
+    case SK_CAPS_LOCK:
+        s = k_caps_lock;
+        break;
+    case SK_NUM_LOCK:
+        s = k_num_lock;
         break;
 #else
     case SK_RIGHT_ARROW:
@@ -1774,6 +1782,36 @@ win32_clear()
 }
 
 /*
+ * Clear the screen (with inverted foreground and background colors).
+ */
+    static void
+win32_clear_inverted()
+{
+    /*
+     * This will clear only the currently visible rows of the NT
+     * console buffer, which means none of the precious scrollback
+     * rows are touched making for faster scrolling.  Note that, if
+     * the window has fewer columns than the console buffer (i.e.
+     * there is a horizontal scrollbar as well), the entire width
+     * of the visible rows will be cleared.
+     */
+    COORD topleft;
+    DWORD nchars;
+    DWORD winsz;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    /* get the number of cells in the current buffer */
+    GetConsoleScreenBufferInfo(con_out, &csbi);
+    winsz = csbi.dwSize.X * (csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
+    topleft.X = 0;
+    topleft.Y = csbi.srWindow.Top;
+
+    curr_attr = MAKEATTR(nm_bg_color, nm_fg_color);
+    FillConsoleOutputCharacter(con_out, ' ', winsz, topleft, &nchars);
+    FillConsoleOutputAttribute(con_out, curr_attr, winsz, topleft, &nchars);
+}
+
+/*
  * Remove the n topmost lines and scroll everything below it in the
  * window upward.
  */
@@ -1979,17 +2017,6 @@ create_flash()
     for (n = 0;  n < sc_width * sc_height;  n++)
         whitescreen[n] = 0x7020;
 #else
-#if MSDOS_COMPILER==WIN32C
-    int n;
-
-    whitescreen = (WORD *)
-        malloc(sc_height * sc_width * sizeof(WORD));
-    if (whitescreen == NULL)
-        return;
-    /* Invert the standard colors. */
-    for (n = 0;  n < sc_width * sc_height;  n++)
-        whitescreen[n] = (WORD)((nm_fg_color << 4) | nm_bg_color);
-#endif
 #endif
 #endif
     flash_created = 1;
@@ -2046,7 +2073,7 @@ vbell()
 #else
 #if MSDOS_COMPILER==WIN32C
     /* paint screen with an inverse color */
-    clear();
+    win32_clear_inverted();
 
     /* leave it displayed for 100 msec. */
     Sleep(100);
