@@ -157,7 +157,7 @@ static int sy_fg_color;     /* Color of system text (before less) */
 static int sy_bg_color;
 public int sgr_mode;        /* Honor ANSI sequences rather than using above */
 #if MSDOS_COMPILER==WIN32C
-public int have_ul;		/* Is underline available? */
+public int have_full_ansi;		/* Is full Windows ANSI SGR support available? */
 #endif
 #else
 
@@ -1105,6 +1105,7 @@ get_term()
      * before any file operations have been done on fd0.
      */
     SET_BINARY(0);
+
     GetConsoleScreenBufferInfo(con_out, &scr);
     ReadConsoleOutputAttribute(con_out, &curr_attr,
                     1, scr.dwCursorPosition, &nread);
@@ -1531,8 +1532,9 @@ win32_init_term()
         /*
          * Enable underline, if available.
          */
+        // ref: <https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences>[`@`](https://archive.is/L7wRJ)
         GetConsoleMode(con_out_ours, &output_mode);
-        have_ul = SetConsoleMode(con_out_ours,
+        have_full_ansi = SetConsoleMode(con_out_ours,
                 output_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     }
 
