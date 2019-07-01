@@ -1099,7 +1099,7 @@ get_term()
     DWORD nread;
     CONSOLE_SCREEN_BUFFER_INFO scr;
 
-    con_out_save = con_out = GetStdHandle(STD_OUTPUT_HANDLE);
+    con_out_save = con_out = CreateFile((LPCSTR)"CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0L, NULL);
     /*
      * Always open stdin in binary. Note this *must* be done
      * before any file operations have been done on fd0.
