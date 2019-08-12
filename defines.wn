@@ -127,6 +127,14 @@
 #define MSDOS_COMPILER  WIN32C
 
 /*
+ * Minimum Windows version.
+ * - see <https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt>
+ * - @@ <https://github.com/MicrosoftDocs/cpp-docs/blob/master/docs/porting/modifying-winver-and-win32-winnt.md> @@ <https://archive.is/n8fu1>
+ */
+#define WINVER          0x0400     // WinNT 4.0
+#define _WIN32_WINNT    0x0400     // WinNT 4.0
+
+/*
  * Pathname separator character.
  */
 #define PATHNAME_SEP    "\\"
