@@ -157,7 +157,7 @@ static int sy_fg_color;     /* Color of system text (before less) */
 static int sy_bg_color;
 public int sgr_mode;        /* Honor ANSI sequences rather than using above */
 #if MSDOS_COMPILER==WIN32C
-public int have_ul;		/* Is underline available? */
+public int have_full_ansi;		/* Is full Windows ANSI SGR support available? */
 #endif
 #else
 
@@ -1099,12 +1099,13 @@ get_term()
     DWORD nread;
     CONSOLE_SCREEN_BUFFER_INFO scr;
 
-    con_out_save = con_out = GetStdHandle(STD_OUTPUT_HANDLE);
+    con_out_save = con_out = CreateFile((LPCSTR)"CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0L, NULL);
     /*
      * Always open stdin in binary. Note this *must* be done
      * before any file operations have been done on fd0.
      */
     SET_BINARY(0);
+
     GetConsoleScreenBufferInfo(con_out, &scr);
     ReadConsoleOutputAttribute(con_out, &curr_attr,
                     1, scr.dwCursorPosition, &nread);
@@ -1116,6 +1117,14 @@ get_term()
 #endif
     nm_fg_color = sy_fg_color;
     nm_bg_color = sy_bg_color;
+
+    // ToDO: research Win10 bug creating consoles with FG=BG (start @ <https://github.com/Microsoft/Terminal/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+color>)
+    // FixME: find a researched definative solution to use Win10 ANSI colors (either better FG/BG definition or better SGR use within `less`); remove "debug" fprintf statements
+    // fprintf(stderr, "FG=%d ; BG=%d\n", nm_fg_color, nm_bg_color);
+    if (nm_fg_color == nm_bg_color) {
+        nm_fg_color = ( nm_bg_color ^ 0x07 );
+        // fprintf(stderr, "(updated) FG=%d ; BG=%d\n", nm_fg_color, nm_bg_color);
+    }
 
     bo_fg_color = -1;
     bo_bg_color = -1;
@@ -1531,8 +1540,9 @@ win32_init_term()
         /*
          * Enable underline, if available.
          */
+        // ref: <https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences>[`@`](https://archive.is/L7wRJ)
         GetConsoleMode(con_out_ours, &output_mode);
-        have_ul = SetConsoleMode(con_out_ours,
+        have_full_ansi = SetConsoleMode(con_out_ours,
                 output_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     }
 

@@ -42,7 +42,7 @@ extern int so_fg_color, so_bg_color;
 extern int bl_fg_color, bl_bg_color;
 extern int sgr_mode;
 #if MSDOS_COMPILER==WIN32C
-extern int have_ul;
+extern int have_full_ansi;
 #endif
 #endif
 
@@ -197,7 +197,7 @@ flush()
     if (is_tty && any_display)
     {
         *ob = '\0';
-        if (ctldisp != OPT_ONPLUS)
+        if ((sgr_mode && have_full_ansi) || (ctldisp != OPT_ONPLUS))
             WIN32textout(obuf, ob - obuf);
         else
         {
@@ -397,7 +397,7 @@ flush()
                             break;
                         case 4:	/* underline on */
 #if MSDOS_COMPILER==WIN32C
-                            if (have_ul)
+                            if (have_full_ansi)
                                 bgi = COMMON_LVB_UNDERSCORE >> 4;
                             else
 #endif
