@@ -1521,8 +1521,6 @@ win32_init_term()
     if (con_out_save == INVALID_HANDLE_VALUE)
         return;
 
-    GetConsoleScreenBufferInfo(con_out_save, &scr);
-
     if (con_out_ours == INVALID_HANDLE_VALUE)
     {
         DWORD output_mode;
@@ -1546,9 +1544,15 @@ win32_init_term()
                 output_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     }
 
+    // FixME: [2019-08-15]; this is a workaround for <https://github.com/microsoft/terminal/issues/2449>; plan removal when addressed or fixed
+    //    ... this code is not usually needed since creating `con_out_ours` via `CreateConsoleScreenBuffer()` creates a copy of the active screen buffer with "Buffer Size" == "Display Window Size"
+    //    ... used here with a "+ 1" as a temporary workaround for display issues when using the "Disable Scroll-forward" console feature
+    // ref: <https://docs.microsoft.com/en-us/windows/console/createconsolescreenbuffer>[`@`](https://archive.is/xBtEA)
+    GetConsoleScreenBufferInfo(con_out_save, &scr);
     size.X = scr.srWindow.Right - scr.srWindow.Left + 1;
-    size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1;
+    size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1 + 1;
     SetConsoleScreenBufferSize(con_out_ours, size);
+
     SetConsoleActiveScreenBuffer(con_out_ours);
     con_out = con_out_ours;
 }
