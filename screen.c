@@ -1119,7 +1119,7 @@ get_term()
     nm_bg_color = sy_bg_color;
 
     // ToDO: research Win10 bug creating consoles with FG=BG (start @ <https://github.com/Microsoft/Terminal/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+color>)
-    // FixME: find a researched definative solution to use Win10 ANSI colors (either better FG/BG definition or better SGR use within `less`); remove "debug" fprintf statements
+    // FixME: find a researched definitive solution to use Win10 ANSI colors (either better FG/BG definition or better SGR use within `less`); remove "debug" fprintf statements
     // fprintf(stderr, "FG=%d ; BG=%d\n", nm_fg_color, nm_bg_color);
     if (nm_fg_color == nm_bg_color) {
         nm_fg_color = ( nm_bg_color ^ 0x07 );
