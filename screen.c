@@ -2503,7 +2503,7 @@ win32_kbhit(tty)
         // fprintf(stderr,"win32_kbhit():ip.EventType=%d,.KeyCode=%d,.ScanCode=%d\n", ip.EventType, ip.Event.KeyEvent.wVirtualKeyCode, ip.Event.KeyEvent.wVirtualScanCode);
     } while (ip.EventType != KEY_EVENT ||
         ip.Event.KeyEvent.bKeyDown != TRUE ||
-        ip.Event.KeyEvent.wVirtualScanCode == 0 ||
+        // ip.Event.KeyEvent.wVirtualScanCode == 0 ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_SHIFT ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_CONTROL ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_MENU);
