@@ -2500,6 +2500,7 @@ win32_kbhit(tty)
         if (read == 0)
             return (FALSE);
         ReadConsoleInput(tty, &ip, 1, &read);
+        // fprintf(stderr,"win32_kbhit():ip.EventType=%d,.KeyCode=%d,.ScanCode=%d\n", ip.EventType, ip.Event.KeyEvent.wVirtualKeyCode, ip.Event.KeyEvent.wVirtualScanCode);
     } while (ip.EventType != KEY_EVENT ||
         ip.Event.KeyEvent.bKeyDown != TRUE ||
         ip.Event.KeyEvent.wVirtualScanCode == 0 ||
@@ -2559,6 +2560,7 @@ WIN32getch(tty)
 
     if (pending_scancode)
     {
+        // fprintf(stderr, "WIN32getch():currentKey.ascii=%d,.scan=%d\n", currentKey.ascii, currentKey.scan);
         pending_scancode = 0;
         return ((char)(currentKey.scan & 0x00FF));
     }
@@ -2583,6 +2585,7 @@ WIN32getch(tty)
      * the lsb of the scan code.
      */
     pending_scancode = (ascii == 0x00);
+    // fprintf(stderr, "WIN32getch():ascii=%d\n", ascii);
     return ((char)ascii);
 }
 #endif

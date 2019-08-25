@@ -497,6 +497,7 @@ mca_search_char(c)
     if (len_cmdbuf() > 0)
         return (NO_MCA);
 
+    // fprintf(stderr, "mca_search_char():c=%d\n", c);
     switch (c)
     {
     case CONTROL('E'): /* ignore END of file */
@@ -540,6 +541,7 @@ mca_char(c)
 {
     int ret;
 
+    // fprintf(stderr, "mca_char():c=%d\n", c);
     switch (mca)
     {
     case 0:
@@ -1092,6 +1094,7 @@ commands()
 
     for (;;)
     {
+        // fprintf(stderr, "commands():loop\n");
         mca = 0;
         cmd_accept();
         number = 0;
@@ -1123,7 +1126,9 @@ commands()
         if (newaction == A_NOACTION)
             c = getcc();
 
+        // action = 0;
     again:
+        // fprintf(stderr, "commands():action=%d, newaction=%d, c=%d, mca=%d\n", action, newaction, c, mca);
         if (sigs)
             continue;
 
