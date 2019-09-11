@@ -1210,6 +1210,7 @@ cmd_char(c)
     int action;
     int len;
 
+    // fprintf(stderr, "cmd_char():1:c=%d\n", c);
     if (!utf_mode)
     {
         cmd_mbc_buf[0] = c;
@@ -1266,6 +1267,7 @@ cmd_char(c)
         cmd_mbc_buf_len = 0;
     }
 
+    // fprintf(stderr, "cmd_char():2\n");
     if (literal)
     {
         /*
@@ -1291,6 +1293,7 @@ cmd_char(c)
         }
     }
 
+    // fprintf(stderr, "cmd_char():3\n");
     /*
      * Insert the char into the command buffer.
      */

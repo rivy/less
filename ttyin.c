@@ -194,5 +194,6 @@ getchr()
             c = '\340';
     } while (result != 1);
 
+    // fprintf(stderr, "getchr():result=%d,c=%d\n", result, c);
     return (c & 0xFF);
 }

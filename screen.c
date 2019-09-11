@@ -1119,7 +1119,7 @@ get_term()
     nm_bg_color = sy_bg_color;
 
     // ToDO: research Win10 bug creating consoles with FG=BG (start @ <https://github.com/Microsoft/Terminal/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+color>)
-    // FixME: find a researched definative solution to use Win10 ANSI colors (either better FG/BG definition or better SGR use within `less`); remove "debug" fprintf statements
+    // FixME: find a researched definitive solution to use Win10 ANSI colors (either better FG/BG definition or better SGR use within `less`); remove "debug" fprintf statements
     // fprintf(stderr, "FG=%d ; BG=%d\n", nm_fg_color, nm_bg_color);
     if (nm_fg_color == nm_bg_color) {
         nm_fg_color = ( nm_bg_color ^ 0x07 );
@@ -1521,8 +1521,6 @@ win32_init_term()
     if (con_out_save == INVALID_HANDLE_VALUE)
         return;
 
-    GetConsoleScreenBufferInfo(con_out_save, &scr);
-
     if (con_out_ours == INVALID_HANDLE_VALUE)
     {
         DWORD output_mode;
@@ -1546,9 +1544,15 @@ win32_init_term()
                 output_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     }
 
+    // FixME: [2019-08-15]; this is a workaround for <https://github.com/microsoft/terminal/issues/2449>; plan removal when addressed or fixed
+    //    ... this code is not usually needed since creating `con_out_ours` via `CreateConsoleScreenBuffer()` creates a copy of the active screen buffer with "Buffer Size" == "Display Window Size"
+    //    ... used here with a "+ 1" as a temporary workaround for display issues when using the "Disable Scroll-forward" console feature
+    // ref: <https://docs.microsoft.com/en-us/windows/console/createconsolescreenbuffer>[`@`](https://archive.is/xBtEA)
+    GetConsoleScreenBufferInfo(con_out_save, &scr);
     size.X = scr.srWindow.Right - scr.srWindow.Left + 1;
-    size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1;
+    size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1 + 1;
     SetConsoleScreenBufferSize(con_out_ours, size);
+
     SetConsoleActiveScreenBuffer(con_out_ours);
     con_out = con_out_ours;
 }
@@ -2496,9 +2500,10 @@ win32_kbhit(tty)
         if (read == 0)
             return (FALSE);
         ReadConsoleInput(tty, &ip, 1, &read);
+        // fprintf(stderr,"win32_kbhit():ip.EventType=%d,.KeyCode=%d,.ScanCode=%d\n", ip.EventType, ip.Event.KeyEvent.wVirtualKeyCode, ip.Event.KeyEvent.wVirtualScanCode);
     } while (ip.EventType != KEY_EVENT ||
         ip.Event.KeyEvent.bKeyDown != TRUE ||
-        ip.Event.KeyEvent.wVirtualScanCode == 0 ||
+        // ip.Event.KeyEvent.wVirtualScanCode == 0 ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_SHIFT ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_CONTROL ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_MENU);
@@ -2555,6 +2560,7 @@ WIN32getch(tty)
 
     if (pending_scancode)
     {
+        // fprintf(stderr, "WIN32getch():currentKey.ascii=%d,.scan=%d\n", currentKey.ascii, currentKey.scan);
         pending_scancode = 0;
         return ((char)(currentKey.scan & 0x00FF));
     }
@@ -2579,6 +2585,7 @@ WIN32getch(tty)
      * the lsb of the scan code.
      */
     pending_scancode = (ascii == 0x00);
+    // fprintf(stderr, "WIN32getch():ascii=%d\n", ascii);
     return ((char)ascii);
 }
 #endif
