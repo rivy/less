@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -25,8 +25,8 @@ extern int top_scroll;
 /*
  * Jump to the end of the file.
  */
-    public void
-jump_forw()
+	public void
+jump_forw(VOID_PARAM)
 {
     POSITION pos;
     POSITION end_pos;
@@ -63,8 +63,8 @@ jump_forw()
 /*
  * Jump to the last buffered line in the file.
  */
-    public void
-jump_forw_buffered()
+	public void
+jump_forw_buffered(VOID_PARAM)
 {
     POSITION end;
 
@@ -114,8 +114,8 @@ jump_back(linenum)
 /*
  * Repaint the screen.
  */
-    public void
-repaint()
+	public void
+repaint(VOID_PARAM)
 {
     struct scrpos scrpos;
     /*

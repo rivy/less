@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -18,44 +18,38 @@
 #include "pckeys.h"
 #endif
 #if MSDOS_COMPILER==WIN32C
-#include "windows.h"
-extern char WIN32getch();
-static DWORD console_mode;
+#define WIN32_LEAN_AND_MEAN
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x400
 #endif
-
+#include <windows.h>
+static DWORD console_mode;
+public HANDLE tty;
+#else
 public int tty;
+#endif
 extern int sigs;
 extern int utf_mode;
+extern int wheel_lines;
 
 /*
  * Open keyboard for input.
  */
-    public void
-open_getchr()
+	public void
+open_getchr(VOID_PARAM)
 {
 #if MSDOS_COMPILER==WIN32C
-    /* Need this to let child processes inherit our console handle */
-    SECURITY_ATTRIBUTES sa;
-    memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
-    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-    sa.bInheritHandle = TRUE;
-#ifdef MINGW
-    HANDLE tty_h = CreateFile("CONIN$", GENERIC_READ,
-#else
-    tty = (int) CreateFile("CONIN$", GENERIC_READ,
-#endif
-            FILE_SHARE_READ, &sa,
-            OPEN_EXISTING, 0L, NULL);
-#ifdef MINGW
-    tty = _open_osfhandle((intptr_t)tty_h, 0);
-    GetConsoleMode(tty_h, &console_mode);
-    /* Make sure we get Ctrl+C events. */
-    SetConsoleMode(tty_h, ENABLE_PROCESSED_INPUT);
-#else
-    GetConsoleMode((HANDLE)tty, &console_mode);
-    /* Make sure we get Ctrl+C events. */
-    SetConsoleMode((HANDLE)tty, ENABLE_PROCESSED_INPUT);
-#endif
+	/* Need this to let child processes inherit our console handle */
+	SECURITY_ATTRIBUTES sa;
+	memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.bInheritHandle = TRUE;
+	tty = CreateFile("CONIN$", GENERIC_READ | GENERIC_WRITE,
+			FILE_SHARE_READ, &sa, 
+			OPEN_EXISTING, 0L, NULL);
+	GetConsoleMode(tty, &console_mode);
+	/* Make sure we get Ctrl+C events. */
+	SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
 #else
 #if MSDOS_COMPILER
     extern int fd0;
@@ -95,26 +89,53 @@ open_getchr()
 /*
  * Close the keyboard.
  */
-    public void
-close_getchr()
+	public void
+close_getchr(VOID_PARAM)
 {
 #if MSDOS_COMPILER==WIN32C
-#ifdef MINGW
-    HANDLE tty_h = (HANDLE)_get_osfhandle(tty);
-    SetConsoleMode(tty_h, console_mode);
-    CloseHandle(tty_h);
-#else
-    SetConsoleMode((HANDLE)tty, console_mode);
-    CloseHandle((HANDLE)tty);
+	SetConsoleMode(tty, console_mode);
+	CloseHandle(tty);
 #endif
+}
+
+#if MSDOS_COMPILER==WIN32C
+/*
+ * Close the pipe, restoring the keyboard (CMD resets it, losing the mouse).
+ */
+	int
+pclose(f)
+	FILE *f;
+{
+	int result;
+
+	result = _pclose(f);
+	SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
+	return result;
+}
 #endif
+
+/*
+ * Get the number of lines to scroll when mouse wheel is moved.
+ */
+	public int
+default_wheel_lines(VOID_PARAM)
+{
+	int lines = 1;
+#if MSDOS_COMPILER==WIN32C
+	if (SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &lines, 0))
+	{
+		if (lines == WHEEL_PAGESCROLL)
+			lines = 3;
+	}
+#endif
+	return lines;
 }
 
 /*
  * Get a character from the keyboard.
  */
-    public int
-getchr()
+	public int
+getchr(VOID_PARAM)
 {
     char c;
     int result;
@@ -127,9 +148,9 @@ getchr()
          */
         flush();
 #if MSDOS_COMPILER==WIN32C
-        if (ABORT_SIGS())
-            return (READ_INTR);
-        c = WIN32getch(tty);
+		if (ABORT_SIGS())
+			return (READ_INTR);
+		c = WIN32getch();
 #else
         c = getch();
 #endif
@@ -154,36 +175,36 @@ getchr()
         }
 #endif
 #if 0 /* allow entering arbitrary hex chars for testing */
-        /* ctrl-A followed by two hex chars makes a byte */
-    {
-        static int hex_in = 0;
-        static int hex_value = 0;
-        if (c == CONTROL('A'))
-        {
-            hex_in = 2;
-            result = 0;
-            continue;
-        }
-        if (hex_in > 0)
-        {
-            int v;
-            if (c >= '0' && c <= '9')
-                v = c - '0';
-            else if (c >= 'a' && c <= 'f')
-                v = c - 'a' + 10;
-            else if (c >= 'A' && c <= 'F')
-                v = c - 'A' + 10;
-            else
-                hex_in = 0;
-            hex_value = (hex_value << 4) | v;
-            if (--hex_in > 0)
-            {
-                result = 0;
-                continue;
-            }
-            c = hex_value;
-        }
-    }
+		/* ctrl-A followed by two hex chars makes a byte */
+	{
+		static int hex_in = 0;
+		static int hex_value = 0;
+		if (c == CONTROL('A'))
+		{
+			hex_in = 2;
+			result = 0;
+			continue;
+		}
+		if (hex_in > 0)
+		{
+			int v;
+			if (c >= '0' && c <= '9')
+				v = c - '0';
+			else if (c >= 'a' && c <= 'f')
+				v = c - 'a' + 10;
+			else if (c >= 'A' && c <= 'F')
+				v = c - 'A' + 10;
+			else
+				v = 0;
+			hex_value = (hex_value << 4) | v;
+			if (--hex_in > 0)
+			{
+				result = 0;
+				continue;
+			}
+			c = hex_value;
+		}
+	}
 #endif
         /*
          * Various parts of the program cannot handle

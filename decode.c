@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -35,6 +35,9 @@
 
 extern int erase_char, erase2_char, kill_char;
 extern int secure;
+extern int mousecap;
+extern int screen_trashed;
+extern int sc_height;
 
 #define SK(k) \
     SK_SPECIAL_KEY, (k), 6, 1, 1, 1
@@ -45,132 +48,134 @@ extern int secure;
 
 static unsigned char cmdtable[] =
 {
-    '\r',0,             A_F_LINE,
-    '\n',0,             A_F_LINE,
-    'e',0,              A_F_LINE,
-    'j',0,              A_F_LINE,
-    SK(SK_DOWN_ARROW),0,        A_F_LINE,
-    CONTROL('E'),0,         A_F_LINE,
-    CONTROL('N'),0,         A_F_LINE,
-    'k',0,              A_B_LINE,
-    'y',0,              A_B_LINE,
-    CONTROL('Y'),0,         A_B_LINE,
-    SK(SK_CONTROL_K),0,     A_B_LINE,
-    CONTROL('P'),0,         A_B_LINE,
-    SK(SK_UP_ARROW),0,      A_B_LINE,
-    'J',0,              A_FF_LINE,
-    'K',0,              A_BF_LINE,
-    'Y',0,              A_BF_LINE,
-    'd',0,              A_F_SCROLL,
-    CONTROL('D'),0,         A_F_SCROLL,
-    'u',0,              A_B_SCROLL,
-    CONTROL('U'),0,         A_B_SCROLL,
-    ' ',0,              A_F_SCREEN,
-    'f',0,              A_F_SCREEN,
-    CONTROL('F'),0,         A_F_SCREEN,
-    CONTROL('V'),0,         A_F_SCREEN,
-    SK(SK_PAGE_DOWN),0,     A_F_SCREEN,
-    'b',0,              A_B_SCREEN,
-    CONTROL('B'),0,         A_B_SCREEN,
-    ESC,'v',0,          A_B_SCREEN,
-    SK(SK_PAGE_UP),0,       A_B_SCREEN,
-    'z',0,              A_F_WINDOW,
-    'w',0,              A_B_WINDOW,
-    ESC,' ',0,          A_FF_SCREEN,
-    'F',0,              A_F_FOREVER,
-    ESC,'F',0,          A_F_UNTIL_HILITE,
-    'R',0,              A_FREPAINT,
-    'r',0,              A_REPAINT,
-    CONTROL('R'),0,         A_REPAINT,
-    CONTROL('L'),0,         A_REPAINT,
-    ESC,'u',0,          A_UNDO_SEARCH,
-    'g',0,              A_GOLINE,
-    SK(SK_HOME),0,          A_GOLINE,
-    '<',0,              A_GOLINE,
-    ESC,'<',0,          A_GOLINE,
-    'p',0,              A_PERCENT,
-    '%',0,              A_PERCENT,
-    ESC,'[',0,          A_LSHIFT,
-    ESC,']',0,          A_RSHIFT,
-    ESC,'(',0,          A_LSHIFT,
-    ESC,')',0,          A_RSHIFT,
-    ESC,'{',0,          A_LLSHIFT,
-    ESC,'}',0,          A_RRSHIFT,
-    SK(SK_RIGHT_ARROW),0,       A_RSHIFT,
-    SK(SK_LEFT_ARROW),0,        A_LSHIFT,
-    SK(SK_CTL_RIGHT_ARROW),0,   A_RRSHIFT,
-    SK(SK_CTL_LEFT_ARROW),0,    A_LLSHIFT,
-    '{',0,              A_F_BRACKET|A_EXTRA,    '{','}',0,
-    '}',0,              A_B_BRACKET|A_EXTRA,    '{','}',0,
-    '(',0,              A_F_BRACKET|A_EXTRA,    '(',')',0,
-    ')',0,              A_B_BRACKET|A_EXTRA,    '(',')',0,
-    '[',0,              A_F_BRACKET|A_EXTRA,    '[',']',0,
-    ']',0,              A_B_BRACKET|A_EXTRA,    '[',']',0,
-    ESC,CONTROL('F'),0,     A_F_BRACKET,
-    ESC,CONTROL('B'),0,     A_B_BRACKET,
-    'G',0,              A_GOEND,
-    ESC,'G',0,          A_GOEND_BUF,
-    ESC,'>',0,          A_GOEND,
-    '>',0,              A_GOEND,
-    SK(SK_END),0,           A_GOEND,
-    'P',0,              A_GOPOS,
+	'\r',0,				A_F_LINE,
+	'\n',0,				A_F_LINE,
+	'e',0,				A_F_LINE,
+	'j',0,				A_F_LINE,
+	SK(SK_DOWN_ARROW),0,		A_F_LINE,
+	CONTROL('E'),0,			A_F_LINE,
+	CONTROL('N'),0,			A_F_LINE,
+	'k',0,				A_B_LINE,
+	'y',0,				A_B_LINE,
+	CONTROL('Y'),0,			A_B_LINE,
+	SK(SK_CONTROL_K),0,		A_B_LINE,
+	CONTROL('P'),0,			A_B_LINE,
+	SK(SK_UP_ARROW),0,		A_B_LINE,
+	'J',0,				A_FF_LINE,
+	'K',0,				A_BF_LINE,
+	'Y',0,				A_BF_LINE,
+	'd',0,				A_F_SCROLL,
+	CONTROL('D'),0,			A_F_SCROLL,
+	'u',0,				A_B_SCROLL,
+	CONTROL('U'),0,			A_B_SCROLL,
+	ESC,'[','M',0,			A_X11MOUSE_IN,
+	ESC,'[','<',0,			A_X116MOUSE_IN,
+	' ',0,				A_F_SCREEN,
+	'f',0,				A_F_SCREEN,
+	CONTROL('F'),0,			A_F_SCREEN,
+	CONTROL('V'),0,			A_F_SCREEN,
+	SK(SK_PAGE_DOWN),0,		A_F_SCREEN,
+	'b',0,				A_B_SCREEN,
+	CONTROL('B'),0,			A_B_SCREEN,
+	ESC,'v',0,			A_B_SCREEN,
+	SK(SK_PAGE_UP),0,		A_B_SCREEN,
+	'z',0,				A_F_WINDOW,
+	'w',0,				A_B_WINDOW,
+	ESC,' ',0,			A_FF_SCREEN,
+	'F',0,				A_F_FOREVER,
+	ESC,'F',0,			A_F_UNTIL_HILITE,
+	'R',0,				A_FREPAINT,
+	'r',0,				A_REPAINT,
+	CONTROL('R'),0,			A_REPAINT,
+	CONTROL('L'),0,			A_REPAINT,
+	ESC,'u',0,			A_UNDO_SEARCH,
+	'g',0,				A_GOLINE,
+	SK(SK_HOME),0,			A_GOLINE,
+	'<',0,				A_GOLINE,
+	ESC,'<',0,			A_GOLINE,
+	'p',0,				A_PERCENT,
+	'%',0,				A_PERCENT,
+	ESC,'[',0,			A_LSHIFT,
+	ESC,']',0,			A_RSHIFT,
+	ESC,'(',0,			A_LSHIFT,
+	ESC,')',0,			A_RSHIFT,
+	ESC,'{',0,			A_LLSHIFT,
+	ESC,'}',0,			A_RRSHIFT,
+	SK(SK_RIGHT_ARROW),0,		A_RSHIFT,
+	SK(SK_LEFT_ARROW),0,		A_LSHIFT,
+	SK(SK_CTL_RIGHT_ARROW),0,	A_RRSHIFT,
+	SK(SK_CTL_LEFT_ARROW),0,	A_LLSHIFT,
+	'{',0,				A_F_BRACKET|A_EXTRA,	'{','}',0,
+	'}',0,				A_B_BRACKET|A_EXTRA,	'{','}',0,
+	'(',0,				A_F_BRACKET|A_EXTRA,	'(',')',0,
+	')',0,				A_B_BRACKET|A_EXTRA,	'(',')',0,
+	'[',0,				A_F_BRACKET|A_EXTRA,	'[',']',0,
+	']',0,				A_B_BRACKET|A_EXTRA,	'[',']',0,
+	ESC,CONTROL('F'),0,		A_F_BRACKET,
+	ESC,CONTROL('B'),0,		A_B_BRACKET,
+	'G',0,				A_GOEND,
+	ESC,'G',0,			A_GOEND_BUF,
+	ESC,'>',0,			A_GOEND,
+	'>',0,				A_GOEND,
+	SK(SK_END),0,			A_GOEND,
+	'P',0,				A_GOPOS,
 
-    '0',0,              A_DIGIT,
-    '1',0,              A_DIGIT,
-    '2',0,              A_DIGIT,
-    '3',0,              A_DIGIT,
-    '4',0,              A_DIGIT,
-    '5',0,              A_DIGIT,
-    '6',0,              A_DIGIT,
-    '7',0,              A_DIGIT,
-    '8',0,              A_DIGIT,
-    '9',0,              A_DIGIT,
-    '.',0,              A_DIGIT,
+	'0',0,				A_DIGIT,
+	'1',0,				A_DIGIT,
+	'2',0,				A_DIGIT,
+	'3',0,				A_DIGIT,
+	'4',0,				A_DIGIT,
+	'5',0,				A_DIGIT,
+	'6',0,				A_DIGIT,
+	'7',0,				A_DIGIT,
+	'8',0,				A_DIGIT,
+	'9',0,				A_DIGIT,
+	'.',0,				A_DIGIT,
 
-    '=',0,              A_STAT,
-    CONTROL('G'),0,         A_STAT,
-    ':','f',0,          A_STAT,
-    '/',0,              A_F_SEARCH,
-    '?',0,              A_B_SEARCH,
-    ESC,'/',0,          A_F_SEARCH|A_EXTRA, '*',0,
-    ESC,'?',0,          A_B_SEARCH|A_EXTRA, '*',0,
-    'n',0,              A_AGAIN_SEARCH,
-    ESC,'n',0,          A_T_AGAIN_SEARCH,
-    'N',0,              A_REVERSE_SEARCH,
-    ESC,'N',0,          A_T_REVERSE_SEARCH,
-    '&',0,              A_FILTER,
-    'm',0,              A_SETMARK,
-    'M',0,				A_SETMARKBOT,
-    ESC,'m',0,			A_CLRMARK,
-    '\'',0,             A_GOMARK,
-    CONTROL('X'),CONTROL('X'),0,    A_GOMARK,
-    'E',0,              A_EXAMINE,
-    ':','e',0,          A_EXAMINE,
-    CONTROL('X'),CONTROL('V'),0,    A_EXAMINE,
-    ':','n',0,          A_NEXT_FILE,
-    ':','p',0,          A_PREV_FILE,
-    't',0,              A_NEXT_TAG,
-    'T',0,              A_PREV_TAG,
-    ':','x',0,          A_INDEX_FILE,
-    ':','d',0,          A_REMOVE_FILE,
-    '-',0,              A_OPT_TOGGLE,
-    ':','t',0,          A_OPT_TOGGLE|A_EXTRA,   't',0,
-    's',0,              A_OPT_TOGGLE|A_EXTRA,   'o',0,
-    '_',0,              A_DISP_OPTION,
-    '|',0,              A_PIPE,
-    'v',0,              A_VISUAL,
-    '!',0,              A_SHELL,
-    '+',0,              A_FIRSTCMD,
+	'=',0,				A_STAT,
+	CONTROL('G'),0,			A_STAT,
+	':','f',0,			A_STAT,
+	'/',0,				A_F_SEARCH,
+	'?',0,				A_B_SEARCH,
+	ESC,'/',0,			A_F_SEARCH|A_EXTRA,	'*',0,
+	ESC,'?',0,			A_B_SEARCH|A_EXTRA,	'*',0,
+	'n',0,				A_AGAIN_SEARCH,
+	ESC,'n',0,			A_T_AGAIN_SEARCH,
+	'N',0,				A_REVERSE_SEARCH,
+	ESC,'N',0,			A_T_REVERSE_SEARCH,
+	'&',0,				A_FILTER,
+	'm',0,				A_SETMARK,
+	'M',0,				A_SETMARKBOT,
+	ESC,'m',0,			A_CLRMARK,
+	'\'',0,				A_GOMARK,
+	CONTROL('X'),CONTROL('X'),0,	A_GOMARK,
+	'E',0,				A_EXAMINE,
+	':','e',0,			A_EXAMINE,
+	CONTROL('X'),CONTROL('V'),0,	A_EXAMINE,
+	':','n',0,			A_NEXT_FILE,
+	':','p',0,			A_PREV_FILE,
+	't',0,				A_NEXT_TAG,
+	'T',0,				A_PREV_TAG,
+	':','x',0,			A_INDEX_FILE,
+	':','d',0,			A_REMOVE_FILE,
+	'-',0,				A_OPT_TOGGLE,
+	':','t',0,			A_OPT_TOGGLE|A_EXTRA,	't',0,
+	's',0,				A_OPT_TOGGLE|A_EXTRA,	'o',0,
+	'_',0,				A_DISP_OPTION,
+	'|',0,				A_PIPE,
+	'v',0,				A_VISUAL,
+	'!',0,				A_SHELL,
+	'+',0,				A_FIRSTCMD,
 
-    'H',0,              A_HELP,
-    'h',0,              A_HELP,
-    SK(SK_F1),0,            A_HELP,
-    'V',0,              A_VERSION,
-    'q',0,              A_QUIT,
-    'Q',0,              A_QUIT,
-    ':','q',0,          A_QUIT,
-    ':','Q',0,          A_QUIT,
-    'Z','Z',0,          A_QUIT
+	'H',0,				A_HELP,
+	'h',0,				A_HELP,
+	SK(SK_F1),0,			A_HELP,
+	'V',0,				A_VERSION,
+	'q',0,				A_QUIT,
+	'Q',0,				A_QUIT,
+	':','q',0,			A_QUIT,
+	':','Q',0,			A_QUIT,
+	'Z','Z',0,			A_QUIT
 };
 
 static unsigned char edittable[] =
@@ -309,8 +314,8 @@ expand_cmd_table(tlist)
 /*
  * Expand special key abbreviations in all command tables.
  */
-    public void
-expand_cmd_tables()
+	public void
+expand_cmd_tables(VOID_PARAM)
 {
     expand_cmd_table(list_fcmd_tables);
     expand_cmd_table(list_ecmd_tables);
@@ -322,8 +327,8 @@ expand_cmd_tables()
 /*
  * Initialize the command lists.
  */
-    public void
-init_cmds()
+	public void
+init_cmds(VOID_PARAM)
 {
     /*
      * Add the default command tables.
@@ -416,6 +421,116 @@ add_var_table(tlist, buf, len)
 }
 
 /*
+ * Return action for a mouse wheel down event.
+ */
+	static int
+mouse_wheel_down(VOID_PARAM)
+{
+	return ((mousecap == OPT_ONPLUS) ? A_B_MOUSE : A_F_MOUSE);
+}
+
+/*
+ * Return action for a mouse wheel up event.
+ */
+	static int
+mouse_wheel_up(VOID_PARAM)
+{
+	return ((mousecap == OPT_ONPLUS) ? A_F_MOUSE : A_B_MOUSE);
+}
+
+/*
+ * Return action for a mouse button release event.
+ */
+	static int
+mouse_button_rel(x, y)
+	int x;
+	int y;
+{
+	/*
+	 * {{ It would be better to return an action and then do this 
+	 *    in commands() but it's nontrivial to pass y to it. }}
+	 */
+	if (y < sc_height-1)
+	{
+		setmark('#', y);
+		screen_trashed = 1;
+	}
+	return (A_NOACTION);
+}
+
+/*
+ * Read a decimal integer. Return the integer and set *pterm to the terminating char.
+ */
+	static int
+getcc_int(pterm)
+	char* pterm;
+{
+	int num = 0;
+	int digits = 0;
+	for (;;)
+	{
+		char ch = getcc();
+		if (ch < '0' || ch > '9')
+		{
+			if (pterm != NULL) *pterm = ch;
+			if (digits == 0)
+				return (-1);
+			return (num);
+		}
+		num = (10 * num) + (ch - '0');
+		++digits;
+	}
+}
+
+/*
+ * Read suffix of mouse input and return the action to take.
+ * The prefix ("\e[M") has already been read.
+ */
+	static int
+x11mouse_action(VOID_PARAM)
+{
+	int b = getcc() - X11MOUSE_OFFSET;
+	int x = getcc() - X11MOUSE_OFFSET-1;
+	int y = getcc() - X11MOUSE_OFFSET-1;
+	switch (b) {
+	default:
+		return (A_NOACTION);
+	case X11MOUSE_WHEEL_DOWN:
+		return mouse_wheel_down();
+	case X11MOUSE_WHEEL_UP:
+		return mouse_wheel_up();
+	case X11MOUSE_BUTTON_REL:
+		return mouse_button_rel(x, y);
+	}
+}
+
+/*
+ * Read suffix of mouse input and return the action to take.
+ * The prefix ("\e[<") has already been read.
+ */
+	static int
+x116mouse_action(VOID_PARAM)
+{
+	char ch;
+	int x, y;
+	int b = getcc_int(&ch);
+	if (b < 0 || ch != ';') return (A_NOACTION);
+	x = getcc_int(&ch) - 1;
+	if (x < 0 || ch != ';') return (A_NOACTION);
+	y = getcc_int(&ch) - 1;
+	if (y < 0) return (A_NOACTION);
+	switch (b) {
+	case X11MOUSE_WHEEL_DOWN:
+		return mouse_wheel_down();
+	case X11MOUSE_WHEEL_UP:
+		return mouse_wheel_up();
+	default:
+		if (ch != 'm') return (A_NOACTION);
+		return mouse_button_rel(x, y);
+	}
+}
+
+/*
  * Search a single command table for the command string in cmd.
  */
     static int
@@ -425,85 +540,89 @@ cmd_search(cmd, table, endtable, sp)
     char *endtable;
     char **sp;
 {
-    char *p;
-    char *q;
-    int a;
+	char *p;
+	char *q;
+	int a;
 
-    *sp = NULL;
-    for (p = table, q = cmd;  p < endtable;  p++, q++)
-    {
-        if (*p == *q)
-        {
-            /*
-             * Current characters match.
-             * If we're at the end of the string, we've found it.
-             * Return the action code, which is the character
-             * after the null at the end of the string
-             * in the command table.
-             */
-            if (*p == '\0')
-            {
-                a = *++p & 0377;
-                while (a == A_SKIP)
-                    a = *++p & 0377;
-                if (a == A_END_LIST)
-                {
-                    /*
-                     * We get here only if the original
-                     * cmd string passed in was empty ("").
-                     * I don't think that can happen,
-                     * but just in case ...
-                     */
-                    return (A_UINVALID);
-                }
-                /*
-                 * Check for an "extra" string.
-                 */
-                if (a & A_EXTRA)
-                {
-                    *sp = ++p;
-                    a &= ~A_EXTRA;
-                }
-                return (a);
-            }
-        } else if (*q == '\0')
-        {
-            /*
-             * Hit the end of the user's command,
-             * but not the end of the string in the command table.
-             * The user's command is incomplete.
-             */
-            return (A_PREFIX);
-        } else
-        {
-            /*
-             * Not a match.
-             * Skip ahead to the next command in the
-             * command table, and reset the pointer
-             * to the beginning of the user's command.
-             */
-            if (*p == '\0' && p[1] == A_END_LIST)
-            {
-                /*
-                 * A_END_LIST is a special marker that tells
-                 * us to abort the cmd search.
-                 */
-                return (A_UINVALID);
-            }
-            while (*p++ != '\0')
-                continue;
-            while (*p == A_SKIP)
-                p++;
-            if (*p & A_EXTRA)
-                while (*++p != '\0')
-                    continue;
-            q = cmd-1;
-        }
-    }
-    /*
-     * No match found in the entire command table.
-     */
-    return (A_INVALID);
+	*sp = NULL;
+	for (p = table, q = cmd;  p < endtable;  p++, q++)
+	{
+		if (*p == *q)
+		{
+			/*
+			 * Current characters match.
+			 * If we're at the end of the string, we've found it.
+			 * Return the action code, which is the character
+			 * after the null at the end of the string
+			 * in the command table.
+			 */
+			if (*p == '\0')
+			{
+				a = *++p & 0377;
+				while (a == A_SKIP)
+					a = *++p & 0377;
+				if (a == A_END_LIST)
+				{
+					/*
+					 * We get here only if the original
+					 * cmd string passed in was empty ("").
+					 * I don't think that can happen,
+					 * but just in case ...
+					 */
+					return (A_UINVALID);
+				}
+				/*
+				 * Check for an "extra" string.
+				 */
+				if (a & A_EXTRA)
+				{
+					*sp = ++p;
+					a &= ~A_EXTRA;
+				}
+				if (a == A_X11MOUSE_IN)
+					a = x11mouse_action();
+				else if (a == A_X116MOUSE_IN)
+					a = x116mouse_action();
+				return (a);
+			}
+		} else if (*q == '\0')
+		{
+			/*
+			 * Hit the end of the user's command,
+			 * but not the end of the string in the command table.
+			 * The user's command is incomplete.
+			 */
+			return (A_PREFIX);
+		} else
+		{
+			/*
+			 * Not a match.
+			 * Skip ahead to the next command in the
+			 * command table, and reset the pointer
+			 * to the beginning of the user's command.
+			 */
+			if (*p == '\0' && p[1] == A_END_LIST)
+			{
+				/*
+				 * A_END_LIST is a special marker that tells 
+				 * us to abort the cmd search.
+				 */
+				return (A_UINVALID);
+			}
+			while (*p++ != '\0')
+				continue;
+			while (*p == A_SKIP)
+				p++;
+			if (*p & A_EXTRA)
+				while (*++p != '\0')
+					continue;
+			q = cmd-1;
+		}
+	}
+	/*
+	 * No match found in the entire command table.
+	 */
+	return (A_INVALID);
 }
 
 /*
@@ -577,6 +696,16 @@ lgetenv(var)
     if (a == EV_OK)
         return (s);
     return (NULL);
+}
+
+/*
+ * Is a string null or empty? 
+ */
+	public int
+isnullenv(s)
+	char* s;
+{
+	return (s == NULL || *s == '\0');
 }
 
 #if USERFILE
@@ -776,47 +905,53 @@ editchar(c, flags)
     int c;
     int flags;
 {
-    int action;
-    int nch;
-    char *s;
-    char usercmd[MAX_CMDLEN+1];
+	int action;
+	int nch;
+	char *s;
+	char usercmd[MAX_CMDLEN+1];
+	
+	/*
+	 * An editing character could actually be a sequence of characters;
+	 * for example, an escape sequence sent by pressing the uparrow key.
+	 * To match the editing string, we use the command decoder
+	 * but give it the edit-commands command table
+	 * This table is constructed to match the user's keyboard.
+	 */
+	if (c == erase_char || c == erase2_char)
+		return (EC_BACKSPACE);
+	if (c == kill_char)
+	{
+#if MSDOS_COMPILER==WIN32C
+		if (!win32_kbhit())
+#endif
 
-    /*
-     * An editing character could actually be a sequence of characters;
-     * for example, an escape sequence sent by pressing the uparrow key.
-     * To match the editing string, we use the command decoder
-     * but give it the edit-commands command table
-     * This table is constructed to match the user's keyboard.
-     */
-    if (c == erase_char || c == erase2_char)
-        return (EC_BACKSPACE);
-    if (c == kill_char)
-        return (EC_LINEKILL);
-
-    /*
-     * Collect characters in a buffer.
-     * Start with the one we have, and get more if we need them.
-     */
-    nch = 0;
-    do {
-        if (nch > 0)
-            c = getcc();
-        usercmd[nch] = c;
-        usercmd[nch+1] = '\0';
-        nch++;
-        action = ecmd_decode(usercmd, &s);
-    } while (action == A_PREFIX);
-
-    if (flags & EC_NORIGHTLEFT)
-    {
-        switch (action)
-        {
-        case EC_RIGHT:
-        case EC_LEFT:
-            action = A_INVALID;
-            break;
-        }
-    }
+		return (EC_LINEKILL);
+	}
+		
+	/*
+	 * Collect characters in a buffer.
+	 * Start with the one we have, and get more if we need them.
+	 */
+	nch = 0;
+	do {
+	  	if (nch > 0)
+			c = getcc();
+		usercmd[nch] = c;
+		usercmd[nch+1] = '\0';
+		nch++;
+		action = ecmd_decode(usercmd, &s);
+	} while (action == A_PREFIX);
+	
+	if (flags & EC_NORIGHTLEFT)
+	{
+		switch (action)
+		{
+		case EC_RIGHT:
+		case EC_LEFT:
+			action = A_INVALID;
+			break;
+		}
+	}
 #if CMD_HISTORY
     if (flags & EC_NOHISTORY)
     {

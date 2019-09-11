@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -14,6 +14,7 @@
 
 #include "less.h"
 #if MSDOS_COMPILER==WIN32C
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -53,12 +54,13 @@ extern int  jump_sline;
 static char consoleTitle[256];
 #endif
 
-public int  line_count;
-extern int  less_is_more;
-extern int  missing_cap;
-extern int  know_dumb;
-extern int  pr_type;
+public int	one_screen;
+extern int	less_is_more;
+extern int	missing_cap;
+extern int	know_dumb;
+extern int	pr_type;
 extern int	quit_if_one_screen;
+extern int	no_init;
 
 
 /*
@@ -80,10 +82,10 @@ main(argc, argv)
     progname = *argv++;
     argc--;
 
-    secure = 0;
-    s = lgetenv("LESSSECURE");
-    if (s != NULL && *s != '\0')
-        secure = 1;
+	secure = 0;
+	s = lgetenv("LESSSECURE");
+	if (!isnullenv(s))
+		secure = 1;
 
 #ifdef WIN32
     if (getenv("HOME") == NULL)
@@ -107,47 +109,44 @@ main(argc, argv)
     GetConsoleTitle(consoleTitle, sizeof(consoleTitle)/sizeof(char));
 #endif /* WIN32 */
 
-    /*
-     * Process command line arguments and LESS environment arguments.
-     * Command line arguments override environment arguments.
-     */
-    is_tty = isatty(1);
-    init_cmds();
-    get_term();
-    expand_cmd_tables();
-    init_charset();
-    init_line();
-    init_cmdhist();
-    init_option();
-    init_search();
+	/*
+	 * Process command line arguments and LESS environment arguments.
+	 * Command line arguments override environment arguments.
+	 */
+	is_tty = isatty(1);
+	init_mark();
+	init_cmds();
+	get_term();
+	expand_cmd_tables();
+	init_charset();
+	init_line();
+	init_cmdhist();
+	init_option();
+	init_search();
 
-    /*
-     * If the name of the executable program is "more",
-     * act like LESS_IS_MORE is set.
-     */
-    for (s = progname + strlen(progname);  s > progname;  s--)
-    {
-        if (s[-1] == PATHNAME_SEP[0])
-            break;
-    }
-    if (strcmp(s, "more") == 0)
-        less_is_more = 1;
+	/*
+	 * If the name of the executable program is "more",
+	 * act like LESS_IS_MORE is set.
+	 */
+	s = last_component(progname);
+	if (strcmp(s, "more") == 0)
+		less_is_more = 1;
 
-    init_prompt();
+	init_prompt();
 
-    s = lgetenv(less_is_more ? "MORE" : "LESS");
-    if (s != NULL)
-        scan_option(save(s));
+	s = lgetenv(less_is_more ? "MORE" : "LESS");
+	if (s != NULL)
+		scan_option(save(s));
 
-#define isoptstring(s)  (((s)[0] == '-' || (s)[0] == '+') && (s)[1] != '\0')
-    while (argc > 0 && (isoptstring(*argv) || isoptpending()))
-    {
-        s = *argv++;
-        argc--;
-        if (strcmp(s, "--") == 0)
-            break;
-        scan_option(s);
-    }
+#define	isoptstring(s)	(((s)[0] == '-' || (s)[0] == '+') && (s)[1] != '\0')
+	while (argc > 0 && (isoptstring(*argv) || isoptpending()))
+	{
+		s = *argv++;
+		argc--;
+		if (strcmp(s, "--") == 0)
+			break;
+		scan_option(s);
+	}
 #undef isoptstring
 
     if (isoptpending())
@@ -161,16 +160,16 @@ main(argc, argv)
     }
 
 #if EDITOR
-    editor = lgetenv("VISUAL");
-    if (editor == NULL || *editor == '\0')
-    {
-        editor = lgetenv("EDITOR");
-        if (editor == NULL || *editor == '\0')
-            editor = EDIT_PGM;
-    }
-    editproto = lgetenv("LESSEDIT");
-    if (editproto == NULL || *editproto == '\0')
-        editproto = "%E ?lm+%lm. %f";
+	editor = lgetenv("VISUAL");
+	if (editor == NULL || *editor == '\0')
+	{
+		editor = lgetenv("EDITOR");
+		if (isnullenv(editor))
+			editor = EDIT_PGM;
+	}
+	editproto = lgetenv("LESSEDIT");
+	if (isnullenv(editproto))
+		editproto = "%E ?lm+%lm. %g";
 #endif
 
     /*
@@ -209,40 +208,35 @@ main(argc, argv)
         (void) get_ifile(*argv++, ifile);
         ifile = prev_ifile(NULL_IFILE);
 #endif
-    }
-    /*
-     * Set up terminal, etc.
-     */
-    if (!is_tty)
-    {
-        /*
-         * Output is not a tty.
-         * Just copy the input file(s) to output.
-         */
-        SET_BINARY(1);
-        if (nifile() == 0)
-        {
-            if (edit_stdin() == 0)
-                cat_file();
-        } else if (edit_first() == 0)
-        {
-            do {
-                cat_file();
-            } while (edit_next(1) == 0);
-        }
-        quit(QUIT_OK);
-    }
+	}
+	/*
+	 * Set up terminal, etc.
+	 */
+	if (!is_tty)
+	{
+		/*
+		 * Output is not a tty.
+		 * Just copy the input file(s) to output.
+		 */
+		SET_BINARY(1);
+		if (edit_first() == 0)
+		{
+			do {
+				cat_file();
+			} while (edit_next(1) == 0);
+		}
+		quit(QUIT_OK);
+	}
 
-    if (missing_cap && !know_dumb)
-        error("WARNING: terminal is not fully functional", NULL_PARG);
-    init_mark();
-    open_getchr();
-    raw_mode(1);
-    init_signals(1);
+	if (missing_cap && !know_dumb)
+		error("WARNING: terminal is not fully functional", NULL_PARG);
+	open_getchr();
+	raw_mode(1);
+	init_signals(1);
 
-    /*
-     * Select the first file to examine.
-     */
+	/*
+	 * Select the first file to examine.
+	 */
 #if TAGS
     if (tagoption != NULL || strcmp(tags, "-") == 0)
     {
@@ -270,30 +264,28 @@ main(argc, argv)
         initial_scrpos.ln = jump_sline;
     } else
 #endif
-    if (nifile() == 0)
-    {
-        if (edit_stdin())  /* Edit standard input */
-            quit(QUIT_ERROR);
-        if (quit_if_one_screen)
-            line_count = get_line_count();
-    } else
-    {
-        if (edit_first())  /* Edit first valid file in cmd line */
-            quit(QUIT_ERROR);
-        if (quit_if_one_screen)
-        {
-            if (nifile() == 1)
-                line_count = get_line_count();
-            else /* If more than one file, -F can not be used */
-                quit_if_one_screen = FALSE;
-        }
-    }
+	{
+		if (edit_first())
+			quit(QUIT_ERROR);
+		/*
+		 * See if file fits on one screen to decide whether 
+		 * to send terminal init. But don't need this 
+		 * if -X (no_init) overrides this (see init()).
+		 */
+		if (quit_if_one_screen)
+		{
+			if (nifile() > 1) /* If more than one file, -F cannot be used */
+				quit_if_one_screen = FALSE;
+			else if (!no_init)
+				one_screen = get_one_screen();
+		}
+	}
 
-    init();
-    commands();
-    quit(QUIT_OK);
-    /*NOTREACHED*/
-    return (0);
+	init();
+	commands();
+	quit(QUIT_OK);
+	/*NOTREACHED*/
+	return (0);
 }
 
 /*

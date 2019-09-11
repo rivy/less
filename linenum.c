@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -72,8 +72,8 @@ extern int screen_trashed;
 /*
  * Initialize the line number structures.
  */
-    public void
-clr_linenum()
+	public void
+clr_linenum(VOID_PARAM)
 {
     struct linenum_info *p;
 
@@ -208,8 +208,8 @@ add_lnum(linenum, pos)
  * If we get stuck in a long loop trying to figure out the
  * line number, print a message to tell the user what we're doing.
  */
-    static void
-longloopmessage()
+	static void
+longloopmessage(VOID_PARAM)
 {
     ierror("Calculating line numbers", NULL_PARG);
 }
@@ -219,8 +219,8 @@ static int loopcount;
 static time_type startime;
 #endif
 
-    static void
-longish()
+	static void
+longish(VOID_PARAM)
 {
 #if HAVE_TIME
     if (loopcount >= 0 && ++loopcount > 100)
@@ -245,8 +245,8 @@ longish()
  * Turn off line numbers because the user has interrupted
  * a lengthy line number calculation.
  */
-    static void
-abort_long()
+	static void
+abort_long(VOID_PARAM)
 {
     if (linenums == OPT_ONPLUS)
         /*

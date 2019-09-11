@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -47,6 +47,7 @@ extern struct scrpos initial_scrpos;
 extern IFILE curr_ifile;
 extern void *ml_search;
 extern void *ml_examine;
+extern int wheel_lines;
 #if SHELL_ESCAPE || PIPEC
 extern void *ml_shell;
 #endif
@@ -58,6 +59,9 @@ extern int screen_trashed;  /* The screen has been overwritten */
 extern int shift_count;
 extern int oldbot;
 extern int forw_prompt;
+#if MSDOS_COMPILER==WIN32C
+extern int utf_mode;
+#endif
 
 #if SHELL_ESCAPE
 static char *shellcmd = NULL;   /* For holding last shell command for "!!" */
@@ -91,12 +95,37 @@ static void multi_search();
  * This looks nicer if the command takes a long time before
  * updating the screen.
  */
-    static void
-cmd_exec()
+	static void
+cmd_exec(VOID_PARAM)
 {
-    clear_attn();
-    clear_bot();
-    flush();
+	clear_attn();
+	clear_bot();
+	flush();
+}
+
+/*
+ * Indicate we are reading a multi-character command.
+ */
+	static void
+set_mca(action)
+	int action;
+{
+	mca = action;
+	deinit_mouse(); /* we don't want mouse events while entering a cmd */
+	clear_bot();
+	clear_cmd();
+}
+
+/*
+ * Indicate we are not reading a multi-character command.
+ */
+	static void
+clear_mca(VOID_PARAM)
+{
+	if (mca == 0)
+		return;
+	mca = 0;
+	init_mouse();
 }
 
 /*
@@ -109,15 +138,13 @@ start_mca(action, prompt, mlist, cmdflags)
     void *mlist;
     int cmdflags;
 {
-    mca = action;
-    clear_bot();
-    clear_cmd();
-    cmd_putstr(prompt);
-    set_mlist(mlist, cmdflags);
+	set_mca(action);
+	cmd_putstr(prompt);
+	set_mlist(mlist, cmdflags);
 }
 
-    public int
-in_mca()
+	public int
+in_mca(VOID_PARAM)
 {
     return (mca != 0 && mca != A_PREFIX);
 }
@@ -125,32 +152,29 @@ in_mca()
 /*
  * Set up the display to start a new search command.
  */
-    static void
-mca_search()
+	static void
+mca_search(VOID_PARAM)
 {
 #if HILITE_SEARCH
-    if (search_type & SRCH_FILTER)
-        mca = A_FILTER;
-    else
+	if (search_type & SRCH_FILTER)
+		set_mca(A_FILTER);
+	else 
 #endif
-    if (search_type & SRCH_FORW)
-        mca = A_F_SEARCH;
-    else
-        mca = A_B_SEARCH;
+	if (search_type & SRCH_FORW)
+		set_mca(A_F_SEARCH);
+	else
+		set_mca(A_B_SEARCH);
 
-    clear_bot();
-    clear_cmd();
-
-    if (search_type & SRCH_NO_MATCH)
-        cmd_putstr("Non-match ");
-    if (search_type & SRCH_FIRST_FILE)
-        cmd_putstr("First-file ");
-    if (search_type & SRCH_PAST_EOF)
-        cmd_putstr("EOF-ignore ");
-    if (search_type & SRCH_NO_MOVE)
-        cmd_putstr("Keep-pos ");
-    if (search_type & SRCH_NO_REGEX)
-        cmd_putstr("Regex-off ");
+	if (search_type & SRCH_NO_MATCH)
+		cmd_putstr("Non-match ");
+	if (search_type & SRCH_FIRST_FILE)
+		cmd_putstr("First-file ");
+	if (search_type & SRCH_PAST_EOF)
+		cmd_putstr("EOF-ignore ");
+	if (search_type & SRCH_NO_MOVE)
+		cmd_putstr("Keep-pos ");
+	if (search_type & SRCH_NO_REGEX)
+		cmd_putstr("Regex-off ");
 
 #if HILITE_SEARCH
     if (search_type & SRCH_FILTER)
@@ -168,43 +192,41 @@ mca_search()
 /*
  * Set up the display to start a new toggle-option command.
  */
-    static void
-mca_opt_toggle()
+	static void
+mca_opt_toggle(VOID_PARAM)
 {
-    int no_prompt;
-    int flag;
-    char *dash;
+	int no_prompt;
+	int flag;
+	char *dash;
+	
+	no_prompt = (optflag & OPT_NO_PROMPT);
+	flag = (optflag & ~OPT_NO_PROMPT);
+	dash = (flag == OPT_NO_TOGGLE) ? "_" : "-";
 
-    no_prompt = (optflag & OPT_NO_PROMPT);
-    flag = (optflag & ~OPT_NO_PROMPT);
-    dash = (flag == OPT_NO_TOGGLE) ? "_" : "-";
-
-    mca = A_OPT_TOGGLE;
-    clear_bot();
-    clear_cmd();
-    cmd_putstr(dash);
-    if (optgetname)
-        cmd_putstr(dash);
-    if (no_prompt)
-        cmd_putstr("(P)");
-    switch (flag)
-    {
-    case OPT_UNSET:
-        cmd_putstr("+");
-        break;
-    case OPT_SET:
-        cmd_putstr("!");
-        break;
-    }
-    forw_prompt = 0;
-    set_mlist(NULL, 0);
+	set_mca(A_OPT_TOGGLE);
+	cmd_putstr(dash);
+	if (optgetname)
+		cmd_putstr(dash);
+	if (no_prompt)
+		cmd_putstr("(P)");
+	switch (flag)
+	{
+	case OPT_UNSET:
+		cmd_putstr("+");
+		break;
+	case OPT_SET:
+		cmd_putstr("!");
+		break;
+	}
+	forw_prompt = 0;
+	set_mlist(NULL, 0);
 }
 
 /*
  * Execute a multicharacter command.
  */
-    static void
-exec_mca()
+	static void
+exec_mca(VOID_PARAM)
 {
     char *cbuf;
 
@@ -369,47 +391,52 @@ mca_opt_first_char(c)
 mca_opt_nonfirst_char(c)
     int c;
 {
-    char *p;
-    char *oname;
+	char *p;
+	char *oname;
+	int err;
 
-    if (curropt != NULL)
-    {
-        /*
-         * Already have a match for the name.
-         * Don't accept anything but erase/kill.
-         */
-        if (is_erase_char(c))
-            return (MCA_DONE);
-        return (MCA_MORE);
-    }
-    /*
-     * Add char to cmd buffer and try to match
-     * the option name.
-     */
-    if (cmd_char(c) == CC_QUIT)
-        return (MCA_DONE);
-    p = get_cmdbuf();
-    opt_lower = ASCII_IS_LOWER(p[0]);
-    curropt = findopt_name(&p, &oname, NULL);
-    if (curropt != NULL)
-    {
-        /*
-         * Got a match.
-         * Remember the option and
-         * display the full option name.
-         */
-        cmd_reset();
-        mca_opt_toggle();
-        for (p = oname;  *p != '\0';  p++)
-        {
-            c = *p;
-            if (!opt_lower && ASCII_IS_LOWER(c))
-                c = ASCII_TO_UPPER(c);
-            if (cmd_char(c) != CC_OK)
-                return (MCA_DONE);
-        }
-    }
-    return (MCA_MORE);
+	if (curropt != NULL)
+	{
+		/*
+		 * Already have a match for the name.
+		 * Don't accept anything but erase/kill.
+		 */
+		if (is_erase_char(c))
+			return (MCA_DONE);
+		return (MCA_MORE);
+	}
+	/*
+	 * Add char to cmd buffer and try to match
+	 * the option name.
+	 */
+	if (cmd_char(c) == CC_QUIT)
+		return (MCA_DONE);
+	p = get_cmdbuf();
+	opt_lower = ASCII_IS_LOWER(p[0]);
+	err = 0;
+	curropt = findopt_name(&p, &oname, &err);
+	if (curropt != NULL)
+	{
+		/*
+		 * Got a match.
+		 * Remember the option and
+		 * display the full option name.
+		 */
+		cmd_reset();
+		mca_opt_toggle();
+		for (p = oname;  *p != '\0';  p++)
+		{
+			c = *p;
+			if (!opt_lower && ASCII_IS_LOWER(c))
+				c = ASCII_TO_UPPER(c);
+			if (cmd_char(c) != CC_OK)
+				return (MCA_DONE);
+		}
+	} else if (err != OPT_AMBIG)
+	{
+		bell();
+	}
+	return (MCA_MORE);
 }
 
 /*
@@ -419,63 +446,64 @@ mca_opt_nonfirst_char(c)
 mca_opt_char(c)
     int c;
 {
-    PARG parg;
+	PARG parg;
 
-    /*
-     * This may be a short option (single char),
-     * or one char of a long option name,
-     * or one char of the option parameter.
-     */
-    if (curropt == NULL && len_cmdbuf() == 0)
-    {
-        int ret = mca_opt_first_char(c);
-        if (ret != NO_MCA)
-            return (ret);
-    }
-    if (optgetname)
-    {
-        /* We're getting a long option name.  */
-        if (!is_newline_char(c))
-            return (mca_opt_nonfirst_char(c));
-        if (curropt == NULL)
-        {
-            parg.p_string = get_cmdbuf();
-            error("There is no --%s option", &parg);
-            return (MCA_DONE);
-        }
-        optgetname = FALSE;
-        cmd_reset();
-    } else
-    {
-        if (is_erase_char(c))
-            return (NO_MCA);
-        if (curropt != NULL)
-            /* We're getting the option parameter. */
-            return (NO_MCA);
-        curropt = findopt(c);
-        if (curropt == NULL)
-        {
-            parg.p_string = propt(c);
-            error("There is no %s option", &parg);
-            return (MCA_DONE);
-        }
-    }
-    /*
-     * If the option which was entered does not take a
-     * parameter, toggle the option immediately,
-     * so user doesn't have to hit RETURN.
-     */
-    if ((optflag & ~OPT_NO_PROMPT) != OPT_TOGGLE ||
-        !opt_has_param(curropt))
-    {
-        toggle_option(curropt, ASCII_IS_LOWER(c), "", optflag);
-        return (MCA_DONE);
-    }
-    /*
-     * Display a prompt appropriate for the option parameter.
-     */
-    start_mca(A_OPT_TOGGLE, opt_prompt(curropt), (void*)NULL, 0);
-    return (MCA_MORE);
+	/*
+	 * This may be a short option (single char),
+	 * or one char of a long option name,
+	 * or one char of the option parameter.
+	 */
+	if (curropt == NULL && len_cmdbuf() == 0)
+	{
+		int ret = mca_opt_first_char(c);
+		if (ret != NO_MCA)
+			return (ret);
+	}
+	if (optgetname)
+	{
+		/* We're getting a long option name.  */
+		if (!is_newline_char(c))
+			return (mca_opt_nonfirst_char(c));
+		if (curropt == NULL)
+		{
+			parg.p_string = get_cmdbuf();
+			error("There is no --%s option", &parg);
+			return (MCA_DONE);
+		}
+		optgetname = FALSE;
+		cmd_reset();
+	} else
+	{
+		if (is_erase_char(c))
+			return (NO_MCA);
+		if (curropt != NULL)
+			/* We're getting the option parameter. */
+			return (NO_MCA);
+		curropt = findopt(c);
+		if (curropt == NULL)
+		{
+			parg.p_string = propt(c);
+			error("There is no %s option", &parg);
+			return (MCA_DONE);
+		}
+		opt_lower = ASCII_IS_LOWER(c);
+	}
+	/*
+	 * If the option which was entered does not take a 
+	 * parameter, toggle the option immediately,
+	 * so user doesn't have to hit RETURN.
+	 */
+	if ((optflag & ~OPT_NO_PROMPT) != OPT_TOGGLE ||
+	    !opt_has_param(curropt))
+	{
+		toggle_option(curropt, opt_lower, "", optflag);
+		return (MCA_DONE);
+	}
+	/*
+	 * Display a prompt appropriate for the option parameter.
+	 */
+	start_mca(A_OPT_TOGGLE, opt_prompt(curropt), (void*)NULL, 0);
+	return (MCA_MORE);
 }
 
 /*
@@ -538,107 +566,107 @@ mca_search_char(c)
 mca_char(c)
     int c;
 {
-    int ret;
+	int ret;
 
-    switch (mca)
-    {
-    case 0:
-        /*
-         * We're not in a multicharacter command.
-         */
-        return (NO_MCA);
+	switch (mca)
+	{
+	case 0:
+		/*
+		 * We're not in a multicharacter command.
+		 */
+		return (NO_MCA);
 
-    case A_PREFIX:
-        /*
-         * In the prefix of a command.
-         * This not considered a multichar command
-         * (even tho it uses cmdbuf, etc.).
-         * It is handled in the commands() switch.
-         */
-        return (NO_MCA);
+	case A_PREFIX:
+		/*
+		 * In the prefix of a command.
+		 * This not considered a multichar command
+		 * (even tho it uses cmdbuf, etc.).
+		 * It is handled in the commands() switch.
+		 */
+		return (NO_MCA);
 
-    case A_DIGIT:
-        /*
-         * Entering digits of a number.
-         * Terminated by a non-digit.
-         */
-        if (!((c >= '0' && c <= '9') || c == '.') &&
-          editchar(c, EC_PEEK|EC_NOHISTORY|EC_NOCOMPLETE|EC_NORIGHTLEFT) == A_INVALID)
-        {
-            /*
-             * Not part of the number.
-             * End the number and treat this char
-             * as a normal command character.
-             */
-            number = cmd_int(&fraction);
-            mca = 0;
-            cmd_accept();
-            return (NO_MCA);
-        }
-        break;
+	case A_DIGIT:
+		/*
+		 * Entering digits of a number.
+		 * Terminated by a non-digit.
+		 */
+		if (!((c >= '0' && c <= '9') || c == '.') && 
+		  editchar(c, EC_PEEK|EC_NOHISTORY|EC_NOCOMPLETE|EC_NORIGHTLEFT) == A_INVALID)
+		{
+			/*
+			 * Not part of the number.
+			 * End the number and treat this char 
+			 * as a normal command character.
+			 */
+			number = cmd_int(&fraction);
+			clear_mca();
+			cmd_accept();
+			return (NO_MCA);
+		}
+		break;
 
-    case A_OPT_TOGGLE:
-        ret = mca_opt_char(c);
-        if (ret != NO_MCA)
-            return (ret);
-        break;
+	case A_OPT_TOGGLE:
+		ret = mca_opt_char(c);
+		if (ret != NO_MCA)
+			return (ret);
+		break;
 
-    case A_F_SEARCH:
-    case A_B_SEARCH:
-    case A_FILTER:
-        ret = mca_search_char(c);
-        if (ret != NO_MCA)
-            return (ret);
-        break;
+	case A_F_SEARCH:
+	case A_B_SEARCH:
+	case A_FILTER:
+		ret = mca_search_char(c);
+		if (ret != NO_MCA)
+			return (ret);
+		break;
 
-    default:
-        /* Other multicharacter command. */
-        break;
-    }
+	default:
+		/* Other multicharacter command. */
+		break;
+	}
 
-    /*
-     * The multichar command is terminated by a newline.
-     */
-    if (is_newline_char(c))
-    {
-        /*
-         * Execute the command.
-         */
-        exec_mca();
-        return (MCA_DONE);
-    }
+	/*
+	 * The multichar command is terminated by a newline.
+	 */
+	if (is_newline_char(c))
+	{
+		/*
+		 * Execute the command.
+		 */
+		exec_mca();
+		return (MCA_DONE);
+	}
 
-    /*
-     * Append the char to the command buffer.
-     */
-    if (cmd_char(c) == CC_QUIT)
-        /*
-         * Abort the multi-char command.
-         */
-        return (MCA_DONE);
+	/*
+	 * Append the char to the command buffer.
+	 */
+	if (cmd_char(c) == CC_QUIT)
+		/*
+		 * Abort the multi-char command.
+		 */
+		return (MCA_DONE);
 
-    if ((mca == A_F_BRACKET || mca == A_B_BRACKET) && len_cmdbuf() >= 2)
-    {
-        /*
-         * Special case for the bracket-matching commands.
-         * Execute the command after getting exactly two
-         * characters from the user.
-         */
-        exec_mca();
-        return (MCA_DONE);
-    }
+	if ((mca == A_F_BRACKET || mca == A_B_BRACKET) && len_cmdbuf() >= 2)
+	{
+		/*
+		 * Special case for the bracket-matching commands.
+		 * Execute the command after getting exactly two
+		 * characters from the user.
+		 */
+		exec_mca();
+		return (MCA_DONE);
+	}
 
-    /*
-     * Need another character.
-     */
-    return (MCA_MORE);
+	/*
+	 * Need another character.
+	 */
+	return (MCA_MORE);
 }
 
 /*
  * Discard any buffered file data.
  */
-    static void
-clear_buffers()
+	static void
+clear_buffers(VOID_PARAM)
 {
     if (!(ch_getflags() & CH_CANSEEK))
         return;
@@ -652,8 +680,8 @@ clear_buffers()
 /*
  * Make sure the screen is displayed.
  */
-    static void
-make_display()
+	static void
+make_display(VOID_PARAM)
 {
     /*
      * If nothing is displayed yet, display starting from initial_scrpos.
@@ -692,8 +720,8 @@ make_display()
 /*
  * Display the appropriate prompt.
  */
-    static void
-prompt()
+	static void
+prompt(VOID_PARAM)
 {
     constant char *p;
 
@@ -729,48 +757,62 @@ prompt()
         quit(QUIT_OK);
 
 #if MSDOS_COMPILER==WIN32C
-    /*
-     * In Win32, display the file name in the window title.
-     */
-    if (!(ch_getflags() & CH_HELPFILE))
-        SetConsoleTitle(pr_expand("Less?f - %f.", 0));
+	/* 
+	 * In Win32, display the file name in the window title.
+	 */
+	if (!(ch_getflags() & CH_HELPFILE))
+	{
+		WCHAR w[MAX_PATH+16];
+		p = pr_expand("Less?f - %f.", 0);
+		MultiByteToWideChar(CP_ACP, 0, p, -1, w, sizeof(w)/sizeof(*w));
+		SetConsoleTitleW(w);
+	}
 #endif
-    /*
-     * Select the proper prompt and display it.
-     */
-    /*
-     * If the previous action was a forward movement,
-     * don't clear the bottom line of the display;
-     * just print the prompt since the forward movement guarantees
-     * that we're in the right position to display the prompt.
-     * Clearing the line could cause a problem: for example, if the last
-     * line displayed ended at the right screen edge without a newline,
-     * then clearing would clear the last displayed line rather than
-     * the prompt line.
-     */
-    if (!forw_prompt)
-        clear_bot();
-    clear_cmd();
-    forw_prompt = 0;
-    p = pr_string();
-    if (is_filtering())
-        putstr("& ");
-    if (p == NULL || *p == '\0')
-        putchr(':');
-    else
-    {
-        at_enter(AT_STANDOUT);
-        putstr(p);
-        at_exit();
-    }
-    clear_eol();
+
+	/*
+	 * Select the proper prompt and display it.
+	 */
+	/*
+	 * If the previous action was a forward movement, 
+	 * don't clear the bottom line of the display;
+	 * just print the prompt since the forward movement guarantees 
+	 * that we're in the right position to display the prompt.
+	 * Clearing the line could cause a problem: for example, if the last
+	 * line displayed ended at the right screen edge without a newline,
+	 * then clearing would clear the last displayed line rather than
+	 * the prompt line.
+	 */
+	if (!forw_prompt)
+		clear_bot();
+	clear_cmd();
+	forw_prompt = 0;
+	p = pr_string();
+	if (is_filtering())
+		putstr("& ");
+	if (p == NULL || *p == '\0')
+		putchr(':');
+	else
+	{
+#if MSDOS_COMPILER==WIN32C
+		WCHAR w[MAX_PATH*2];
+		char  a[MAX_PATH*2];
+		MultiByteToWideChar(CP_ACP, 0, p, -1, w, sizeof(w)/sizeof(*w));
+		WideCharToMultiByte(utf_mode ? CP_UTF8 : GetConsoleOutputCP(),
+		                    0, w, -1, a, sizeof(a), NULL, NULL);
+		p = a;
+#endif
+		at_enter(AT_STANDOUT);
+		putstr(p);
+		at_exit();
+	}
+	clear_eol();
 }
 
 /*
  * Display the less version message.
  */
-    public void
-dispversion()
+	public void
+dispversion(VOID_PARAM)
 {
     PARG parg;
 
@@ -781,8 +823,8 @@ dispversion()
 /*
  * Return a character to complete a partial command, if possible.
  */
-    static LWCHAR
-getcc_end_command()
+	static LWCHAR
+getcc_end_command(VOID_PARAM)
 {
     switch (mca)
     {
@@ -879,11 +921,11 @@ getcc_repl(orig, repl, gr_getc, gr_ungetc)
 /*
  * Get command character.
  */
-    public int
-getcc()
+	public int
+getcc(VOID_PARAM)
 {
-    /* Replace kent (keypad Enter) with a newline. */
-    return getcc_repl(kent, "\n", getccu, ungetcc);
+	/* Replace kent (keypad Enter) with a newline. */
+	return getcc_repl(kent, "\n", getccu, ungetcc);
 }
 
 /*
@@ -918,8 +960,8 @@ ungetsc(s)
 /*
  * Peek the next command character, without consuming it.
  */
-    public LWCHAR
-peekcc()
+	public LWCHAR
+peekcc(VOID_PARAM)
 {
     LWCHAR c = getcc();
     ungetcc(c);
@@ -1069,397 +1111,411 @@ forw_loop(until_hilite)
  * Main command processor.
  * Accept and execute commands until a quit command.
  */
-    public void
-commands()
+	public void
+commands(VOID_PARAM)
 {
-    int c;
-    int action;
-    char *cbuf;
-    int newaction;
-    int save_search_type;
-    char *extra;
-    char tbuf[2];
-    PARG parg;
-    IFILE old_ifile;
-    IFILE new_ifile;
-    char *tagfile;
+	int c;
+	int action;
+	char *cbuf;
+	int newaction;
+	int save_search_type;
+	char *extra;
+	char tbuf[2];
+	PARG parg;
+	IFILE old_ifile;
+	IFILE new_ifile;
+	char *tagfile;
 
-    c = 0;
+	search_type = SRCH_FORW;
+	wscroll = (sc_height + 1) / 2;
+	newaction = A_NOACTION;
 
-    search_type = SRCH_FORW;
-    wscroll = (sc_height + 1) / 2;
-    newaction = A_NOACTION;
+	for (;;)
+	{
+		clear_mca();
+		cmd_accept();
+		number = 0;
+		curropt = NULL;
 
-    for (;;)
-    {
-        mca = 0;
-        cmd_accept();
-        number = 0;
-        curropt = NULL;
+		/*
+		 * See if any signals need processing.
+		 */
+		if (sigs)
+		{
+			psignals();
+			if (quitting)
+				quit(QUIT_SAVED_STATUS);
+		}
 
-        /*
-         * See if any signals need processing.
-         */
-        if (sigs)
-        {
-            psignals();
-            if (quitting)
-                quit(QUIT_SAVED_STATUS);
-        }
+		/*
+		 * See if window size changed, for systems that don't
+		 * generate SIGWINCH.
+		 */
+		check_winch();
 
-        /*
-         * See if window size changed, for systems that don't
-         * generate SIGWINCH.
-         */
-        check_winch();
+		/*
+		 * Display prompt and accept a character.
+		 */
+		cmd_reset();
+		prompt();
+		if (sigs)
+			continue;
+		if (newaction == A_NOACTION)
+			c = getcc();
 
-        /*
-         * Display prompt and accept a character.
-         */
-        cmd_reset();
-        prompt();
-        if (sigs)
-            continue;
-        if (newaction == A_NOACTION)
-            c = getcc();
+	again:
+		if (sigs)
+			continue;
 
-    again:
-        if (sigs)
-            continue;
+		if (newaction != A_NOACTION)
+		{
+			action = newaction;
+			newaction = A_NOACTION;
+		} else
+		{
+			/*
+			 * If we are in a multicharacter command, call mca_char.
+			 * Otherwise we call fcmd_decode to determine the
+			 * action to be performed.
+			 */
+			if (mca)
+				switch (mca_char(c))
+				{
+				case MCA_MORE:
+					/*
+					 * Need another character.
+					 */
+					c = getcc();
+					goto again;
+				case MCA_DONE:
+					/*
+					 * Command has been handled by mca_char.
+					 * Start clean with a prompt.
+					 */
+					continue;
+				case NO_MCA:
+					/*
+					 * Not a multi-char command
+					 * (at least, not anymore).
+					 */
+					break;
+				}
 
-        if (newaction != A_NOACTION)
-        {
-            action = newaction;
-            newaction = A_NOACTION;
-        } else
-        {
-            /*
-             * If we are in a multicharacter command, call mca_char.
-             * Otherwise we call fcmd_decode to determine the
-             * action to be performed.
-             */
-            if (mca)
-                switch (mca_char(c))
-                {
-                case MCA_MORE:
-                    /*
-                     * Need another character.
-                     */
-                    c = getcc();
-                    goto again;
-                case MCA_DONE:
-                    /*
-                     * Command has been handled by mca_char.
-                     * Start clean with a prompt.
-                     */
-                    continue;
-                case NO_MCA:
-                    /*
-                     * Not a multi-char command
-                     * (at least, not anymore).
-                     */
-                    break;
-                }
+			/*
+			 * Decode the command character and decide what to do.
+			 */
+			if (mca)
+			{
+				/*
+				 * We're in a multichar command.
+				 * Add the character to the command buffer
+				 * and display it on the screen.
+				 * If the user backspaces past the start 
+				 * of the line, abort the command.
+				 */
+				if (cmd_char(c) == CC_QUIT || len_cmdbuf() == 0)
+					continue;
+				cbuf = get_cmdbuf();
+			} else
+			{
+				/*
+				 * Don't use cmd_char if we're starting fresh
+				 * at the beginning of a command, because we
+				 * don't want to echo the command until we know
+				 * it is a multichar command.  We also don't
+				 * want erase_char/kill_char to be treated
+				 * as line editing characters.
+				 */
+				tbuf[0] = c;
+				tbuf[1] = '\0';
+				cbuf = tbuf;
+			}
+			extra = NULL;
+			action = fcmd_decode(cbuf, &extra);
+			/*
+			 * If an "extra" string was returned,
+			 * process it as a string of command characters.
+			 */
+			if (extra != NULL)
+				ungetsc(extra);
+		}
+		/*
+		 * Clear the cmdbuf string.
+		 * (But not if we're in the prefix of a command,
+		 * because the partial command string is kept there.)
+		 */
+		if (action != A_PREFIX)
+			cmd_reset();
 
-            /*
-             * Decode the command character and decide what to do.
-             */
-            if (mca)
-            {
-                /*
-                 * We're in a multichar command.
-                 * Add the character to the command buffer
-                 * and display it on the screen.
-                 * If the user backspaces past the start
-                 * of the line, abort the command.
-                 */
-                if (cmd_char(c) == CC_QUIT || len_cmdbuf() == 0)
-                    continue;
-                cbuf = get_cmdbuf();
-            } else
-            {
-                /*
-                 * Don't use cmd_char if we're starting fresh
-                 * at the beginning of a command, because we
-                 * don't want to echo the command until we know
-                 * it is a multichar command.  We also don't
-                 * want erase_char/kill_char to be treated
-                 * as line editing characters.
-                 */
-                tbuf[0] = c;
-                tbuf[1] = '\0';
-                cbuf = tbuf;
-            }
-            extra = NULL;
-            action = fcmd_decode(cbuf, &extra);
-            /*
-             * If an "extra" string was returned,
-             * process it as a string of command characters.
-             */
-            if (extra != NULL)
-                ungetsc(extra);
-        }
-        /*
-         * Clear the cmdbuf string.
-         * (But not if we're in the prefix of a command,
-         * because the partial command string is kept there.)
-         */
-        if (action != A_PREFIX)
-            cmd_reset();
+		switch (action)
+		{
+		case A_DIGIT:
+			/*
+			 * First digit of a number.
+			 */
+			start_mca(A_DIGIT, ":", (void*)NULL, CF_QUIT_ON_ERASE);
+			goto again;
 
-        switch (action)
-        {
-        case A_DIGIT:
-            /*
-             * First digit of a number.
-             */
-            start_mca(A_DIGIT, ":", (void*)NULL, CF_QUIT_ON_ERASE);
-            goto again;
+		case A_F_WINDOW:
+			/*
+			 * Forward one window (and set the window size).
+			 */
+			if (number > 0)
+				swindow = (int) number;
+			/* FALLTHRU */
+		case A_F_SCREEN:
+			/*
+			 * Forward one screen.
+			 */
+			if (number <= 0)
+				number = get_swindow();
+			cmd_exec();
+			if (show_attn)
+				set_attnpos(bottompos);
+			forward((int) number, 0, 1);
+			break;
 
-        case A_F_WINDOW:
-            /*
-             * Forward one window (and set the window size).
-             */
-            if (number > 0)
-                swindow = (int) number;
-            /* FALLTHRU */
-        case A_F_SCREEN:
-            /*
-             * Forward one screen.
-             */
-            if (number <= 0)
-                number = get_swindow();
-            cmd_exec();
-            if (show_attn)
-                set_attnpos(bottompos);
-            forward((int) number, 0, 1);
-            break;
+		case A_B_WINDOW:
+			/*
+			 * Backward one window (and set the window size).
+			 */
+			if (number > 0)
+				swindow = (int) number;
+			/* FALLTHRU */
+		case A_B_SCREEN:
+			/*
+			 * Backward one screen.
+			 */
+			if (number <= 0)
+				number = get_swindow();
+			cmd_exec();
+			backward((int) number, 0, 1);
+			break;
 
-        case A_B_WINDOW:
-            /*
-             * Backward one window (and set the window size).
-             */
-            if (number > 0)
-                swindow = (int) number;
-            /* FALLTHRU */
-        case A_B_SCREEN:
-            /*
-             * Backward one screen.
-             */
-            if (number <= 0)
-                number = get_swindow();
-            cmd_exec();
-            backward((int) number, 0, 1);
-            break;
+		case A_F_LINE:
+			/*
+			 * Forward N (default 1) line.
+			 */
+			if (number <= 0)
+				number = 1;
+			cmd_exec();
+			if (show_attn == OPT_ONPLUS && number > 1)
+				set_attnpos(bottompos);
+			forward((int) number, 0, 0);
+			break;
 
-        case A_F_LINE:
-            /*
-             * Forward N (default 1) line.
-             */
-            if (number <= 0)
-                number = 1;
-            cmd_exec();
-            if (show_attn == OPT_ONPLUS && number > 1)
-                set_attnpos(bottompos);
-            forward((int) number, 0, 0);
-            break;
+		case A_B_LINE:
+			/*
+			 * Backward N (default 1) line.
+			 */
+			if (number <= 0)
+				number = 1;
+			cmd_exec();
+			backward((int) number, 0, 0);
+			break;
 
-        case A_B_LINE:
-            /*
-             * Backward N (default 1) line.
-             */
-            if (number <= 0)
-                number = 1;
-            cmd_exec();
-            backward((int) number, 0, 0);
-            break;
+		case A_F_MOUSE:
+			/*
+			 * Forward wheel_lines lines.
+			 */
+			cmd_exec();
+			forward(wheel_lines, 0, 0);
+			break;
 
-        case A_FF_LINE:
-            /*
-             * Force forward N (default 1) line.
-             */
-            if (number <= 0)
-                number = 1;
-            cmd_exec();
-            if (show_attn == OPT_ONPLUS && number > 1)
-                set_attnpos(bottompos);
-            forward((int) number, 1, 0);
-            break;
+		case A_B_MOUSE:
+			/*
+			 * Backward wheel_lines lines.
+			 */
+			cmd_exec();
+			backward(wheel_lines, 0, 0);
+			break;
 
-        case A_BF_LINE:
-            /*
-             * Force backward N (default 1) line.
-             */
-            if (number <= 0)
-                number = 1;
-            cmd_exec();
-            backward((int) number, 1, 0);
-            break;
+		case A_FF_LINE:
+			/*
+			 * Force forward N (default 1) line.
+			 */
+			if (number <= 0)
+				number = 1;
+			cmd_exec();
+			if (show_attn == OPT_ONPLUS && number > 1)
+				set_attnpos(bottompos);
+			forward((int) number, 1, 0);
+			break;
 
-        case A_FF_SCREEN:
-            /*
-             * Force forward one screen.
-             */
-            if (number <= 0)
-                number = get_swindow();
-            cmd_exec();
-            if (show_attn == OPT_ONPLUS)
-                set_attnpos(bottompos);
-            forward((int) number, 1, 0);
-            break;
+		case A_BF_LINE:
+			/*
+			 * Force backward N (default 1) line.
+			 */
+			if (number <= 0)
+				number = 1;
+			cmd_exec();
+			backward((int) number, 1, 0);
+			break;
+		
+		case A_FF_SCREEN:
+			/*
+			 * Force forward one screen.
+			 */
+			if (number <= 0)
+				number = get_swindow();
+			cmd_exec();
+			if (show_attn == OPT_ONPLUS)
+				set_attnpos(bottompos);
+			forward((int) number, 1, 0);
+			break;
 
-        case A_F_FOREVER:
-            /*
-             * Forward forever, ignoring EOF.
-             */
-            if (show_attn)
-                set_attnpos(bottompos);
-            newaction = forw_loop(0);
-            break;
+		case A_F_FOREVER:
+			/*
+			 * Forward forever, ignoring EOF.
+			 */
+			if (show_attn)
+				set_attnpos(bottompos);
+			newaction = forw_loop(0);
+			break;
 
-        case A_F_UNTIL_HILITE:
-            newaction = forw_loop(1);
-            break;
+		case A_F_UNTIL_HILITE:
+			newaction = forw_loop(1);
+			break;
 
-        case A_F_SCROLL:
-            /*
-             * Forward N lines
-             * (default same as last 'd' or 'u' command).
-             */
-            if (number > 0)
-                wscroll = (int) number;
-            cmd_exec();
-            if (show_attn == OPT_ONPLUS)
-                set_attnpos(bottompos);
-            forward(wscroll, 0, 0);
-            break;
+		case A_F_SCROLL:
+			/*
+			 * Forward N lines 
+			 * (default same as last 'd' or 'u' command).
+			 */
+			if (number > 0)
+				wscroll = (int) number;
+			cmd_exec();
+			if (show_attn == OPT_ONPLUS)
+				set_attnpos(bottompos);
+			forward(wscroll, 0, 0);
+			break;
 
-        case A_B_SCROLL:
-            /*
-             * Forward N lines
-             * (default same as last 'd' or 'u' command).
-             */
-            if (number > 0)
-                wscroll = (int) number;
-            cmd_exec();
-            backward(wscroll, 0, 0);
-            break;
+		case A_B_SCROLL:
+			/*
+			 * Forward N lines 
+			 * (default same as last 'd' or 'u' command).
+			 */
+			if (number > 0)
+				wscroll = (int) number;
+			cmd_exec();
+			backward(wscroll, 0, 0);
+			break;
 
-        case A_FREPAINT:
-            /*
-             * Flush buffers, then repaint screen.
-             * Don't flush the buffers on a pipe!
-             */
-            clear_buffers();
-            /* FALLTHRU */
-        case A_REPAINT:
-            /*
-             * Repaint screen.
-             */
-            cmd_exec();
-            repaint();
-            break;
+		case A_FREPAINT:
+			/*
+			 * Flush buffers, then repaint screen.
+			 * Don't flush the buffers on a pipe!
+			 */
+			clear_buffers();
+			/* FALLTHRU */
+		case A_REPAINT:
+			/*
+			 * Repaint screen.
+			 */
+			cmd_exec();
+			repaint();
+			break;
 
-        case A_GOLINE:
-            /*
-             * Go to line N, default beginning of file.
-             */
-            if (number <= 0)
-                number = 1;
-            cmd_exec();
-            jump_back(number);
-            break;
+		case A_GOLINE:
+			/*
+			 * Go to line N, default beginning of file.
+			 */
+			if (number <= 0)
+				number = 1;
+			cmd_exec();
+			jump_back(number);
+			break;
 
-        case A_PERCENT:
-            /*
-             * Go to a specified percentage into the file.
-             */
-            if (number < 0)
-            {
-                number = 0;
-                fraction = 0;
-            }
-            if (number > 100)
-            {
-                number = 100;
-                fraction = 0;
-            }
-            cmd_exec();
-            jump_percent((int) number, fraction);
-            break;
+		case A_PERCENT:
+			/*
+			 * Go to a specified percentage into the file.
+			 */
+			if (number < 0)
+			{
+				number = 0;
+				fraction = 0;
+			}
+			if (number > 100 || (number == 100 && fraction != 0))
+			{
+				number = 100;
+				fraction = 0;
+			}
+			cmd_exec();
+			jump_percent((int) number, fraction);
+			break;
 
-        case A_GOEND:
-            /*
-             * Go to line N, default end of file.
-             */
-            cmd_exec();
-            if (number <= 0)
-                jump_forw();
-            else
-                jump_back(number);
-            break;
+		case A_GOEND:
+			/*
+			 * Go to line N, default end of file.
+			 */
+			cmd_exec();
+			if (number <= 0)
+				jump_forw();
+			else
+				jump_back(number);
+			break;
 
-        case A_GOEND_BUF:
-            /*
-             * Go to line N, default last buffered byte.
-             */
-            cmd_exec();
-            if (number <= 0)
-                jump_forw_buffered();
-            else
-                jump_back(number);
-            break;
+		case A_GOEND_BUF:
+			/*
+			 * Go to line N, default last buffered byte.
+			 */
+			cmd_exec();
+			if (number <= 0)
+				jump_forw_buffered();
+			else
+				jump_back(number);
+			break;
 
-        case A_GOPOS:
-            /*
-             * Go to a specified byte position in the file.
-             */
-            cmd_exec();
-            if (number < 0)
-                number = 0;
-            jump_line_loc((POSITION) number, jump_sline);
-            break;
+		case A_GOPOS:
+			/*
+			 * Go to a specified byte position in the file.
+			 */
+			cmd_exec();
+			if (number < 0)
+				number = 0;
+			jump_line_loc((POSITION) number, jump_sline);
+			break;
 
-        case A_STAT:
-            /*
-             * Print file name, etc.
-             */
-            if (ch_getflags() & CH_HELPFILE)
-                break;
-            cmd_exec();
-            parg.p_string = eq_message();
-            error("%s", &parg);
-            break;
+		case A_STAT:
+			/*
+			 * Print file name, etc.
+			 */
+			if (ch_getflags() & CH_HELPFILE)
+				break;
+			cmd_exec();
+			parg.p_string = eq_message();
+			error("%s", &parg);
+			break;
 
-        case A_VERSION:
-            /*
-             * Print version number, without the "@(#)".
-             */
-            cmd_exec();
-            dispversion();
-            break;
+		case A_VERSION:
+			/*
+			 * Print version number, without the "@(#)".
+			 */
+			cmd_exec();
+			dispversion();
+			break;
 
-        case A_QUIT:
-            /*
-             * Exit.
-             */
-            if (curr_ifile != NULL_IFILE &&
-                ch_getflags() & CH_HELPFILE)
-            {
-                /*
-                 * Quit while viewing the help file
-                 * just means return to viewing the
-                 * previous file.
-                 */
-                hshift = save_hshift;
-                bs_mode = save_bs_mode;
-                if (edit_prev(1) == 0)
-                    break;
-            }
-            if (extra != NULL)
-                quit(*extra);
-            quit(QUIT_OK);
-            break;
+		case A_QUIT:
+			/*
+			 * Exit.
+			 */
+			if (curr_ifile != NULL_IFILE && 
+			    ch_getflags() & CH_HELPFILE)
+			{
+				/*
+				 * Quit while viewing the help file
+				 * just means return to viewing the
+				 * previous file.
+				 */
+				hshift = save_hshift;
+				bs_mode = save_bs_mode;
+				if (edit_prev(1) == 0)
+					break;
+			}
+			if (extra != NULL)
+				quit(*extra);
+			quit(QUIT_OK);
+			break;
 
 /*
  * Define abbreviation for a commonly used sequence below.

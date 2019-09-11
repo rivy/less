@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -318,15 +318,6 @@ struct scrpos
     int ln;
 };
 
-/*
- * A mark is an ifile (input file) plus a position within the file.
- */
-struct mark
-{
-    IFILE m_ifile;
-    struct scrpos m_scrpos;
-};
-
 typedef union parg
 {
     char *p_string;
@@ -486,9 +477,10 @@ struct wchar_range_table
 #define CONTROL(c)  ((c)&037)
 #endif /* IS_EBCDIC_HOST */
 
-#define ESC     CONTROL('[')
-#define CSI     ((unsigned char)'\233')
-#define CHAR_END_COMMAND 0x40000000
+#define	ESC		CONTROL('[')
+#define	ESCS		"\33"
+#define	CSI		((unsigned char)'\233')
+#define	CHAR_END_COMMAND 0x40000000
 
 #if _OSK_MWC32
 #define LSIGNAL(sig,func)   os9_signal(sig,func)
@@ -547,6 +539,15 @@ struct wchar_range_table
 #define time_type   long
 #endif
 
+/* X11 mouse reporting definitions */
+#define X11MOUSE_BUTTON1    0 /* Left button press */
+#define X11MOUSE_BUTTON2    1 /* Middle button press */
+#define X11MOUSE_BUTTON3    2 /* Right button press */
+#define X11MOUSE_BUTTON_REL 3 /* Button release */
+#define X11MOUSE_WHEEL_UP   0x40 /* Wheel scroll up */
+#define X11MOUSE_WHEEL_DOWN 0x41 /* Wheel scroll down */
+#define X11MOUSE_OFFSET     0x20 /* Added to button & pos bytes to create a char */
+
 struct mlist;
 struct loption;
 struct hilite_tree;
@@ -557,3 +558,8 @@ struct hilite_tree;
 void postoa LESSPARAMS ((POSITION, char*));
 void linenumtoa LESSPARAMS ((LINENUM, char*));
 void inttoa LESSPARAMS ((int, char*));
+int lstrtoi LESSPARAMS ((char*, char**));
+POSITION lstrtopos LESSPARAMS ((char*, char**));
+#if MSDOS_COMPILER==WIN32C
+int pclose LESSPARAMS ((FILE*));
+#endif

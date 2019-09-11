@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -19,11 +19,16 @@
 
 #if MSDOS_COMPILER
 #include <dos.h>
+#if MSDOS_COMPILER==WIN32C && defined(MINGW)
+#include <direct.h>
+#define setdisk(n) _chdrive((n)+1)
+#else
 #ifdef _MSC_VER
 #include <direct.h>
 #define setdisk(n) _chdrive((n)+1)
 #else
 #include <dir.h>
+#endif
 #endif
 #endif
 
@@ -289,38 +294,35 @@ pipe_data(cmd, spos, epos)
     POSITION spos;
     POSITION epos;
 {
-    FILE *f;
-    int c;
-#ifndef MINGW
-    extern FILE *popen();
-#endif
+	FILE *f;
+	int c;
 
-    /*
-     * This is structured much like lsystem().
-     * Since we're running a shell program, we must be careful
-     * to perform the necessary deinitialization before running
-     * the command, and reinitialization after it.
-     */
-    if (ch_seek(spos) != 0)
-    {
-        error("Cannot seek to start position", NULL_PARG);
-        return (-1);
-    }
+	/*
+	 * This is structured much like lsystem().
+	 * Since we're running a shell program, we must be careful
+	 * to perform the necessary deinitialization before running
+	 * the command, and reinitialization after it.
+	 */
+	if (ch_seek(spos) != 0)
+	{
+		error("Cannot seek to start position", NULL_PARG);
+		return (-1);
+	}
 
-    if ((f = popen(cmd, "w")) == NULL)
-    {
-        error("Cannot create pipe", NULL_PARG);
-        return (-1);
-    }
-    clear_bot();
-    putstr("!");
-    putstr(cmd);
-    putstr("\n");
+	if ((f = popen(cmd, "w")) == NULL)
+	{
+		error("Cannot create pipe", NULL_PARG);
+		return (-1);
+	}
+	clear_bot();
+	putstr("!");
+	putstr(cmd);
+	putstr("\n");
 
-    deinit();
-    flush();
-    raw_mode(0);
-    init_signals(0);
+	deinit();
+	flush();
+	raw_mode(0);
+	init_signals(0);
 #if MSDOS_COMPILER==WIN32C
     close_getchr();
 #endif

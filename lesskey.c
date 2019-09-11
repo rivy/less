@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -219,8 +219,8 @@ int errors;
 
 extern char version[];
 
-    void
-usage()
+	void
+usage(VOID_PARAM)
 {
     fprintf(stderr, "usage: lesskey [-o output] [input]\n");
     exit(1);
@@ -342,8 +342,8 @@ parse_args(argc, argv)
 /*
  * Initialize data structures.
  */
-    void
-init_tables()
+	void
+init_tables(VOID_PARAM)
 {
     cmdtable.names = cmdnames;
     cmdtable.pbuffer = cmdtable.buffer;

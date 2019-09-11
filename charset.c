@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -244,8 +244,8 @@ icharset(name, no_error)
 /*
  * Define a charset, given a locale name.
  */
-    static void
-ilocale()
+	static void
+ilocale(VOID_PARAM)
 {
     int c;
 
@@ -314,8 +314,8 @@ setfmt(s, fmtvarptr, attrptr, default_fmt)
 /*
  *
  */
-    static void
-set_charset()
+	static void
+set_charset(VOID_PARAM)
 {
     char *s;
 
@@ -327,22 +327,22 @@ set_charset()
         if (icharset("utf-8", 1))
             return;
 #endif
-    /*
-     * See if environment variable LESSCHARSET is defined.
-     */
-    s = lgetenv("LESSCHARSET");
-    if (icharset(s, 0))
-        return;
+	/*
+	 * See if environment variable LESSCHARSET is defined.
+	 */
+	s = lgetenv("LESSCHARSET");
+	if (icharset(s, 0))
+		return;
 
-    /*
-     * LESSCHARSET is not defined: try LESSCHARDEF.
-     */
-    s = lgetenv("LESSCHARDEF");
-    if (s != NULL && *s != '\0')
-    {
-        ichardef(s);
-        return;
-    }
+	/*
+	 * LESSCHARSET is not defined: try LESSCHARDEF.
+	 */
+	s = lgetenv("LESSCHARDEF");
+	if (!isnullenv(s))
+	{
+		ichardef(s);
+		return;
+	}
 
 #if HAVE_LOCALE
 #ifdef CODESET
@@ -394,8 +394,8 @@ set_charset()
 /*
  * Initialize charset data structures.
  */
-    public void
-init_charset()
+	public void
+init_charset(VOID_PARAM)
 {
     char *s;
 

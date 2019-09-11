@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -45,16 +45,20 @@ public int chopline;        /* Truncate displayed lines at screen width */
 public int no_init;     /* Disable sending ti/te termcap strings */
 public int no_keypad;       /* Disable sending ks/ke termcap strings */
 public int twiddle;             /* Show tildes after EOF */
-public int show_attn;       /* Hilite first unread line */
-public int shift_count;     /* Number of positions to shift horizontally */
-public int status_col;      /* Display a status column */
-public int use_lessopen;    /* Use the LESSOPEN filter */
-public int quit_on_intr;    /* Quit on interrupt */
-public int follow_mode;     /* F cmd Follows file desc or file name? */
-public int oldbot;      /* Old bottom of screen behavior {{REMOVE}} */
-public int opt_use_backslash;   /* Use backslash escaping in option parsing */
-public LWCHAR rscroll_char;	/* Char which marks chopped lines with -S */
+public int show_attn;		/* Hilite first unread line */
+public int shift_count;		/* Number of positions to shift horizontally */
+public int status_col;		/* Display a status column */
+public int use_lessopen;	/* Use the LESSOPEN filter */
+public int quit_on_intr;	/* Quit on interrupt */
+public int follow_mode;		/* F cmd Follows file desc or file name? */
+public int oldbot;		/* Old bottom of screen behavior {{REMOVE}} */
+public int opt_use_backslash;	/* Use backslash escaping in option parsing */
+public char rscroll_char;	/* Char which marks chopped lines with -S */
 public int rscroll_attr;	/* Attribute of rscroll_char */
+public int no_hist_dups;	/* Remove dups from history list */
+public int mousecap;		/* Allow mouse for scrolling */
+public int wheel_lines;		/* Number of lines to scroll on mouse wheel scroll */
+public int perma_marks;		/* Save marks in history file */
 #if HILITE_SEARCH
 public int hilite_search;   /* Highlight matched search patterns? */
 #endif
@@ -120,6 +124,10 @@ static struct optname oldbot_optname = { "old-bot",              NULL };
 static struct optname follow_optname = { "follow-name",          NULL };
 static struct optname use_backslash_optname = { "use-backslash", NULL };
 static struct optname rscroll_optname = { "rscroll", NULL };
+static struct optname nohistdups_optname = { "no-histdups",      NULL };
+static struct optname mousecap_optname = { "mouse",              NULL };
+static struct optname wheel_lines_optname = { "wheel-lines",     NULL };
+static struct optname perma_marks_optname = { "save-marks",     NULL };
 
 
 /*
@@ -351,134 +359,166 @@ static struct loption option[] =
         { "tags file: ", NULL, NULL }
     },
 #endif
-    { 'u', &u_optname,
-        TRIPLE|REPAINT, OPT_OFF, &bs_mode, NULL,
-        {
-            "Display underlined text in underline mode",
-            "Backspaces cause overstrike",
-            "Print backspace as ^H"
-        }
-    },
-    { 'V', &V__optname,
-        NOVAR, 0, NULL, opt__V,
-        { NULL, NULL, NULL }
-    },
-    { 'w', &w_optname,
-        TRIPLE|REPAINT, OPT_OFF, &show_attn, NULL,
-        {
-            "Don't highlight first unread line",
-            "Highlight first unread line after forward-screen",
-            "Highlight first unread line after any forward movement",
-        }
-    },
-    { 'x', &x_optname,
-        STRING|REPAINT, 0, NULL, opt_x,
-        {
-            "Tab stops: ",
-            "0123456789,",
-            NULL
-        }
-    },
-    { 'X', &X__optname,
-        BOOL|NO_TOGGLE, OPT_OFF, &no_init, NULL,
-        {
-            "Send init/deinit strings to terminal",
-            "Don't use init/deinit strings",
-            NULL
-        }
-    },
-    { 'y', &y_optname,
-        NUMBER, -1, &forw_scroll, NULL,
-        {
-            "Forward scroll limit: ",
-            "Forward scroll limit is %d lines",
-            NULL
-        }
-    },
-    { 'z', &z_optname,
-        NUMBER, -1, &swindow, NULL,
-        {
-            "Scroll window size: ",
-            "Scroll window size is %d lines",
-            NULL
-        }
-    },
-    { '"', &quote_optname,
-        STRING, 0, NULL, opt_quote,
-        { "quotes: ", NULL, NULL }
-    },
-    { '~', &tilde_optname,
-        BOOL|REPAINT, OPT_ON, &twiddle, NULL,
-        {
-            "Don't show tildes after end of file",
-            "Show tildes after end of file",
-            NULL
-        }
-    },
-    { '?', &query_optname,
-        NOVAR, 0, NULL, opt_query,
-        { NULL, NULL, NULL }
-    },
-    { '#', &pound_optname,
-        STRING, 0, NULL, opt_shift,
-        {
-            "Horizontal shift: ",
-            "0123456789.",
-            NULL
-        }
-    },
-    { OLETTER_NONE, &keypad_optname,
-        BOOL|NO_TOGGLE, OPT_OFF, &no_keypad, NULL,
-        {
-            "Use keypad mode",
-            "Don't use keypad mode",
-            NULL
-        }
-    },
-    { OLETTER_NONE, &oldbot_optname,
-        BOOL, OPT_OFF, &oldbot, NULL,
-        {
-            "Use new bottom of screen behavior",
-            "Use old bottom of screen behavior",
-            NULL
-        }
-    },
-    { OLETTER_NONE, &follow_optname,
-        BOOL, FOLLOW_DESC, &follow_mode, NULL,
-        {
-            "F command follows file descriptor",
-            "F command follows file name",
-            NULL
-        }
-    },
-    { OLETTER_NONE, &use_backslash_optname,
-        BOOL, OPT_OFF, &opt_use_backslash, NULL,
-        {
-            "Use backslash escaping in command line parameters",
-            "Don't use backslash escaping in command line parameters",
-            NULL
-        }
-    },
-    { OLETTER_NONE, &rscroll_optname,
-        STRING|REPAINT|INIT_HANDLER, 0, NULL, opt_rscroll,
-        { "right scroll character: ", NULL, NULL }
-    },
-    { '\0', NULL, NOVAR, 0, NULL, NULL, { NULL, NULL, NULL } }
+	{ 'u', &u_optname,
+		TRIPLE|REPAINT, OPT_OFF, &bs_mode, NULL,
+		{
+			"Display underlined text in underline mode",
+			"Backspaces cause overstrike",
+			"Print backspace as ^H"
+		}
+	},
+	{ 'V', &V__optname,
+		NOVAR, 0, NULL, opt__V,
+		{ NULL, NULL, NULL }
+	},
+	{ 'w', &w_optname,
+		TRIPLE|REPAINT, OPT_OFF, &show_attn, NULL,
+		{
+			"Don't highlight first unread line",
+			"Highlight first unread line after forward-screen",
+			"Highlight first unread line after any forward movement",
+		}
+	},
+	{ 'x', &x_optname,
+		STRING|REPAINT, 0, NULL, opt_x,
+		{
+			"Tab stops: ",
+			"0123456789,",
+			NULL
+		}
+	},
+	{ 'X', &X__optname,
+		BOOL|NO_TOGGLE, OPT_OFF, &no_init, NULL,
+		{
+			"Send init/deinit strings to terminal",
+			"Don't use init/deinit strings",
+			NULL
+		}
+	},
+	{ 'y', &y_optname,
+		NUMBER, -1, &forw_scroll, NULL,
+		{
+			"Forward scroll limit: ",
+			"Forward scroll limit is %d lines",
+			NULL
+		}
+	},
+	{ 'z', &z_optname,
+		NUMBER, -1, &swindow, NULL,
+		{
+			"Scroll window size: ",
+			"Scroll window size is %d lines",
+			NULL
+		}
+	},
+	{ '"', &quote_optname,
+		STRING, 0, NULL, opt_quote,
+		{ "quotes: ", NULL, NULL }
+	},
+	{ '~', &tilde_optname,
+		BOOL|REPAINT, OPT_ON, &twiddle, NULL,
+		{
+			"Don't show tildes after end of file",
+			"Show tildes after end of file",
+			NULL
+		}
+	},
+	{ '?', &query_optname,
+		NOVAR, 0, NULL, opt_query,
+		{ NULL, NULL, NULL }
+	},
+	{ '#', &pound_optname,
+		STRING, 0, NULL, opt_shift,
+		{
+			"Horizontal shift: ",
+			"0123456789.",
+			NULL
+		}
+	},
+	{ OLETTER_NONE, &keypad_optname,
+		BOOL|NO_TOGGLE, OPT_OFF, &no_keypad, NULL,
+		{
+			"Use keypad mode",
+			"Don't use keypad mode",
+			NULL
+		}
+	},
+	{ OLETTER_NONE, &oldbot_optname,
+		BOOL, OPT_OFF, &oldbot, NULL,
+		{
+			"Use new bottom of screen behavior",
+			"Use old bottom of screen behavior",
+			NULL
+		}
+	},
+	{ OLETTER_NONE, &follow_optname,
+		BOOL, FOLLOW_DESC, &follow_mode, NULL,
+		{
+			"F command follows file descriptor",
+			"F command follows file name",
+			NULL
+		}
+	},
+	{ OLETTER_NONE, &use_backslash_optname,
+		BOOL, OPT_OFF, &opt_use_backslash, NULL,
+		{
+			"Use backslash escaping in command line parameters",
+			"Don't use backslash escaping in command line parameters",
+			NULL
+		}
+	},
+	{ OLETTER_NONE, &rscroll_optname,
+		STRING|REPAINT|INIT_HANDLER, 0, NULL, opt_rscroll,
+		{ "right scroll character: ", NULL, NULL }
+	},
+	{ OLETTER_NONE, &nohistdups_optname,
+		BOOL, OPT_OFF, &no_hist_dups, NULL,
+		{
+			"Allow duplicates in history list",
+			"Remove duplicates from history list",
+			NULL
+		}
+	},
+	{ OLETTER_NONE, &mousecap_optname,
+		TRIPLE, OPT_OFF, &mousecap, opt_mousecap,
+		{
+			"Ignore mouse input",
+			"Use the mouse for scrolling",
+			"Use the mouse for scrolling (reverse)"
+		}
+	},
+	{ OLETTER_NONE, &wheel_lines_optname,
+		NUMBER|INIT_HANDLER, 0, &wheel_lines, opt_wheel_lines,
+		{
+			"Lines to scroll on mouse wheel: ",
+			"Scroll %d line(s) on mouse wheel",
+			NULL
+		}
+	},
+	{ OLETTER_NONE, &perma_marks_optname,
+		BOOL, OPT_OFF, &perma_marks, NULL,
+		{
+			"Don't save marks in history file",
+			"Save marks in history file",
+			NULL
+		}
+	},
+	{ '\0', NULL, NOVAR, 0, NULL, NULL, { NULL, NULL, NULL } }
 };
 
 
 /*
  * Initialize each option to its default value.
  */
-    public void
-init_option()
+	public void
+init_option(VOID_PARAM)
 {
     struct loption *o;
     char *p;
 
-    p = lgetenv("LESS_IS_MORE");
-    if (p != NULL && *p != '\0')
-        less_is_more = 1;
+	p = lgetenv("LESS_IS_MORE");
+	if (!isnullenv(p))
+		less_is_more = 1;
 
     for (o = option;  o->oletter != '\0';  o++)
     {
