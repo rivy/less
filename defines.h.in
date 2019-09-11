@@ -134,9 +134,9 @@
 #define TGETENT_OK  1
 
 /*
- * HAVE_ANSI_PROTOS	is 1 if your compiler supports ANSI function prototypes.
+ * HAVE_ANSI_PROTOS is 1 if your compiler supports ANSI function prototypes.
  */
-#define HAVE_ANSI_PROTOS	1
+#define HAVE_ANSI_PROTOS    1
 
 /*
  * HAVE_SYS_TYPES_H is 1 if your system has <sys/types.h>.
@@ -167,7 +167,7 @@
 /*
  * Default shell metacharacters and meta-escape character.
  */
-#define	DEF_METACHARS	"; *?\t\n'\"()<>[]|&^`#\\$%=~{},"
+#define DEF_METACHARS   "; *?\t\n'\"()<>[]|&^`#\\$%=~{},"
 #define DEF_METAESCAPE  "\\"
 
 /*
@@ -263,11 +263,17 @@
 /* PCRE (Perl-compatible regular expression) library */
 #undef HAVE_PCRE
 
+/* PCRE2 (Perl-compatible regular expression) library */
+#undef HAVE_PCRE2
+
 /* Define to 1 if you have the `popen' function. */
 #undef HAVE_POPEN
 
 /* POSIX regcomp() and regex.h */
 #undef HAVE_POSIX_REGCOMP
+
+/* Define to 1 if you have the `realpath' function. */
+#undef HAVE_REALPATH
 
 /* System V regcmp() */
 #undef HAVE_REGCMP

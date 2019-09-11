@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2017  Mark Nudelman
+ * Copyright (C) 1984-2019  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -50,7 +50,7 @@ extern int have_full_ansi;
  * Display the line which is in the line buffer.
  */
     public void
-put_line()
+put_line(VOID_PARAM)
 {
     int c;
     int i;
@@ -175,7 +175,7 @@ static char *ob = obuf;
  * overwritten or scrolled away.
  */
     public void
-flush()
+flush(VOID_PARAM)
 {
     int n;
     int fd;
@@ -395,7 +395,7 @@ flush()
                         case 7: /* inverse on */
                             at |= 2;
                             break;
-                        case 4:	/* underline on */
+                        case 4: /* underline on */
 #if MSDOS_COMPILER==WIN32C
                             if (have_full_ansi)
                                 bgi = COMMON_LVB_UNDERSCORE >> 4;
@@ -718,6 +718,27 @@ TYPE_TO_A_FUNC(linenumtoa, LINENUM)
 TYPE_TO_A_FUNC(inttoa, int)
 
 /*
+ * Convert an string to an integral type.
+ */
+#define STR_TO_TYPE_FUNC(funcname, type) \
+type funcname(buf, ebuf) \
+    char *buf; \
+    char **ebuf; \
+{ \
+    type val = 0; \
+    for (;;) { \
+        char c = *buf++; \
+        if (c < '0' || c > '9') break; \
+        val = 10 * val + c - '0'; \
+    } \
+    if (ebuf != NULL) *ebuf = buf; \
+    return val; \
+}
+
+STR_TO_TYPE_FUNC(lstrtopos, POSITION)
+STR_TO_TYPE_FUNC(lstrtoi, int)
+
+/*
  * Output an integer in a given radix.
  */
     static int
@@ -801,7 +822,7 @@ less_printf(fmt, parg)
  * become the next command.
  */
     public void
-get_return()
+get_return(VOID_PARAM)
 {
     int c;
 
