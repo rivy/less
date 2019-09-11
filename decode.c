@@ -215,10 +215,6 @@ static unsigned char edittable[] =
     ESC,'j',0,          EC_DOWN,    /* ESC j */
     SK(SK_DOWN_ARROW),0,        EC_DOWN,    /* DOWNARROW */
     CONTROL('G'),0,         EC_ABORT,   /* CTRL-G */
-    SK(SK_CAPS_LOCK),0,     EC_NOACTION,    /* CAPS-LOCK */
-    SK(SK_NUM_LOCK),0,      EC_NOACTION,    /* NUM-LOCK */
-    SK(SK_PAGE_DOWN),0,      EC_NOACTION,    /* PAGE-UP */
-    SK(SK_PAGE_UP),0,      EC_NOACTION,    /* PAGE-DOWN */
 };
 
 /*
