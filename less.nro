@@ -942,15 +942,15 @@ will display the contents of that new file.
 Enables mouse input:
 scrolling the mouse wheel down moves forward in the file,
 scrolling the mouse wheel up moves backwards in the file,
-and clicking the mouse sets the "#" mark to the line 
+and clicking the mouse sets the "#" mark to the line
 where the mouse is clicked.
-The number of lines to scroll when the wheel is moved 
+The number of lines to scroll when the wheel is moved
 can be set by the \-\-wheel-lines option.
 Mouse input works only on terminals which support X11 mouse reporting,
-and on the Windows version of 
+and on the Windows version of
 .IR less .
 .IP "\-\-MOUSE"
-Like \-\-mouse, except the direction scrolled 
+Like \-\-mouse, except the direction scrolled
 on mouse wheel movement is reversed.
 .IP "\-\-no-keypad"
 Disables sending the keypad initialization and deinitialization strings
@@ -959,7 +959,7 @@ This is sometimes useful if the keypad strings make the numeric
 keypad behave in an undesirable manner.
 .IP "\-\-no-histdups"
 This option changes the behavior so that if a search string or
-file name is typed in, and the same string is already in the history list, 
+file name is typed in, and the same string is already in the history list,
 the existing copy is removed from the history list before the new one is added.
 Thus, a given string will appear only once in the history list.
 Normally, a string may appear multiple times.
@@ -1240,9 +1240,9 @@ lesspipe.sh:
 .br
     *.Z)    uncompress \-c $1  2>/dev/null
 .br
-		;;
+        ;;
 .br
-	*)	exit 1
+    *)  exit 1
 .br
         ;;
 .br
@@ -1608,7 +1608,7 @@ The LESSEDIT string is expanded in the same way as the prompt strings.
 The default value for LESSEDIT is:
 .nf
 .sp
-	%E\ ?lm+%lm.\ %g
+    %E\ ?lm+%lm.\ %g
 .sp
 .fi
 Note that this expands to the editor name, followed by a + and the

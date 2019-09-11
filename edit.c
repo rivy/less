@@ -170,7 +170,7 @@ close_pipe(FILE *pipefd)
 /*
  * Close the current input file.
  */
-	static void
+    static void
 close_file(VOID_PARAM)
 {
     struct scrpos scrpos;
@@ -485,27 +485,27 @@ edit_ifile(ifile)
 #if HILITE_SEARCH
         clr_hilite();
 #endif
-		if (strcmp(filename, FAKE_HELPFILE) && strcmp(filename, FAKE_EMPTYFILE))
-		{
-			char *qfilename = shell_quote(filename);
-			cmd_addhist(ml_examine, qfilename, 1);
-			free(qfilename);
-		}
+        if (strcmp(filename, FAKE_HELPFILE) && strcmp(filename, FAKE_EMPTYFILE))
+        {
+            char *qfilename = shell_quote(filename);
+            cmd_addhist(ml_examine, qfilename, 1);
+            free(qfilename);
+        }
 
-		if (no_display && errmsgs > 0)
-		{
-			/*
-			 * We displayed some messages on error output
-			 * (file descriptor 2; see error() function).
-			 * Before erasing the screen contents,
-			 * display the file name and wait for a keystroke.
-			 */
-			parg.p_string = filename;
-			error("%s", &parg);
-		}
-	}
-	free(filename);
-	return (0);
+        if (no_display && errmsgs > 0)
+        {
+            /*
+             * We displayed some messages on error output
+             * (file descriptor 2; see error() function).
+             * Before erasing the screen contents,
+             * display the file name and wait for a keystroke.
+             */
+            parg.p_string = filename;
+            error("%s", &parg);
+        }
+    }
+    free(filename);
+    return (0);
 }
 
 /*
@@ -574,19 +574,19 @@ edit_list(filelist)
 /*
  * Edit the first file in the command line (ifile) list.
  */
-	public int
+    public int
 edit_first(VOID_PARAM)
 {
-	if (nifile() == 0)
-		return (edit_stdin());
-	curr_ifile = NULL_IFILE;
-	return (edit_next(1));
+    if (nifile() == 0)
+        return (edit_stdin());
+    curr_ifile = NULL_IFILE;
+    return (edit_next(1));
 }
 
 /*
  * Edit the last file in the command line (ifile) list.
  */
-	public int
+    public int
 edit_last(VOID_PARAM)
 {
     curr_ifile = NULL_IFILE;
@@ -693,7 +693,7 @@ edit_index(n)
     return (edit_ifile(h));
 }
 
-	public IFILE
+    public IFILE
 save_curr_ifile(VOID_PARAM)
 {
     if (curr_ifile != NULL_IFILE)
@@ -746,7 +746,7 @@ reedit_ifile(save_ifile)
     quit(QUIT_ERROR);
 }
 
-	public void
+    public void
 reopen_curr_ifile(VOID_PARAM)
 {
     IFILE save_ifile = save_curr_ifile();
@@ -757,7 +757,7 @@ reopen_curr_ifile(VOID_PARAM)
 /*
  * Edit standard input.
  */
-	public int
+    public int
 edit_stdin(VOID_PARAM)
 {
     if (isatty(fd0))
@@ -772,7 +772,7 @@ edit_stdin(VOID_PARAM)
  * Copy a file directly to standard output.
  * Used if standard output is not a tty.
  */
-	public void
+    public void
 cat_file(VOID_PARAM)
 {
     int c;

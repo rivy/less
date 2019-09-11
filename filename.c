@@ -97,7 +97,7 @@ shell_unquote(str)
 /*
  * Get the shell's escape character.
  */
-	public char *
+    public char *
 get_meta_escape(VOID_PARAM)
 {
     char *s;
@@ -111,7 +111,7 @@ get_meta_escape(VOID_PARAM)
 /*
  * Get the characters which the shell considers to be "metacharacters".
  */
-	static char *
+    static char *
 metachars(VOID_PARAM)
 {
     static char *mchars = NULL;
@@ -572,32 +572,32 @@ shellcmd(cmd)
     FILE *fd;
 
 #if HAVE_SHELL
-	char *shell;
+    char *shell;
 
-	shell = lgetenv("SHELL");
-	if (!isnullenv(shell))
-	{
-		char *scmd;
-		char *esccmd;
+    shell = lgetenv("SHELL");
+    if (!isnullenv(shell))
+    {
+        char *scmd;
+        char *esccmd;
 
-		/*
-		 * Read the output of <$SHELL -c cmd>.  
-		 * Escape any metacharacters in the command.
-		 */
-		esccmd = shell_quote(cmd);
-		if (esccmd == NULL)
-		{
-			fd = popen(cmd, "r");
-		} else
-		{
-			int len = (int) (strlen(shell) + strlen(esccmd) + 5);
-			scmd = (char *) ecalloc(len, sizeof(char));
-			SNPRINTF3(scmd, len, "%s %s %s", shell, shell_coption(), esccmd);
-			free(esccmd);
-			fd = popen(scmd, "r");
-			free(scmd);
-		}
-	} else
+        /*
+         * Read the output of <$SHELL -c cmd>.
+         * Escape any metacharacters in the command.
+         */
+        esccmd = shell_quote(cmd);
+        if (esccmd == NULL)
+        {
+            fd = popen(cmd, "r");
+        } else
+        {
+            int len = (int) (strlen(shell) + strlen(esccmd) + 5);
+            scmd = (char *) ecalloc(len, sizeof(char));
+            SNPRINTF3(scmd, len, "%s %s %s", shell, shell_coption(), esccmd);
+            free(esccmd);
+            fd = popen(scmd, "r");
+            free(scmd);
+        }
+    } else
 #endif
     {
         fd = popen(cmd, "r");
@@ -732,55 +732,55 @@ lglob(filename)
 #else
 #if HAVE_POPEN
 {
-	/*
-	 * We get the shell to glob the filename for us by passing
-	 * an "echo" command to the shell and reading its output.
-	 */
-	FILE *fd;
-	char *s;
-	char *lessecho;
-	char *cmd;
-	char *esc;
-	int len;
+    /*
+     * We get the shell to glob the filename for us by passing
+     * an "echo" command to the shell and reading its output.
+     */
+    FILE *fd;
+    char *s;
+    char *lessecho;
+    char *cmd;
+    char *esc;
+    int len;
 
-	esc = get_meta_escape();
-	if (strlen(esc) == 0)
-		esc = "-";
-	esc = shell_quote(esc);
-	if (esc == NULL)
-	{
-		return (filename);
-	}
-	lessecho = lgetenv("LESSECHO");
-	if (isnullenv(lessecho))
-		lessecho = "lessecho";
-	/*
-	 * Invoke lessecho, and read its output (a globbed list of filenames).
-	 */
-	len = (int) (strlen(lessecho) + strlen(filename) + (7*strlen(metachars())) + 24);
-	cmd = (char *) ecalloc(len, sizeof(char));
-	SNPRINTF4(cmd, len, "%s -p0x%x -d0x%x -e%s ", lessecho, openquote, closequote, esc);
-	free(esc);
-	for (s = metachars();  *s != '\0';  s++)
-		sprintf(cmd + strlen(cmd), "-n0x%x ", *s);
-	sprintf(cmd + strlen(cmd), "-- %s", filename);
-	fd = shellcmd(cmd);
-	free(cmd);
-	if (fd == NULL)
-	{
-		/*
-		 * Cannot create the pipe.
-		 * Just return the original (fexpanded) filename.
-		 */
-		return (filename);
-	}
-	gfilename = readfd(fd);
-	pclose(fd);
-	if (*gfilename == '\0')
-	{
-		free(gfilename);
-		return (filename);
-	}
+    esc = get_meta_escape();
+    if (strlen(esc) == 0)
+        esc = "-";
+    esc = shell_quote(esc);
+    if (esc == NULL)
+    {
+        return (filename);
+    }
+    lessecho = lgetenv("LESSECHO");
+    if (isnullenv(lessecho))
+        lessecho = "lessecho";
+    /*
+     * Invoke lessecho, and read its output (a globbed list of filenames).
+     */
+    len = (int) (strlen(lessecho) + strlen(filename) + (7*strlen(metachars())) + 24);
+    cmd = (char *) ecalloc(len, sizeof(char));
+    SNPRINTF4(cmd, len, "%s -p0x%x -d0x%x -e%s ", lessecho, openquote, closequote, esc);
+    free(esc);
+    for (s = metachars();  *s != '\0';  s++)
+        sprintf(cmd + strlen(cmd), "-n0x%x ", *s);
+    sprintf(cmd + strlen(cmd), "-- %s", filename);
+    fd = shellcmd(cmd);
+    free(cmd);
+    if (fd == NULL)
+    {
+        /*
+         * Cannot create the pipe.
+         * Just return the original (fexpanded) filename.
+         */
+        return (filename);
+    }
+    gfilename = readfd(fd);
+    pclose(fd);
+    if (*gfilename == '\0')
+    {
+        free(gfilename);
+        return (filename);
+    }
 }
 #else
     /*
@@ -797,16 +797,16 @@ lglob(filename)
 /*
  * @@@
  */
-	public char *
+    public char *
 lrealpath(path)
-	char *path;
+    char *path;
 {
 #if HAVE_REALPATH
-	char rpath[PATH_MAX];
-	if (realpath(path, rpath) != NULL)
-		return (save(rpath));
+    char rpath[PATH_MAX];
+    if (realpath(path, rpath) != NULL)
+        return (save(rpath));
 #endif
-	return (save(path));
+    return (save(path));
 }
 
 /*
@@ -1096,7 +1096,7 @@ filesize(f)
 /*
  *
  */
-	public char *
+    public char *
 shell_coption(VOID_PARAM)
 {
     return ("-c");
@@ -1119,4 +1119,3 @@ last_component(name)
     }
     return (name);
 }
-

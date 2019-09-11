@@ -49,7 +49,7 @@ extern int have_ul;
 /*
  * Display the line which is in the line buffer.
  */
-	public void
+    public void
 put_line(VOID_PARAM)
 {
     int c;
@@ -174,7 +174,7 @@ static char *ob = obuf;
  * sure these messages can be seen before they are
  * overwritten or scrolled away.
  */
-	public void
+    public void
 flush(VOID_PARAM)
 {
     int n;
@@ -395,7 +395,7 @@ flush(VOID_PARAM)
                         case 7: /* inverse on */
                             at |= 2;
                             break;
-                        case 4:	/* underline on */
+                        case 4: /* underline on */
 #if MSDOS_COMPILER==WIN32C
                             if (have_ul)
                                 bgi = COMMON_LVB_UNDERSCORE >> 4;
@@ -724,17 +724,17 @@ TYPE_TO_A_FUNC(inttoa, int)
  */
 #define STR_TO_TYPE_FUNC(funcname, type) \
 type funcname(buf, ebuf) \
-	char *buf; \
-	char **ebuf; \
+    char *buf; \
+    char **ebuf; \
 { \
-	type val = 0; \
-	for (;;) { \
-		char c = *buf++; \
-		if (c < '0' || c > '9') break; \
-		val = 10 * val + c - '0'; \
-	} \
-	if (ebuf != NULL) *ebuf = buf; \
-	return val; \
+    type val = 0; \
+    for (;;) { \
+        char c = *buf++; \
+        if (c < '0' || c > '9') break; \
+        val = 10 * val + c - '0'; \
+    } \
+    if (ebuf != NULL) *ebuf = buf; \
+    return val; \
 }
 
 STR_TO_TYPE_FUNC(lstrtopos, POSITION);
@@ -823,7 +823,7 @@ less_printf(fmt, parg)
  * If some other non-trivial char is pressed, unget it, so it will
  * become the next command.
  */
-	public void
+    public void
 get_return(VOID_PARAM)
 {
     int c;

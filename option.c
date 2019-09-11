@@ -69,227 +69,227 @@ propt(c)
 scan_option(s)
     char *s;
 {
-	struct loption *o;
-	int optc;
-	char *optname;
-	char *printopt;
-	char *str;
-	int set_default;
-	int lc;
-	int err;
-	PARG parg;
+    struct loption *o;
+    int optc;
+    char *optname;
+    char *printopt;
+    char *str;
+    int set_default;
+    int lc;
+    int err;
+    PARG parg;
 
-	if (s == NULL)
-		return;
+    if (s == NULL)
+        return;
 
-	/*
-	 * If we have a pending option which requires an argument,
-	 * handle it now.
-	 * This happens if the previous option was, for example, "-P"
-	 * without a following string.  In that case, the current
-	 * option is simply the argument for the previous option.
-	 */
-	if (pendopt != NULL)
-	{
-		switch (pendopt->otype & OTYPE)
-		{
-		case STRING:
-			(*pendopt->ofunc)(INIT, s);
-			break;
-		case NUMBER:
-			printopt = opt_desc(pendopt);
-			*(pendopt->ovar) = getnum(&s, printopt, (int*)NULL);
-			break;
-		}
-		pendopt = NULL;
-		return;
-	}
+    /*
+     * If we have a pending option which requires an argument,
+     * handle it now.
+     * This happens if the previous option was, for example, "-P"
+     * without a following string.  In that case, the current
+     * option is simply the argument for the previous option.
+     */
+    if (pendopt != NULL)
+    {
+        switch (pendopt->otype & OTYPE)
+        {
+        case STRING:
+            (*pendopt->ofunc)(INIT, s);
+            break;
+        case NUMBER:
+            printopt = opt_desc(pendopt);
+            *(pendopt->ovar) = getnum(&s, printopt, (int*)NULL);
+            break;
+        }
+        pendopt = NULL;
+        return;
+    }
 
-	set_default = FALSE;
-	optname = NULL;
+    set_default = FALSE;
+    optname = NULL;
 
-	while (*s != '\0')
-	{
-		/*
-		 * Check some special cases first.
-		 */
-		switch (optc = *s++)
-		{
-		case ' ':
-		case '\t':
-		case END_OPTION_STRING:
-			continue;
-		case '-':
-			/*
-			 * "--" indicates an option name instead of a letter.
-			 */
-			if (*s == '-')
-			{
-				optname = ++s;
-				break;
-			}
-			/*
-			 * "-+" means set these options back to their defaults.
-			 * (They may have been set otherwise by previous 
-			 * options.)
-			 */
-			set_default = (*s == '+');
-			if (set_default)
-				s++;
-			continue;
-		case '+':
-			/*
-			 * An option prefixed by a "+" is ungotten, so 
-			 * that it is interpreted as less commands 
-			 * processed at the start of the first input file.
-			 * "++" means process the commands at the start of
-			 * EVERY input file.
-			 */
-			plusoption = TRUE;
-			s = optstring(s, &str, propt('+'), NULL);
-			if (s == NULL)
-				return;
-			if (*str == '+')
-			{
-				if (every_first_cmd != NULL)
-					free(every_first_cmd);
-				every_first_cmd = save(str+1);
-			} else
-			{
-				ungetcc(CHAR_END_COMMAND);
-				ungetsc(str);
-			}
-			free(str);
-			continue;
-		case '0':  case '1':  case '2':  case '3':  case '4':
-		case '5':  case '6':  case '7':  case '8':  case '9':
-			/*
-			 * Special "more" compatibility form "-<number>"
-			 * instead of -z<number> to set the scrolling 
-			 * window size.
-			 */
-			s--;
-			optc = 'z';
-			break;
-		case 'n':
-			if (less_is_more)
-				optc = 'z';
-			break;
-		}
+    while (*s != '\0')
+    {
+        /*
+         * Check some special cases first.
+         */
+        switch (optc = *s++)
+        {
+        case ' ':
+        case '\t':
+        case END_OPTION_STRING:
+            continue;
+        case '-':
+            /*
+             * "--" indicates an option name instead of a letter.
+             */
+            if (*s == '-')
+            {
+                optname = ++s;
+                break;
+            }
+            /*
+             * "-+" means set these options back to their defaults.
+             * (They may have been set otherwise by previous
+             * options.)
+             */
+            set_default = (*s == '+');
+            if (set_default)
+                s++;
+            continue;
+        case '+':
+            /*
+             * An option prefixed by a "+" is ungotten, so
+             * that it is interpreted as less commands
+             * processed at the start of the first input file.
+             * "++" means process the commands at the start of
+             * EVERY input file.
+             */
+            plusoption = TRUE;
+            s = optstring(s, &str, propt('+'), NULL);
+            if (s == NULL)
+                return;
+            if (*str == '+')
+            {
+                if (every_first_cmd != NULL)
+                    free(every_first_cmd);
+                every_first_cmd = save(str+1);
+            } else
+            {
+                ungetcc(CHAR_END_COMMAND);
+                ungetsc(str);
+            }
+            free(str);
+            continue;
+        case '0':  case '1':  case '2':  case '3':  case '4':
+        case '5':  case '6':  case '7':  case '8':  case '9':
+            /*
+             * Special "more" compatibility form "-<number>"
+             * instead of -z<number> to set the scrolling
+             * window size.
+             */
+            s--;
+            optc = 'z';
+            break;
+        case 'n':
+            if (less_is_more)
+                optc = 'z';
+            break;
+        }
 
-		/*
-		 * Not a special case.
-		 * Look up the option letter in the option table.
-		 */
-		err = 0;
-		if (optname == NULL)
-		{
-			printopt = propt(optc);
-			lc = ASCII_IS_LOWER(optc);
-			o = findopt(optc);
-		} else
-		{
-			printopt = optname;
-			lc = ASCII_IS_LOWER(optname[0]);
-			o = findopt_name(&optname, NULL, &err);
-			s = optname;
-			optname = NULL;
-			if (*s == '\0' || *s == ' ')
-			{
-				/*
-				 * The option name matches exactly.
-				 */
-				;
-			} else if (*s == '=')
-			{
-				/*
-				 * The option name is followed by "=value".
-				 */
-				if (o != NULL &&
-				    (o->otype & OTYPE) != STRING &&
-				    (o->otype & OTYPE) != NUMBER)
-				{
-					parg.p_string = printopt;
-					error("The %s option should not be followed by =",
-						&parg);
-					return;
-				}
-				s++;
-			} else
-			{
-				/*
-				 * The specified name is longer than the
-				 * real option name.
-				 */
-				o = NULL;
-			}
-		}
-		if (o == NULL)
-		{
-			parg.p_string = printopt;
-			if (err == OPT_AMBIG)
-				error("%s is an ambiguous abbreviation (\"less --help\" for help)",
-					&parg);
-			else
-				error("There is no %s option (\"less --help\" for help)",
-					&parg);
-			return;
-		}
+        /*
+         * Not a special case.
+         * Look up the option letter in the option table.
+         */
+        err = 0;
+        if (optname == NULL)
+        {
+            printopt = propt(optc);
+            lc = ASCII_IS_LOWER(optc);
+            o = findopt(optc);
+        } else
+        {
+            printopt = optname;
+            lc = ASCII_IS_LOWER(optname[0]);
+            o = findopt_name(&optname, NULL, &err);
+            s = optname;
+            optname = NULL;
+            if (*s == '\0' || *s == ' ')
+            {
+                /*
+                 * The option name matches exactly.
+                 */
+                ;
+            } else if (*s == '=')
+            {
+                /*
+                 * The option name is followed by "=value".
+                 */
+                if (o != NULL &&
+                    (o->otype & OTYPE) != STRING &&
+                    (o->otype & OTYPE) != NUMBER)
+                {
+                    parg.p_string = printopt;
+                    error("The %s option should not be followed by =",
+                        &parg);
+                    return;
+                }
+                s++;
+            } else
+            {
+                /*
+                 * The specified name is longer than the
+                 * real option name.
+                 */
+                o = NULL;
+            }
+        }
+        if (o == NULL)
+        {
+            parg.p_string = printopt;
+            if (err == OPT_AMBIG)
+                error("%s is an ambiguous abbreviation (\"less --help\" for help)",
+                    &parg);
+            else
+                error("There is no %s option (\"less --help\" for help)",
+                    &parg);
+            return;
+        }
 
-		str = NULL;
-		switch (o->otype & OTYPE)
-		{
-		case BOOL:
-			if (set_default)
-				*(o->ovar) = o->odefault;
-			else
-				*(o->ovar) = ! o->odefault;
-			break;
-		case TRIPLE:
-			if (set_default)
-				*(o->ovar) = o->odefault;
-			else
-				*(o->ovar) = flip_triple(o->odefault, lc);
-			break;
-		case STRING:
-			if (*s == '\0')
-			{
-				/*
-				 * Set pendopt and return.
-				 * We will get the string next time
-				 * scan_option is called.
-				 */
-				pendopt = o;
-				return;
-			}
-			/*
-			 * Don't do anything here.
-			 * All processing of STRING options is done by 
-			 * the handling function.
-			 */
-			while (*s == ' ')
-				s++;
-			s = optstring(s, &str, printopt, o->odesc[1]);
-			if (s == NULL)
-				return;
-			break;
-		case NUMBER:
-			if (*s == '\0')
-			{
-				pendopt = o;
-				return;
-			}
-			*(o->ovar) = getnum(&s, printopt, (int*)NULL);
-			break;
-		}
-		/*
-		 * If the option has a handling function, call it.
-		 */
-		if (o->ofunc != NULL)
-			(*o->ofunc)(INIT, str);
-		if (str != NULL)
-			free(str);
-	}
+        str = NULL;
+        switch (o->otype & OTYPE)
+        {
+        case BOOL:
+            if (set_default)
+                *(o->ovar) = o->odefault;
+            else
+                *(o->ovar) = ! o->odefault;
+            break;
+        case TRIPLE:
+            if (set_default)
+                *(o->ovar) = o->odefault;
+            else
+                *(o->ovar) = flip_triple(o->odefault, lc);
+            break;
+        case STRING:
+            if (*s == '\0')
+            {
+                /*
+                 * Set pendopt and return.
+                 * We will get the string next time
+                 * scan_option is called.
+                 */
+                pendopt = o;
+                return;
+            }
+            /*
+             * Don't do anything here.
+             * All processing of STRING options is done by
+             * the handling function.
+             */
+            while (*s == ' ')
+                s++;
+            s = optstring(s, &str, printopt, o->odesc[1]);
+            if (s == NULL)
+                return;
+            break;
+        case NUMBER:
+            if (*s == '\0')
+            {
+                pendopt = o;
+                return;
+            }
+            *(o->ovar) = getnum(&s, printopt, (int*)NULL);
+            break;
+        }
+        /*
+         * If the option has a handling function, call it.
+         */
+        if (o->ofunc != NULL)
+            (*o->ofunc)(INIT, str);
+        if (str != NULL)
+            free(str);
+    }
 }
 
 /*
@@ -532,7 +532,7 @@ opt_prompt(o)
  * In that case, the current option is taken to be the string for
  * the previous option.
  */
-	public int
+    public int
 isoptpending(VOID_PARAM)
 {
     return (pendopt != NULL);
@@ -553,7 +553,7 @@ nostring(printopt)
 /*
  * Print error message if a STRING type option is not followed by a string.
  */
-	public void
+    public void
 nopendopt(VOID_PARAM)
 {
     nostring(opt_desc(pendopt));
@@ -701,7 +701,7 @@ getfraction(sp, printopt, errp)
 /*
  * Get the value of the -e flag.
  */
-	public int
+    public int
 get_quit_at_eof(VOID_PARAM)
 {
     if (!less_is_more)

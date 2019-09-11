@@ -36,12 +36,12 @@ enum tag_result {
  * Tag type
  */
 enum {
-	T_CTAGS,	/* 'tags': standard and extended format (ctags) */
-	T_CTAGS_X,	/* stdin: cross reference format (ctags) */
-	T_GTAGS,	/* 'GTAGS': function definition (global) */
-	T_GRTAGS,	/* 'GRTAGS': function reference (global) */
-	T_GSYMS,	/* 'GSYMS': other symbols (global) */
-	T_GPATH		/* 'GPATH': path name (global) */
+    T_CTAGS,    /* 'tags': standard and extended format (ctags) */
+    T_CTAGS_X,  /* stdin: cross reference format (ctags) */
+    T_GTAGS,    /* 'GTAGS': function definition (global) */
+    T_GRTAGS,   /* 'GRTAGS': function reference (global) */
+    T_GSYMS,    /* 'GSYMS': other symbols (global) */
+    T_GPATH     /* 'GPATH': path name (global) */
 };
 
 static enum tag_result findctag();
@@ -88,7 +88,7 @@ static struct tag *curtag;
 /*
  * Delete tag structures.
  */
-	public void
+    public void
 cleantags(VOID_PARAM)
 {
     struct tag *tp;
@@ -140,7 +140,7 @@ maketagent(name, file, linenum, pattern, endline)
 /*
  * Get tag mode.
  */
-	public int
+    public int
 gettagtype(VOID_PARAM)
 {
     int f;
@@ -202,7 +202,7 @@ findtag(tag)
 /*
  * Search for a tag.
  */
-	public POSITION
+    public POSITION
 tagsearch(VOID_PARAM)
 {
     if (curtag == NULL)
@@ -244,7 +244,7 @@ prevtag(n)
 /*
  * Return the total number of tags.
  */
-	public int
+    public int
 ntags(VOID_PARAM)
 {
     return total;
@@ -253,7 +253,7 @@ ntags(VOID_PARAM)
 /*
  * Return the sequence number of current tag.
  */
-	public int
+    public int
 curr_tag(VOID_PARAM)
 {
     return curseq;
@@ -379,7 +379,7 @@ findctag(tag)
 /*
  * Edit current tagged file.
  */
-	public int
+    public int
 edit_tagfile(VOID_PARAM)
 {
     if (curtag == NULL)
@@ -416,7 +416,7 @@ curtag_match(char const *line, POSITION linepos)
  *  regcmp vs. re_comp) behave differently in the presence of
  *  parentheses (which are almost always found in a tag).
  */
-	static POSITION
+    static POSITION
 ctagsearch(VOID_PARAM)
 {
     POSITION pos, linepos;
@@ -524,43 +524,43 @@ findgtag(tag, type)
 #if !HAVE_POPEN
         return TAG_NOFILE;
 #else
-		char *command;
-		char *flag;
-		char *qtag;
-		char *cmd = lgetenv("LESSGLOBALTAGS");
+        char *command;
+        char *flag;
+        char *qtag;
+        char *cmd = lgetenv("LESSGLOBALTAGS");
 
-		if (isnullenv(cmd))
-			return TAG_NOFILE;
-		/* Get suitable flag value for global(1). */
-		switch (type)
-		{
-		case T_GTAGS:
-			flag = "" ;
-			break;
-		case T_GRTAGS:
-			flag = "r";
-			break;
-		case T_GSYMS:
-			flag = "s";
-			break;
-		case T_GPATH:
-			flag = "P";
-			break;
-		default:
-			return TAG_NOTYPE;
-		}
+        if (isnullenv(cmd))
+            return TAG_NOFILE;
+        /* Get suitable flag value for global(1). */
+        switch (type)
+        {
+        case T_GTAGS:
+            flag = "" ;
+            break;
+        case T_GRTAGS:
+            flag = "r";
+            break;
+        case T_GSYMS:
+            flag = "s";
+            break;
+        case T_GPATH:
+            flag = "P";
+            break;
+        default:
+            return TAG_NOTYPE;
+        }
 
-		/* Get our data from global(1). */
-		qtag = shell_quote(tag);
-		if (qtag == NULL)
-			qtag = tag;
-		command = (char *) ecalloc(strlen(cmd) + strlen(flag) +
-				strlen(qtag) + 5, sizeof(char));
-		sprintf(command, "%s -x%s %s", cmd, flag, qtag);
-		if (qtag != tag)
-			free(qtag);
-		fp = popen(command, "r");
-		free(command);
+        /* Get our data from global(1). */
+        qtag = shell_quote(tag);
+        if (qtag == NULL)
+            qtag = tag;
+        command = (char *) ecalloc(strlen(cmd) + strlen(flag) +
+                strlen(qtag) + 5, sizeof(char));
+        sprintf(command, "%s -x%s %s", cmd, flag, qtag);
+        if (qtag != tag)
+            free(qtag);
+        fp = popen(command, "r");
+        free(command);
 #endif
     }
     if (fp != NULL)
@@ -630,7 +630,7 @@ static int circular = 0;    /* 1: circular tag structure */
  * by findgtag().  The next call to gtagsearch() will try to position at the
  * appropriate tag.
  */
-	static char *
+    static char *
 nextgtag(VOID_PARAM)
 {
     struct tag *tp;
@@ -660,7 +660,7 @@ nextgtag(VOID_PARAM)
  * setup by findgtat().  The next call to gtagsearch() will try to position
  * at the appropriate tag.
  */
-	static char *
+    static char *
 prevgtag(VOID_PARAM)
 {
     struct tag *tp;
@@ -690,7 +690,7 @@ prevgtag(VOID_PARAM)
  * using either findtag() or one of nextgtag() and prevgtag().  Returns -1
  * if it was unable to position at the tag, 0 if successful.
  */
-	static POSITION
+    static POSITION
 gtagsearch(VOID_PARAM)
 {
     if (curtag == NULL)

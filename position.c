@@ -21,7 +21,7 @@
 #include "less.h"
 #include "position.h"
 
-static POSITION *table = NULL;	/* The position table */
+static POSITION *table = NULL;  /* The position table */
 static int table_size = 0;
 
 extern int sc_width, sc_height;
@@ -91,7 +91,7 @@ add_back_pos(pos)
 /*
  * Initialize the position table, done whenever we clear the screen.
  */
-	public void
+    public void
 pos_clear(VOID_PARAM)
 {
     int i;
@@ -103,7 +103,7 @@ pos_clear(VOID_PARAM)
 /*
  * Allocate or reallocate the position table.
  */
-	public void
+    public void
 pos_init(VOID_PARAM)
 {
     struct scrpos scrpos;
@@ -149,7 +149,7 @@ onscreen(pos)
 /*
  * See if the entire screen is empty.
  */
-	public int
+    public int
 empty_screen(VOID_PARAM)
 {
     return (empty_lines(0, sc_height-1));
@@ -181,46 +181,46 @@ get_scrpos(scrpos, where)
     struct scrpos *scrpos;
     int where;
 {
-	int i;
-	int dir;
-	int last;
+    int i;
+    int dir;
+    int last;
 
-	switch (where)
-	{
-	case TOP:
-		i = 0; dir = +1; last = sc_height-2;
-		break;
-	case BOTTOM: case BOTTOM_PLUS_ONE:
-		i = sc_height-2; dir = -1; last = 0;
-		break;
-	default:
-		i = where;
-		if (table[i] == NULL_POSITION) {
-			scrpos->pos = NULL_POSITION;
-			return;
-		}
-		/* Values of dir and last don't matter after this. */
-		break;
-	}
+    switch (where)
+    {
+    case TOP:
+        i = 0; dir = +1; last = sc_height-2;
+        break;
+    case BOTTOM: case BOTTOM_PLUS_ONE:
+        i = sc_height-2; dir = -1; last = 0;
+        break;
+    default:
+        i = where;
+        if (table[i] == NULL_POSITION) {
+            scrpos->pos = NULL_POSITION;
+            return;
+        }
+        /* Values of dir and last don't matter after this. */
+        break;
+    }
 
-	/*
-	 * Find the first line on the screen which has something on it,
-	 * and return the screen line number and the file position.
-	 */
-	for (;; i += dir)
-	{
-		if (table[i] != NULL_POSITION)
-		{
-			scrpos->ln = i+1;
-			scrpos->pos = table[i];
-			return;
-		}
-		if (i == last) break;
-	}
-	/*
-	 * The screen is empty.
-	 */
-	scrpos->pos = NULL_POSITION;
+    /*
+     * Find the first line on the screen which has something on it,
+     * and return the screen line number and the file position.
+     */
+    for (;; i += dir)
+    {
+        if (table[i] != NULL_POSITION)
+        {
+            scrpos->ln = i+1;
+            scrpos->pos = table[i];
+            return;
+        }
+        if (i == last) break;
+    }
+    /*
+     * The screen is empty.
+     */
+    scrpos->pos = NULL_POSITION;
 }
 
 /*

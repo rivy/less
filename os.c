@@ -175,7 +175,7 @@ start:
 /*
  * Interrupt a pending iread().
  */
-	public void
+    public void
 intread(VOID_PARAM)
 {
     LONG_JUMP(read_label, 1);
@@ -185,7 +185,7 @@ intread(VOID_PARAM)
  * Return the current time.
  */
 #if HAVE_TIME
-	public time_type
+    public time_type
 get_time(VOID_PARAM)
 {
     time_type t;

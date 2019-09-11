@@ -24,14 +24,14 @@
 extern IFILE    curr_ifile;
 
 struct ifile {
-    struct ifile *h_next;		/* Links for command line list */
+    struct ifile *h_next;       /* Links for command line list */
     struct ifile *h_prev;
-    char *h_filename;		/* Name of the file */
-    void *h_filestate;		/* File state (used in ch.c) */
-    int h_index;			/* Index within command line list */
-    int h_hold;			/* Hold count */
-    char h_opened;			/* Has this ifile been opened? */
-    struct scrpos h_scrpos;		/* Saved position within the file */
+    char *h_filename;       /* Name of the file */
+    void *h_filestate;      /* File state (used in ch.c) */
+    int h_index;            /* Index within command line list */
+    int h_hold;         /* Hold count */
+    char h_opened;          /* Has this ifile been opened? */
+    struct scrpos h_scrpos;     /* Saved position within the file */
     void *h_altpipe;                /* Alt pipe */
     char *h_altfilename;            /* Alt filename */
 };
@@ -109,25 +109,25 @@ new_ifile(filename, prev)
     char *filename;
     struct ifile *prev;
 {
-	struct ifile *p;
+    struct ifile *p;
 
-	/*
-	 * Allocate and initialize structure.
-	 */
-	p = (struct ifile *) ecalloc(1, sizeof(struct ifile));
-	p->h_filename = save(filename);
-	p->h_scrpos.pos = NULL_POSITION;
-	p->h_opened = 0;
-	p->h_hold = 0;
-	p->h_filestate = NULL;
-	link_ifile(p, prev);
-	/*
-	 * {{ It's dodgy to call mark.c functions from here;
-	 *    there is potentially dangerous recursion.
-	 *    Probably need to revisit this design. }}
-	 */
-	mark_check_ifile(ext_ifile(p));
-	return (p);
+    /*
+     * Allocate and initialize structure.
+     */
+    p = (struct ifile *) ecalloc(1, sizeof(struct ifile));
+    p->h_filename = save(filename);
+    p->h_scrpos.pos = NULL_POSITION;
+    p->h_opened = 0;
+    p->h_hold = 0;
+    p->h_filestate = NULL;
+    link_ifile(p, prev);
+    /*
+     * {{ It's dodgy to call mark.c functions from here;
+     *    there is potentially dangerous recursion.
+     *    Probably need to revisit this design. }}
+     */
+    mark_check_ifile(ext_ifile(p));
+    return (p);
 }
 
 /*
@@ -203,7 +203,7 @@ getoff_ifile(ifile)
 /*
  * Return the number of ifiles.
  */
-	public int
+    public int
 nifile(VOID_PARAM)
 {
     return (ifiles);
@@ -216,27 +216,27 @@ nifile(VOID_PARAM)
 find_ifile(filename)
     char *filename;
 {
-	struct ifile *p;
-	char *rfilename = lrealpath(filename);
+    struct ifile *p;
+    char *rfilename = lrealpath(filename);
 
-	for (p = anchor.h_next;  p != &anchor;  p = p->h_next)
-	{
-		if (strcmp(filename, p->h_filename) == 0 ||
-		    strcmp(rfilename, p->h_filename) == 0)
-		{
-			/*
-			 * If given name is shorter than the name we were
-			 * previously using for this file, adopt shorter name.
-			 */
-			if (strlen(filename) < strlen(p->h_filename))
-				strcpy(p->h_filename, filename);
-			break;
-		}
-	}
-	free(rfilename);
-	if (p == &anchor)
-		p = NULL;
-	return (p);
+    for (p = anchor.h_next;  p != &anchor;  p = p->h_next)
+    {
+        if (strcmp(filename, p->h_filename) == 0 ||
+            strcmp(rfilename, p->h_filename) == 0)
+        {
+            /*
+             * If given name is shorter than the name we were
+             * previously using for this file, adopt shorter name.
+             */
+            if (strlen(filename) < strlen(p->h_filename))
+                strcpy(p->h_filename, filename);
+            break;
+        }
+    }
+    free(rfilename);
+    if (p == &anchor)
+        p = NULL;
+    return (p);
 }
 
 /*
@@ -385,7 +385,7 @@ get_altfilename(ifile)
 }
 
 #if 0
-	public void
+    public void
 if_dump(VOID_PARAM)
 {
     struct ifile *p;

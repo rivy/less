@@ -128,9 +128,9 @@
 #define PATHNAME_SEP    "\\"
 
 /*
- * HAVE_ANSI_PROTOS	is 1 if your compiler supports ANSI function prototypes.
+ * HAVE_ANSI_PROTOS is 1 if your compiler supports ANSI function prototypes.
  */
-#define HAVE_ANSI_PROTOS	1
+#define HAVE_ANSI_PROTOS    1
 
 /*
  * HAVE_SYS_TYPES_H is 1 if your system has <sys/types.h>.
@@ -173,15 +173,15 @@
  * Sizes of various buffers.
  */
 #if 0 /* old sizes for small memory machines */
-#define	CMDBUF_SIZE	512	/* Buffer for multichar commands */
-#define	UNGOT_SIZE	100	/* Max chars to unget() */
-#define	LINEBUF_SIZE	1024	/* Max size of line in input file */
-#define	OUTBUF_SIZE	1024	/* Output buffer */
-#define	PROMPT_SIZE	200	/* Max size of prompt string */
-#define	TERMBUF_SIZE	2048	/* Termcap buffer for tgetent */
-#define	TERMSBUF_SIZE	1024	/* Buffer to hold termcap strings */
-#define	TAGLINE_SIZE	512	/* Max size of line in tags file */
-#define	TABSTOP_MAX	32	/* Max number of custom tab stops */
+#define CMDBUF_SIZE 512 /* Buffer for multichar commands */
+#define UNGOT_SIZE  100 /* Max chars to unget() */
+#define LINEBUF_SIZE    1024    /* Max size of line in input file */
+#define OUTBUF_SIZE 1024    /* Output buffer */
+#define PROMPT_SIZE 200 /* Max size of prompt string */
+#define TERMBUF_SIZE    2048    /* Termcap buffer for tgetent */
+#define TERMSBUF_SIZE   1024    /* Buffer to hold termcap strings */
+#define TAGLINE_SIZE    512 /* Max size of line in tags file */
+#define TABSTOP_MAX 32  /* Max number of custom tab stops */
 #else /* more reasonable sizes for modern machines */
 #define CMDBUF_SIZE 2048    /* Buffer for multichar commands */
 #define UNGOT_SIZE  200 /* Max chars to unget() */
@@ -218,18 +218,18 @@
 /* #undef HAVE_REGCMP */
 #ifdef MINGW
     #ifdef USE_POSIX_REGCOMP
-	#define HAVE_POSIX_REGCOMP 1
+    #define HAVE_POSIX_REGCOMP 1
     #else
-	#ifdef USE_GNU_REGEX
-	    #define HAVE_GNU_REGEX  1
+    #ifdef USE_GNU_REGEX
+        #define HAVE_GNU_REGEX  1
         #else
             #ifdef USE_REGEXP_C
-		#define HAVE_V8_REGCOMP 1
-		#define HAVE_REGEXEC2   1
+        #define HAVE_V8_REGCOMP 1
+        #define HAVE_REGEXEC2   1
             #else
                 #define NO_REGEX 1
-	    #endif
-	#endif
+        #endif
+    #endif
     #endif
 #else
 #define HAVE_V8_REGCOMP 1
@@ -377,9 +377,9 @@
 #endif
 #endif
 
-#define	popen	_popen
-#if !defined(_MSC_VER) || (_MSC_VER < 1900) 
-#define snprintf	_snprintf
+#define popen   _popen
+#if !defined(_MSC_VER) || (_MSC_VER < 1900)
+#define snprintf    _snprintf
 #endif
 
 #ifndef MINGW

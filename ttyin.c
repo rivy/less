@@ -35,21 +35,21 @@ extern int wheel_lines;
 /*
  * Open keyboard for input.
  */
-	public void
+    public void
 open_getchr(VOID_PARAM)
 {
 #if MSDOS_COMPILER==WIN32C
-	/* Need this to let child processes inherit our console handle */
-	SECURITY_ATTRIBUTES sa;
-	memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
-	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-	sa.bInheritHandle = TRUE;
-	tty = CreateFile("CONIN$", GENERIC_READ | GENERIC_WRITE,
-			FILE_SHARE_READ, &sa, 
-			OPEN_EXISTING, 0L, NULL);
-	GetConsoleMode(tty, &console_mode);
-	/* Make sure we get Ctrl+C events. */
-	SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
+    /* Need this to let child processes inherit our console handle */
+    SECURITY_ATTRIBUTES sa;
+    memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.bInheritHandle = TRUE;
+    tty = CreateFile("CONIN$", GENERIC_READ | GENERIC_WRITE,
+            FILE_SHARE_READ, &sa,
+            OPEN_EXISTING, 0L, NULL);
+    GetConsoleMode(tty, &console_mode);
+    /* Make sure we get Ctrl+C events. */
+    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
 #else
 #if MSDOS_COMPILER
     extern int fd0;
@@ -89,12 +89,12 @@ open_getchr(VOID_PARAM)
 /*
  * Close the keyboard.
  */
-	public void
+    public void
 close_getchr(VOID_PARAM)
 {
 #if MSDOS_COMPILER==WIN32C
-	SetConsoleMode(tty, console_mode);
-	CloseHandle(tty);
+    SetConsoleMode(tty, console_mode);
+    CloseHandle(tty);
 #endif
 }
 
@@ -102,39 +102,39 @@ close_getchr(VOID_PARAM)
 /*
  * Close the pipe, restoring the keyboard (CMD resets it, losing the mouse).
  */
-	int
+    int
 pclose(f)
-	FILE *f;
+    FILE *f;
 {
-	int result;
+    int result;
 
-	result = _pclose(f);
-	SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
-	return result;
+    result = _pclose(f);
+    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
+    return result;
 }
 #endif
 
 /*
  * Get the number of lines to scroll when mouse wheel is moved.
  */
-	public int
+    public int
 default_wheel_lines(VOID_PARAM)
 {
-	int lines = 1;
+    int lines = 1;
 #if MSDOS_COMPILER==WIN32C
-	if (SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &lines, 0))
-	{
-		if (lines == WHEEL_PAGESCROLL)
-			lines = 3;
-	}
+    if (SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &lines, 0))
+    {
+        if (lines == WHEEL_PAGESCROLL)
+            lines = 3;
+    }
 #endif
-	return lines;
+    return lines;
 }
 
 /*
  * Get a character from the keyboard.
  */
-	public int
+    public int
 getchr(VOID_PARAM)
 {
     char c;
@@ -148,9 +148,9 @@ getchr(VOID_PARAM)
          */
         flush();
 #if MSDOS_COMPILER==WIN32C
-		if (ABORT_SIGS())
-			return (READ_INTR);
-		c = WIN32getch();
+        if (ABORT_SIGS())
+            return (READ_INTR);
+        c = WIN32getch();
 #else
         c = getch();
 #endif
@@ -175,36 +175,36 @@ getchr(VOID_PARAM)
         }
 #endif
 #if 0 /* allow entering arbitrary hex chars for testing */
-		/* ctrl-A followed by two hex chars makes a byte */
-	{
-		static int hex_in = 0;
-		static int hex_value = 0;
-		if (c == CONTROL('A'))
-		{
-			hex_in = 2;
-			result = 0;
-			continue;
-		}
-		if (hex_in > 0)
-		{
-			int v;
-			if (c >= '0' && c <= '9')
-				v = c - '0';
-			else if (c >= 'a' && c <= 'f')
-				v = c - 'a' + 10;
-			else if (c >= 'A' && c <= 'F')
-				v = c - 'A' + 10;
-			else
-				v = 0;
-			hex_value = (hex_value << 4) | v;
-			if (--hex_in > 0)
-			{
-				result = 0;
-				continue;
-			}
-			c = hex_value;
-		}
-	}
+        /* ctrl-A followed by two hex chars makes a byte */
+    {
+        static int hex_in = 0;
+        static int hex_value = 0;
+        if (c == CONTROL('A'))
+        {
+            hex_in = 2;
+            result = 0;
+            continue;
+        }
+        if (hex_in > 0)
+        {
+            int v;
+            if (c >= '0' && c <= '9')
+                v = c - '0';
+            else if (c >= 'a' && c <= 'f')
+                v = c - 'a' + 10;
+            else if (c >= 'A' && c <= 'F')
+                v = c - 'A' + 10;
+            else
+                v = 0;
+            hex_value = (hex_value << 4) | v;
+            if (--hex_in > 0)
+            {
+                result = 0;
+                continue;
+            }
+            c = hex_value;
+        }
+    }
 #endif
         /*
          * Various parts of the program cannot handle

@@ -45,7 +45,7 @@ extern char *tagoption;
 /*
  * Sound the bell to indicate user is trying to move past end of file.
  */
-	static void
+    static void
 eof_bell(VOID_PARAM)
 {
     if (quiet == NOT_QUIET)
@@ -57,7 +57,7 @@ eof_bell(VOID_PARAM)
 /*
  * Check to see if the end of file is currently displayed.
  */
-	public int
+    public int
 eof_displayed(VOID_PARAM)
 {
     POSITION pos;
@@ -84,7 +84,7 @@ eof_displayed(VOID_PARAM)
 /*
  * Check to see if the entire file is currently displayed.
  */
-	public int
+    public int
 entire_file_displayed(VOID_PARAM)
 {
     POSITION pos;
@@ -104,7 +104,7 @@ entire_file_displayed(VOID_PARAM)
  * of the screen; this can happen when we display a short file
  * for the first time.
  */
-	public void
+    public void
 squish_check(VOID_PARAM)
 {
     if (!squished)
@@ -433,7 +433,7 @@ backward(n, force, only_last)
  * back_scroll, because the default case depends on sc_height and
  * top_scroll, as well as back_scroll.
  */
-	public int
+    public int
 get_back_scroll(VOID_PARAM)
 {
     if (no_back_scroll)
@@ -448,16 +448,16 @@ get_back_scroll(VOID_PARAM)
 /*
  * Will the entire file fit on one screen?
  */
-	public int
+    public int
 get_one_screen(VOID_PARAM)
 {
-	int nlines;
-	POSITION pos = ch_zero();
+    int nlines;
+    POSITION pos = ch_zero();
 
-	for (nlines = 0;  nlines < sc_height;  nlines++)
-	{
-		pos = forw_line(pos);
-		if (pos == NULL_POSITION) break;
-	}
-	return (nlines < sc_height);
+    for (nlines = 0;  nlines < sc_height;  nlines++)
+    {
+        pos = forw_line(pos);
+        if (pos == NULL_POSITION) break;
+    }
+    return (nlines < sc_height);
 }

@@ -65,7 +65,7 @@ static char *mp;
 /*
  * Initialize the prompt prototype strings.
  */
-	public void
+    public void
 init_prompt(VOID_PARAM)
 {
     prproto[0] = save(s_proto);
@@ -149,7 +149,7 @@ ap_int(num)
 /*
  * Append a question mark to the end of the message.
  */
-	static void
+    static void
 ap_quest(VOID_PARAM)
 {
     ap_str("?");
@@ -183,30 +183,30 @@ cond(c, where)
     char c;
     int where;
 {
-	POSITION len;
+    POSITION len;
 
-	switch (c)
-	{
-	case 'a':	/* Anything in the message yet? */
-		return (mp > message);
-	case 'b':	/* Current byte offset known? */
-		return (curr_byte(where) != NULL_POSITION);
-	case 'c':
-		return (hshift != 0);
-	case 'e':	/* At end of file? */
-		return (eof_displayed());
-	case 'f':	/* Filename known? */
-	case 'g':
-		return (strcmp(get_filename(curr_ifile), "-") != 0);
-	case 'l':	/* Line number known? */
-	case 'd':	/* Same as l */
-		if (!linenums)
-			return 0;
-		return (currline(where) != 0);
-	case 'L':	/* Final line number known? */
-	case 'D':	/* Final page number known? */
-		return (linenums && ch_length() != NULL_POSITION);
-	case 'm':	/* More than one file? */
+    switch (c)
+    {
+    case 'a':   /* Anything in the message yet? */
+        return (mp > message);
+    case 'b':   /* Current byte offset known? */
+        return (curr_byte(where) != NULL_POSITION);
+    case 'c':
+        return (hshift != 0);
+    case 'e':   /* At end of file? */
+        return (eof_displayed());
+    case 'f':   /* Filename known? */
+    case 'g':
+        return (strcmp(get_filename(curr_ifile), "-") != 0);
+    case 'l':   /* Line number known? */
+    case 'd':   /* Same as l */
+        if (!linenums)
+            return 0;
+        return (currline(where) != 0);
+    case 'L':   /* Final line number known? */
+    case 'D':   /* Final page number known? */
+        return (linenums && ch_length() != NULL_POSITION);
+    case 'm':   /* More than one file? */
 #if TAGS
         return (ntags() ? (ntags() > 1) : (nifile() > 1));
 #else
@@ -251,13 +251,13 @@ protochar(c, where, iseditproto)
     int where;
     int iseditproto;
 {
-	POSITION pos;
-	POSITION len;
-	int n;
-	LINENUM linenum;
-	LINENUM last_linenum;
-	IFILE h;
-	char *s;
+    POSITION pos;
+    POSITION len;
+    int n;
+    LINENUM linenum;
+    LINENUM last_linenum;
+    IFILE h;
+    char *s;
 
 #undef  PAGE_NUM
 #define PAGE_NUM(linenum)  ((((linenum) - 1) / (sc_height - 1)) + 1)
@@ -303,18 +303,18 @@ protochar(c, where, iseditproto)
         ap_str(editor);
         break;
 #endif
-	case 'f':	/* File name */
-		ap_str(get_filename(curr_ifile));
-		break;
-	case 'F':	/* Last component of file name */
-		ap_str(last_component(get_filename(curr_ifile)));
-		break;
-	case 'g':	/* Shell-escaped file name */
-		s = shell_quote(get_filename(curr_ifile));
-		ap_str(s);
-		free(s);
-		break;
-	case 'i':	/* Index into list of files */
+    case 'f':   /* File name */
+        ap_str(get_filename(curr_ifile));
+        break;
+    case 'F':   /* Last component of file name */
+        ap_str(last_component(get_filename(curr_ifile)));
+        break;
+    case 'g':   /* Shell-escaped file name */
+        s = shell_quote(get_filename(curr_ifile));
+        ap_str(s);
+        free(s);
+        break;
+    case 'i':   /* Index into list of files */
 #if TAGS
         if (ntags())
             ap_int(curr_tag());
@@ -559,7 +559,7 @@ pr_expand(proto, maxwidth)
 /*
  * Return a message suitable for printing by the "=" command.
  */
-	public char *
+    public char *
 eq_message(VOID_PARAM)
 {
     return (pr_expand(eqproto, 0));
@@ -571,7 +571,7 @@ eq_message(VOID_PARAM)
  * If we can't come up with an appropriate prompt, return NULL
  * and the caller will prompt with a colon.
  */
-	public char *
+    public char *
 pr_string(VOID_PARAM)
 {
     char *prompt;
@@ -588,7 +588,7 @@ pr_string(VOID_PARAM)
 /*
  * Return a message suitable for printing while waiting in the F command.
  */
-	public char *
+    public char *
 wait_message(VOID_PARAM)
 {
     return (pr_expand(wproto, sc_width-so_s_width-so_e_width-2));

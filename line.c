@@ -78,16 +78,16 @@ static POSITION mbc_pos;
 /*
  * Initialize from environment variables.
  */
-	public void
+    public void
 init_line(VOID_PARAM)
 {
-	end_ansi_chars = lgetenv("LESSANSIENDCHARS");
-	if (isnullenv(end_ansi_chars))
-		end_ansi_chars = "m";
+    end_ansi_chars = lgetenv("LESSANSIENDCHARS");
+    if (isnullenv(end_ansi_chars))
+        end_ansi_chars = "m";
 
-	mid_ansi_chars = lgetenv("LESSANSIMIDCHARS");
-	if (isnullenv(mid_ansi_chars))
-		mid_ansi_chars = "0123456789:;[?!\"'#%()*+ ";
+    mid_ansi_chars = lgetenv("LESSANSIMIDCHARS");
+    if (isnullenv(mid_ansi_chars))
+        mid_ansi_chars = "0123456789:;[?!\"'#%()*+ ";
 
     linebuf = (char *) ecalloc(LINEBUF_SIZE, sizeof(char));
     attr = (char *) ecalloc(LINEBUF_SIZE, sizeof(char));
@@ -97,7 +97,7 @@ init_line(VOID_PARAM)
 /*
  * Expand the line buffer.
  */
-	static int
+    static int
 expand_linebuf(VOID_PARAM)
 {
     /* Double the size of the line buffer. */
@@ -111,22 +111,22 @@ expand_linebuf(VOID_PARAM)
     char *new_buf = (char *) calloc(new_size, sizeof(char));
     char *new_attr = (char *) calloc(new_size, sizeof(char));
 #endif
-	if (new_buf == NULL || new_attr == NULL)
-	{
-		if (new_attr != NULL)
-			free(new_attr);
-		if (new_buf != NULL)
-			free(new_buf);
-		return 1;
-	}
+    if (new_buf == NULL || new_attr == NULL)
+    {
+        if (new_attr != NULL)
+            free(new_attr);
+        if (new_buf != NULL)
+            free(new_buf);
+        return 1;
+    }
 #if !HAVE_REALLOC
-	/*
-	 * We just calloc'd the buffers; copy the old contents.
-	 */
-	memcpy(new_buf, linebuf, size_linebuf * sizeof(char));
-	memcpy(new_attr, attr, size_linebuf * sizeof(char));
-	free(attr);
-	free(linebuf);
+    /*
+     * We just calloc'd the buffers; copy the old contents.
+     */
+    memcpy(new_buf, linebuf, size_linebuf * sizeof(char));
+    memcpy(new_attr, attr, size_linebuf * sizeof(char));
+    free(attr);
+    free(linebuf);
 #endif
     linebuf = new_buf;
     attr = new_attr;
@@ -147,7 +147,7 @@ is_ascii_char(ch)
 /*
  * Rewind the line buffer.
  */
-	public void
+    public void
 prewind(VOID_PARAM)
 {
     curr = 0;
@@ -170,9 +170,9 @@ prewind(VOID_PARAM)
  */
     static void
 set_linebuf(n, ch, a)
-	int n;
-	char ch;
-	char a;
+    int n;
+    char ch;
+    char a;
 {
     linebuf[n] = ch;
     attr[n] = a;
@@ -183,9 +183,9 @@ set_linebuf(n, ch, a)
  */
     static void
 add_linebuf(ch, a, w)
-	char ch;
-	char a;
-	int w;
+    char ch;
+    char a;
+    int w;
 {
     set_linebuf(curr++, ch, a);
     column += w;
@@ -386,7 +386,7 @@ pshift(shift)
 /*
  *
  */
-	public void
+    public void
 pshift_all(VOID_PARAM)
 {
     pshift(column);
@@ -510,7 +510,7 @@ pwidth(ch, a, prev_ch)
  * Delete to the previous base character in the line buffer.
  * Return 1 if one is found.
  */
-	static int
+    static int
 backc(VOID_PARAM)
 {
     LWCHAR prev_ch;
@@ -538,7 +538,7 @@ backc(VOID_PARAM)
 /*
  * Are we currently within a recognized ANSI escape sequence?
  */
-	static int
+    static int
 in_ansi_esc_seq(VOID_PARAM)
 {
     char *p;
@@ -1037,7 +1037,7 @@ do_append(ch, rep, pos)
 /*
  *
  */
-	public int
+    public int
 pflushmbc(VOID_PARAM)
 {
     int r = 0;
@@ -1054,7 +1054,7 @@ pflushmbc(VOID_PARAM)
 /*
  * Switch to normal attribute at end of line.
  */
-	static void
+    static void
 add_attr_normal(VOID_PARAM)
 {
     char *p = "\033[m";
@@ -1206,7 +1206,7 @@ gline(i, ap)
 /*
  * Indicate that there is no current line.
  */
-	public void
+    public void
 null_line(VOID_PARAM)
 {
     is_null_line = 1;
@@ -1340,7 +1340,7 @@ back_raw_line(curr_pos, linep, line_lenp)
 /*
  * Find the shift necessary to show the end of the longest displayed line.
  */
-	public int
+    public int
 rrshift(VOID_PARAM)
 {
     POSITION pos;

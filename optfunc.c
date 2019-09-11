@@ -204,7 +204,7 @@ opt_j(type, s)
     }
 }
 
-	public void
+    public void
 calc_jump_sline(VOID_PARAM)
 {
     if (jump_sline_fraction < 0)
@@ -268,7 +268,7 @@ opt_shift(type, s)
         break;
     }
 }
-	public void
+    public void
 calc_shift_count(VOID_PARAM)
 {
     if (shift_count_fraction < 0)
@@ -497,30 +497,30 @@ opt__V(type, s)
     int type;
     char *s;
 {
-	switch (type)
-	{
-	case TOGGLE:
-	case QUERY:
-		dispversion();
-		break;
-	case INIT:
-		/*
-		 * Force output to stdout per GNU standard for --version output.
-		 */
-		any_display = 1;
-		putstr("less ");
-		putstr(version);
-		putstr(" (");
-		putstr(pattern_lib_name());
-		putstr(" regular expressions)\n");
-		putstr("Copyright (C) 1984-2019  Mark Nudelman\n\n");
-		putstr("less comes with NO WARRANTY, to the extent permitted by law.\n");
-		putstr("For information about the terms of redistribution,\n");
-		putstr("see the file named README in the less distribution.\n");
-		putstr("Home page: http://www.greenwoodsoftware.com/less\n");
-		quit(QUIT_OK);
-		break;
-	}
+    switch (type)
+    {
+    case TOGGLE:
+    case QUERY:
+        dispversion();
+        break;
+    case INIT:
+        /*
+         * Force output to stdout per GNU standard for --version output.
+         */
+        any_display = 1;
+        putstr("less ");
+        putstr(version);
+        putstr(" (");
+        putstr(pattern_lib_name());
+        putstr(" regular expressions)\n");
+        putstr("Copyright (C) 1984-2019  Mark Nudelman\n\n");
+        putstr("less comes with NO WARRANTY, to the extent permitted by law.\n");
+        putstr("For information about the terms of redistribution,\n");
+        putstr("see the file named README in the less distribution.\n");
+        putstr("Home page: http://www.greenwoodsoftware.com/less\n");
+        quit(QUIT_OK);
+        break;
+    }
 }
 
 #if MSDOS_COMPILER
@@ -800,51 +800,51 @@ opt_query(type, s)
 /*
  * Handler for the --mouse option.
  */
-	/*ARGSUSED*/
-	public void
+    /*ARGSUSED*/
+    public void
 opt_mousecap(type, s)
-	int type;
-	char *s;
+    int type;
+    char *s;
 {
-	switch (type)
-	{
-	case TOGGLE:
-		if (mousecap == OPT_OFF)
-			deinit_mouse();
-		else
-			init_mouse();
-		break;
-	case INIT:
-	case QUERY:
-		break;
-	}
+    switch (type)
+    {
+    case TOGGLE:
+        if (mousecap == OPT_OFF)
+            deinit_mouse();
+        else
+            init_mouse();
+        break;
+    case INIT:
+    case QUERY:
+        break;
+    }
 }
 
 /*
  * Handler for the --wheel-lines option.
  */
-	/*ARGSUSED*/
-	public void
+    /*ARGSUSED*/
+    public void
 opt_wheel_lines(type, s)
-	int type;
-	char *s;
+    int type;
+    char *s;
 {
-	switch (type)
-	{
-	case INIT:
-	case TOGGLE:
-		if (wheel_lines <= 0)
-			wheel_lines = default_wheel_lines();
-		break;
-	case QUERY:
-		break;
-	}
+    switch (type)
+    {
+    case INIT:
+    case TOGGLE:
+        if (wheel_lines <= 0)
+            wheel_lines = default_wheel_lines();
+        break;
+    case QUERY:
+        break;
+    }
 }
 
 /*
  * Get the "screen window" size.
  */
-	public int
+    public int
 get_swindow(VOID_PARAM)
 {
     if (swindow > 0)

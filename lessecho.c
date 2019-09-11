@@ -37,14 +37,14 @@ static char meta_escape_buf[2];
 static char metachars[64] = "";
 static int num_metachars = 0;
 
-	static void
+    static void
 pr_usage(VOID_PARAM)
 {
     fprintf(stderr,
         "usage: lessecho [-ox] [-cx] [-pn] [-dn] [-mx] [-nn] [-ex] [-fn] [-a] file ...\n");
 }
 
-	static void
+    static void
 pr_version(VOID_PARAM)
 {
     char *p;

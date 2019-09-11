@@ -244,7 +244,7 @@ icharset(name, no_error)
 /*
  * Define a charset, given a locale name.
  */
-	static void
+    static void
 ilocale(VOID_PARAM)
 {
     int c;
@@ -314,7 +314,7 @@ setfmt(s, fmtvarptr, attrptr, default_fmt)
 /*
  *
  */
-	static void
+    static void
 set_charset(VOID_PARAM)
 {
     char *s;
@@ -327,22 +327,22 @@ set_charset(VOID_PARAM)
         if (icharset("utf-8", 1))
             return;
 #endif
-	/*
-	 * See if environment variable LESSCHARSET is defined.
-	 */
-	s = lgetenv("LESSCHARSET");
-	if (icharset(s, 0))
-		return;
+    /*
+     * See if environment variable LESSCHARSET is defined.
+     */
+    s = lgetenv("LESSCHARSET");
+    if (icharset(s, 0))
+        return;
 
-	/*
-	 * LESSCHARSET is not defined: try LESSCHARDEF.
-	 */
-	s = lgetenv("LESSCHARDEF");
-	if (!isnullenv(s))
-	{
-		ichardef(s);
-		return;
-	}
+    /*
+     * LESSCHARSET is not defined: try LESSCHARDEF.
+     */
+    s = lgetenv("LESSCHARDEF");
+    if (!isnullenv(s))
+    {
+        ichardef(s);
+        return;
+    }
 
 #if HAVE_LOCALE
 #ifdef CODESET
@@ -394,7 +394,7 @@ set_charset(VOID_PARAM)
 /*
  * Initialize charset data structures.
  */
-	public void
+    public void
 init_charset(VOID_PARAM)
 {
     char *s;

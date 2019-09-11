@@ -39,8 +39,8 @@ extern long jump_sline_fraction;
  * Interrupt signal handler.
  */
 #if MSDOS_COMPILER!=WIN32C
-	/* ARGSUSED*/
-	static RETSIGTYPE
+    /* ARGSUSED*/
+    static RETSIGTYPE
 u_interrupt(type)
     int type;
 {
@@ -145,15 +145,15 @@ terminate(type)
 init_signals(on)
     int on;
 {
-	if (on)
-	{
-		/*
-		 * Set signal handlers.
-		 */
+    if (on)
+    {
+        /*
+         * Set signal handlers.
+         */
 #if MSDOS_COMPILER==WIN32C
-		SetConsoleCtrlHandler(wbreak_handler, TRUE);
+        SetConsoleCtrlHandler(wbreak_handler, TRUE);
 #else
-		(void) LSIGNAL(SIGINT, u_interrupt);
+        (void) LSIGNAL(SIGINT, u_interrupt);
 #endif
 #ifdef SIGTSTP
         (void) LSIGNAL(SIGTSTP, stop);
@@ -170,15 +170,15 @@ init_signals(on)
 #ifdef SIGTERM
         (void) LSIGNAL(SIGTERM, terminate);
 #endif
-	} else
-	{
-		/*
-		 * Restore signals to defaults.
-		 */
+    } else
+    {
+        /*
+         * Restore signals to defaults.
+         */
 #if MSDOS_COMPILER==WIN32C
-		SetConsoleCtrlHandler(wbreak_handler, FALSE);
+        SetConsoleCtrlHandler(wbreak_handler, FALSE);
 #else
-		(void) LSIGNAL(SIGINT, SIG_DFL);
+        (void) LSIGNAL(SIGINT, SIG_DFL);
 #endif
 #ifdef SIGTSTP
         (void) LSIGNAL(SIGTSTP, SIG_DFL);
@@ -202,7 +202,7 @@ init_signals(on)
  * Process any signals we have received.
  * A received signal cause a bit to be set in "sigs".
  */
-	public void
+    public void
 psignals(VOID_PARAM)
 {
     int tsignals;
@@ -243,23 +243,23 @@ psignals(VOID_PARAM)
     }
 #endif
 #ifdef S_WINCH
-	if (tsignals & S_WINCH)
-	{
-		int old_width, old_height;
-		/*
-		 * Re-execute scrsize() to read the new window size.
-		 */
-		old_width = sc_width;
-		old_height = sc_height;
-		get_term();
-		if (sc_width != old_width || sc_height != old_height)
-		{
-			wscroll = (sc_height + 1) / 2;
-			calc_jump_sline();
-			calc_shift_count();
-		}
-		screen_trashed = 1;
-	}
+    if (tsignals & S_WINCH)
+    {
+        int old_width, old_height;
+        /*
+         * Re-execute scrsize() to read the new window size.
+         */
+        old_width = sc_width;
+        old_height = sc_height;
+        get_term();
+        if (sc_width != old_width || sc_height != old_height)
+        {
+            wscroll = (sc_height + 1) / 2;
+            calc_jump_sline();
+            calc_shift_count();
+        }
+        screen_trashed = 1;
+    }
 #endif
     if (tsignals & S_INTERRUPT)
     {

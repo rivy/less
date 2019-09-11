@@ -64,39 +64,39 @@ compile_pattern2(pattern, search_type, comp_pattern, show_error)
     *comp_pattern = comp;
 #endif
 #if HAVE_PCRE
-	constant char *errstring;
-	int erroffset;
-	PARG parg;
-	pcre *comp = pcre_compile(pattern,
-			(utf_mode) ? PCRE_UTF8 | PCRE_NO_UTF8_CHECK : 0,
-			&errstring, &erroffset, NULL);
-	if (comp == NULL)
-	{
-		parg.p_string = (char *) errstring;
-		if (show_error)
-			error("%s", &parg);
-		return (-1);
-	}
-	*comp_pattern = comp;
+    constant char *errstring;
+    int erroffset;
+    PARG parg;
+    pcre *comp = pcre_compile(pattern,
+            (utf_mode) ? PCRE_UTF8 | PCRE_NO_UTF8_CHECK : 0,
+            &errstring, &erroffset, NULL);
+    if (comp == NULL)
+    {
+        parg.p_string = (char *) errstring;
+        if (show_error)
+            error("%s", &parg);
+        return (-1);
+    }
+    *comp_pattern = comp;
 #endif
 #if HAVE_PCRE2
-	int errcode;
-	PCRE2_SIZE erroffset;
-	PARG parg;
-	pcre2_code *comp = pcre2_compile((PCRE2_SPTR)pattern, strlen(pattern),
-			0, &errcode, &erroffset, NULL);
-	if (comp == NULL)
-	{
-		if (show_error)
-		{
-			char msg[160];
-			pcre2_get_error_message(errcode, (PCRE2_UCHAR*)msg, sizeof(msg));
-			parg.p_string = msg;
-			error("%s", &parg);
-		}
-		return (-1);
-	}
-	*comp_pattern = comp;
+    int errcode;
+    PCRE2_SIZE erroffset;
+    PARG parg;
+    pcre2_code *comp = pcre2_compile((PCRE2_SPTR)pattern, strlen(pattern),
+            0, &errcode, &erroffset, NULL);
+    if (comp == NULL)
+    {
+        if (show_error)
+        {
+            char msg[160];
+            pcre2_get_error_message(errcode, (PCRE2_UCHAR*)msg, sizeof(msg));
+            parg.p_string = msg;
+            error("%s", &parg);
+        }
+        return (-1);
+    }
+    *comp_pattern = comp;
 #endif
 #if HAVE_RE_COMP
     PARG parg;
@@ -195,9 +195,9 @@ uncompile_pattern(pattern)
     *pattern = NULL;
 #endif
 #if HAVE_PCRE2
-	if (*pattern != NULL)
-		pcre2_code_free(*pattern);
-	*pattern = NULL;
+    if (*pattern != NULL)
+        pcre2_code_free(*pattern);
+    *pattern = NULL;
 #endif
 #if HAVE_RE_COMP
     *pattern = 0;
@@ -249,7 +249,7 @@ is_null_pattern(pattern)
     return (pattern == NULL);
 #endif
 #if HAVE_PCRE2
-	return (pattern == NULL);
+    return (pattern == NULL);
 #endif
 #if HAVE_RE_COMP
     return (pattern == 0);
@@ -380,19 +380,19 @@ match_pattern(pattern, tpattern, line, line_len, sp, ep, notbol, search_type)
     }
 #endif
 #if HAVE_PCRE2
-	{
-		int flags = (notbol) ? PCRE2_NOTBOL : 0;
-		pcre2_match_data *md = pcre2_match_data_create(3, NULL);
-		matched = pcre2_match(pattern, (PCRE2_SPTR)line, line_len,
-			0, flags, md, NULL) >= 0;
-		if (matched)
-		{
-			PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(md);
-			*sp = line + ovector[0];
-			*ep = line + ovector[1];
-		}
-		pcre2_match_data_free(md);
-	}
+    {
+        int flags = (notbol) ? PCRE2_NOTBOL : 0;
+        pcre2_match_data *md = pcre2_match_data_create(3, NULL);
+        matched = pcre2_match(pattern, (PCRE2_SPTR)line, line_len,
+            0, flags, md, NULL) >= 0;
+        if (matched)
+        {
+            PCRE2_SIZE *ovector = pcre2_get_ovector_pointer(md);
+            *sp = line + ovector[0];
+            *ep = line + ovector[1];
+        }
+        pcre2_match_data_free(md);
+    }
 #endif
 #if HAVE_RE_COMP
     matched = (re_exec(line) == 1);
@@ -428,31 +428,31 @@ match_pattern(pattern, tpattern, line, line_len, sp, ep, notbol, search_type)
 /*
  * Return the name of the pattern matching library.
  */
-	public char *
+    public char *
 pattern_lib_name(VOID_PARAM)
 {
 #if HAVE_GNU_REGEX
-	return ("GNU");
+    return ("GNU");
 #else
 #if HAVE_POSIX_REGCOMP
-	return ("POSIX");
+    return ("POSIX");
 #else
 #if HAVE_PCRE2
-	return ("PCRE2");
+    return ("PCRE2");
 #else
 #if HAVE_PCRE
-	return ("PCRE");
+    return ("PCRE");
 #else
 #if HAVE_RE_COMP
-	return ("BSD");
+    return ("BSD");
 #else
 #if HAVE_REGCMP
-	return ("V8");
+    return ("V8");
 #else
 #if HAVE_V8_REGCOMP
-	return ("Spencer V8");
+    return ("Spencer V8");
 #else
-	return ("no");
+    return ("no");
 #endif
 #endif
 #endif
