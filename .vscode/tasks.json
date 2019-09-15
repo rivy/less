@@ -1,0 +1,22 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build (DEBUG)",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-f",
+                "Makefile.win.mingw",
+                "DEBUG=1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
+}
