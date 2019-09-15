@@ -245,6 +245,17 @@ flush(VOID_PARAM)
                  (p_next = memchr(p_next, ESC, ob - p_next)) != NULL; )
             {
                 p = p_next;
+                if ((int)(ob - p) < 3) {
+                    // possible incomplete sequence at end of obuf[] buffer; output any prior chars, copy to beginning of buffer, and return
+                    if (p > anchor) {
+                        WIN32textout(anchor, p-anchor);
+                    }
+                    int slop = (int)(ob - p);
+                    /* {{ strcpy args overlap! }} */
+                    strcpy(obuf, p);
+                    ob = &obuf[slop];
+                    return;
+                }
                 if (p[1] == '[')  /* "ESC-[" sequence */
                 {
                     if (p > anchor)
@@ -347,7 +358,6 @@ flush(VOID_PARAM)
                             ob = &obuf[slop];
                             return;
                         }
-
                         if (q == p ||
                             code > 107 || code < 0 ||
                             (!is_ansi_end(*q) && *q != ';'))
@@ -540,6 +550,19 @@ flush(VOID_PARAM)
                             break;
                         }
                         p = q;
+                        if (*q == '\0')
+                        {
+                            /*
+                             * Incomplete sequence.
+                             * Leave it unprocessed
+                             * in the buffer.
+                             */
+                            int slop = (int) (q - anchor);
+                            /* {{ strcpy args overlap! }} */
+                            strcpy(obuf, anchor);
+                            ob = &obuf[slop];
+                            return;
+                        }
                     }
                     if (!is_ansi_end(*p) || p == p_next)
                         break;
