@@ -6,16 +6,17 @@
 #### Start of system configuration section. ####
 
 CC = gcc
+## -g :: produce debugging information
 ## -O<n> :: <n> == [0 .. 3], increasing level of optimization (see <https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html> @@ <https://archive.vn/7YtdI>)
 ## -pedantic-errors :: error on use of compiler language extensions
 ## -Werror :: warnings treated as errors
 ## -Wall :: enable all (usual) warnings
 ## -Wextra :: enable extra warnings
 ## -Wno-comment :: suppress warnings about trailing comments on directive lines
-CFLAGS = -I. -O3 -pedantic-errors -Werror -Wall -Wno-comment
+CFLAGS = -I. -pedantic-errors -Werror -Wall -Wno-comment
 CFLAGS_COMPILE_ONLY = -c
 CPPFLAGS =
-LDFLAGS = -g
+LDFLAGS =
 
 LIBS =
 
@@ -26,6 +27,13 @@ CP = copy
 
 DEFINETYPE = wn
 OBJDEP = defines.h less.h
+
+DEBUG ?= 0
+ifeq ($(DEBUG),1)
+	CFLAGS += -DDEBUG -O0 -g
+else
+	CFLAGS += -DNDEBUG -O3
+endif
 
 #### End of system configuration section. ####
 
