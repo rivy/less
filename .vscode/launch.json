@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Debug `less`",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/less.exe",
+            "args": [ "../causes-fault-single-line.txt" ],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "logging": { "engineLogging": true },
+            "MIMode": "gdb",
+            "miDebuggerPath": "${workspaceFolder}/dbin/gdb-chcp1257.BAT",
+            "setupCommands": [ { "text": "-enable-pretty-printing", "description": "Enable GDB pretty printing", "ignoreFailures": true } ],
+            // "preLaunchTask": "${defaultBuildTask}", // PENDING: see <https://github.com/microsoft/vscode/pull/80478> , <https://github.com/Microsoft/vscode/issues/32239>
+            "preLaunchTask": "Build (DEBUG)"
+        }
+    ]
+}
