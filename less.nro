@@ -1183,17 +1183,17 @@ lessopen.sh:
 .br
     case "$1" in
 .br
-	*.Z)	TEMPFILE=$(mktemp)
+    *.Z)    TEMPFILE=$(mktemp)
 .br
-		uncompress \-c $1  >$TEMPFILE  2>/dev/null
+        uncompress \-c $1  >$TEMPFILE  2>/dev/null
 .br
-		if [ \-s $TEMPFILE ]; then
+        if [ \-s $TEMPFILE ]; then
 .br
-			echo $TEMPFILE
+            echo $TEMPFILE
 .br
         else
 .br
-			rm \-f $TEMPFILE
+            rm \-f $TEMPFILE
 .br
         fi
 .br
