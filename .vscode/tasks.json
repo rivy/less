@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build (DEBUG)",
+            "label": "Build (gcc; debug)",
             "type": "shell",
             "command": "make",
             "args": [
@@ -17,6 +17,40 @@
             "problemMatcher": [
                 "$gcc"
             ]
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-f",
+                "Makefile.win.mingw",
+                "clean"
+            ],
+            "group": {
+                "kind": "none"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "clang.exe build active file",
+            "command": "C:\\Users\\Roy\\AppData\\Local\\scoop\\apps\\clang\\7.0.0\\bin\\clang.exe",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "C:\\Users\\Roy\\AppData\\Local\\scoop\\apps\\clang\\7.0.0\\bin"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
         }
     ]
 }
