@@ -88,42 +88,41 @@ map_rgb_to_ANSI16( r, g, b )
 {
     long color = 0;
 
-    const int MAX_RGB_COLOR_VALUE = 0xff;
     const int COLOR_INTENSE = 0x8;
     const int COLOR_RED = 0x1;      // ANSI16 "RED"
     const int COLOR_GREEN = 0x2;    // ANSI16 "GREEN"
     const int COLOR_BLUE = 0x4;     // ANSI16 "BLUE"
-    // const int COLOR_GRAY = COLOR_RED|COLOR_GREEN|COLOR_BLUE;
-    // const int COLOR_DARKGRAY = COLOR_INTENSE|0;
-    // const int COLOR_WHITE = COLOR_INTENSE|COLOR_GRAY;
+    const int COLOR_BLACK = 0x0;
+    const int COLOR_DARKGRAY = COLOR_INTENSE|COLOR_BLACK;
 
-    // partition color-space into [off, on (dark), on(intense)]
-    long color_partition_value = MAX_RGB_COLOR_VALUE / 3;
-    long color_threshold = color_partition_value;
-    long intensity_threshold = color_partition_value * 2;
+    // heuristics
+    long base_color_threshold = 0x80;
+    long intensity_threshold = 0xd0;
+    long min_color_threshold = 0x20;
+    long intensity_grouping_boundary = 25; // as a percentage
+
+    long color_threshold;
 
     long combined_intensity_threshold;
     long combined_intensity = 0;
     int contributing_colors = 0;
 
-    // combine intensities of contributing colors
+    long max_intensity = 0;
+    if ( r > max_intensity ) { max_intensity = r; }
+    if ( g > max_intensity ) { max_intensity = g; }
+    if ( b > max_intensity ) { max_intensity = b; }
+
+    color_threshold = max_intensity - (max_intensity * intensity_grouping_boundary / 100);
+    if (color_threshold < min_color_threshold) { color_threshold = min_color_threshold; }
+
     if ( r >= color_threshold ) { color |= COLOR_RED; contributing_colors++; combined_intensity += r; }
     if ( g >= color_threshold ) { color |= COLOR_GREEN; contributing_colors++; combined_intensity += g; }
     if ( b >= color_threshold ) { color |= COLOR_BLUE; contributing_colors++; combined_intensity += b; }
-    // combine all intensities if two or more colors contribute (heuristic)
-    if ( contributing_colors >= 2 ) { combined_intensity = r + g + b; }
 
-    combined_intensity_threshold = contributing_colors * intensity_threshold;
+    combined_intensity_threshold = intensity_threshold * contributing_colors;
 
-    // heuristic to spread the colors more evenly
-    if ( contributing_colors == 2 ) { combined_intensity_threshold += (color_partition_value/2); }
-
-    if (( contributing_colors > 0 ) && (combined_intensity >= combined_intensity_threshold )) { color |= COLOR_INTENSE; }
-
-//    // add "intense black" == "dark gray" (replacing some "white")
-//    // NOTE: this causes a visual change to the "usual" 6 x 6 x 6 color cube
-//    //   ... but this evens color distributions and allows some rgb values to downsample to "intense black"
-//    if ( ( color == COLOR_WHITE ) && ( (r < intensity_threshold) || (g < intensity_threshold) || (b < intensity_threshold) )) { color = COLOR_DARKGRAY; }
+    if ((contributing_colors > 0) && (combined_intensity > combined_intensity_threshold)) { color |= COLOR_INTENSE; }
+    if ((contributing_colors > 1) && (max_intensity < base_color_threshold)) { color = COLOR_DARKGRAY; }
 
     return color;
 }
