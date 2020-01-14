@@ -145,8 +145,7 @@ map_xterm256_to_ANSI16( n )
     else
     { /* 6 x 6 x 6 color increments */
         // ref: http://www.mudpedia.org/mediawiki/index.php/Xterm_256_colors @@ https://archive.is/dtVov
-        // unsigned char color_level[] = { 0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff }; // commonly used xterm256 RGB values
-        unsigned char color_level[] = { 0x00, 0x33, 0x66, 0x99, 0xcc, 0xff };    // improves down-mapped color distribution
+        unsigned char color_level[] = { 0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff }; // commonly used xterm256 RGB values (ref: https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit)
         long r = color_level[ ((n - 16) / 36) % 6 ];
         long g = color_level[ ((n - 16) / 6) % 6 ];
         long b = color_level[ (n - 16) % 6 ];
