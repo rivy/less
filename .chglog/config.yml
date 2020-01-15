@@ -29,7 +29,6 @@ options:
       perf: perf
       refactor: refactor
       test: test
-      update: update
       # aggregating types
       add: change
       added: change
@@ -39,6 +38,7 @@ options:
       chore: maint
       fixed: fix
       fixes: fix
+      update: change
       updated: update
       upkeep: maint
   commit_groups:
@@ -56,13 +56,15 @@ options:
       update: Dependency Updates
       # version: Version Changes
   header:
-    pattern: "^(\\w+)(?:\\s*\\/(\\S+))\\s*[~:]?\\s(.*)$|^(\\w+)(?:\\s*\\(([^)]+)\\))?\\s*[~:]?\\s(.*)$"
+    pattern: "^(\\w+)(?:\\s*\\/(\\S+))\\s*([~:])?\\s(.*)$|^(\\w+)(?:\\s*\\(([^)]+)\\))?\\s*([~:])?\\s(.*)$"
     pattern_maps:
       - Type
       - Scope
+      - Separator
       - Subject
       - Type
       - Scope
+      - Separator
       - Subject
   tag:
     # pattern: "^([RrVv](-[Vv]?)?)?\\d.*$"
