@@ -27,7 +27,8 @@ CC = clang
 ## -Wall :: enable all (usual) warnings
 ## -Wextra :: enable 'extra' warnings
 ## -Wno-comment :: suppress warnings about trailing comments on directive lines
-CFLAGS = -I. -O3 -pedantic-errors -Werror -Wall -Wno-comment --target=$(TARGET) -D_CRT_SECURE_NO_WARNINGS
+## -Wno-deprecated-declarations :: suppress deprecation warnings
+CFLAGS = -I. -O3 -pedantic-errors -Werror -Wall -Wno-comment -Wno-deprecated-declarations --target=$(TARGET) -D_CRT_SECURE_NO_WARNINGS
 CFLAGS_COMPILE_ONLY = -c
 CPPFLAGS =
 #LDFLAGS = -g
