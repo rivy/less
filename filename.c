@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -802,9 +802,9 @@ lrealpath(path)
 	char *path;
 {
 #if HAVE_REALPATH
-	char rpath[PATH_MAX];
-	if (realpath(path, rpath) != NULL)
-		return (save(rpath));
+	char *rpath = realpath(path, NULL);
+    if (rpath != NULL)
+		return (rpath);
 #endif
 	return (save(path));
 }
