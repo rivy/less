@@ -1275,7 +1275,7 @@ cmd_char(c)
 #endif
             else if (IS_UTF8_LEAD(c))
             {
-                cmd_mbc_buf_len = utf_len((unsigned char)c);
+                cmd_mbc_buf_len = utf_len(c);
                 return (CC_OK);
             } else
             {

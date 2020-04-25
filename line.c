@@ -174,7 +174,7 @@ set_linebuf(n, ch, a)
     char ch;
     char a;
 {
-    linebuf[n] = (char) ch;
+    linebuf[n] = ch;
     attr[n] = a;
 }
 
