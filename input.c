@@ -116,7 +116,7 @@ get_forw_line:
             return (NULL_POSITION);
         }
         c = ch_forw_get();
-        backchars = pappend((unsigned char)c, new_pos);
+        backchars = pappend(c, new_pos);
         new_pos++;
         if (backchars > 0)
         {
@@ -172,7 +172,7 @@ get_forw_line:
         /*
          * Append the char to the line and get the next char.
          */
-        backchars = pappend((unsigned char)c, ch_tell()-1);
+        backchars = pappend(c, ch_tell()-1);
         if (backchars > 0)
         {
             /*
@@ -384,7 +384,7 @@ get_back_line:
             endline = TRUE;
             break;
         }
-        backchars = pappend((unsigned char)c, ch_tell()-1);
+        backchars = pappend(c, ch_tell()-1);
         if (backchars > 0)
         {
             /*
