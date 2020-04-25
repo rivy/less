@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -509,7 +509,7 @@ prutfchar(ch)
  */
     public int
 utf_len(ch)
-    PARAM_unsigned_char ch;
+    int ch;
 {
     if ((ch & 0x80) == 0)
         return 1;
@@ -813,7 +813,7 @@ is_ubin_char(ch)
          * Consider it binary if it can't be converted.
          */
         BOOL used_default = TRUE;
-        WideCharToMultiByte(GetConsoleOutputCP(), 0, (LPCWSTR) &ch, 1, NULL, 0, NULL, &used_default);
+        WideCharToMultiByte(GetConsoleOutputCP(), WC_NO_BEST_FIT_CHARS, (LPCWSTR) &ch, 1, NULL, 0, NULL, &used_default);
         if (used_default)
             ubin = 1;
     }

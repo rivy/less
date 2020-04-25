@@ -13,7 +13,8 @@ CC = gcc
 ## -Wall :: enable all (usual) warnings
 ## -Wextra :: enable extra warnings
 ## -Wno-comment :: suppress warnings about trailing comments on directive lines
-CFLAGS = -I. -pedantic-errors -Werror -Wall -Wno-comment
+## -Wno-deprecated-declarations :: suppress deprecation warnings
+CFLAGS = -I. -pedantic-errors -Werror -Wall -Wno-comment -Wno-deprecated-declarations
 CFLAGS_COMPILE_ONLY = -c
 CPPFLAGS =
 LDFLAGS =
