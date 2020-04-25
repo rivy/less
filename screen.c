@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -220,8 +220,9 @@ extern int binattr;
 extern int one_screen;
 
 #if !MSDOS_COMPILER
-static char *cheaper();
-static void tmodes();
+static char *cheaper LESSPARAMS((char *t1, char *t2, char *def));
+static void tmodes LESSPARAMS((char *incap, char *outcap, char **instr,
+    char **outstr, char *def_instr, char *def_outstr, char **spp));
 #endif
 
 /*
@@ -643,7 +644,6 @@ ltget_env(capname)
     char *capname;
 {
     char name[64];
-    char *s;
 
     if (termcap_debug)
     {
@@ -1132,8 +1132,11 @@ get_term(VOID_PARAM)
     char *sp;
     char *t1, *t2;
     char *term;
-    char termbuf[TERMBUF_SIZE];
-
+    /*
+     * Some termcap libraries assume termbuf is static
+     * (accessible after tgetent returns).
+     */
+    static char termbuf[TERMBUF_SIZE];
     static char sbuf[TERMSBUF_SIZE];
 
 #if OS2
@@ -1159,6 +1162,7 @@ get_term(VOID_PARAM)
     if ((term = lgetenv("TERM")) == NULL)
         term = DEFAULT_TERM;
     hardcopy = 0;
+    /* {{ Should probably just pass NULL instead of termbuf. }} */
     if (tgetent(termbuf, term) != TGETENT_OK)
         hardcopy = 1;
     if (ltgetflag("hc"))
