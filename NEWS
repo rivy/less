@@ -11,6 +11,23 @@
 
 ======================================================================
 
+    Major changes between "less" versions 551 and 557
+
+* Update Unicode tables.
+
+* Treat Hangul Jamo medial vowels and final consonants as zero width.
+
+* Display error message immediately when -o is toggled and
+  input is not a pipe.
+
+* Fix display bug in WIN32C version.
+
+* Fix memory corruption when built with libtermcap.
+
+* Support libtinfow.
+
+======================================================================
+
     Major changes between "less" versions 530 and 551
 
 * Add --mouse option.

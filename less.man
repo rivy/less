@@ -758,9 +758,9 @@ LESS(1)                     General Commands Manual                    LESS(1)
        -S or --chop-long-lines
               Causes  lines  longer than the screen width to be chopped (trun-
               cated) rather than wrapped.  That is, the portion of a long line
-              that does not fit in the screen width is not shown.  The default
-              is to wrap long lines; that is, display  the  remainder  on  the
-              next line.
+              that does not fit in the screen width is not displayed until you
+              press RIGHT-ARROW.  The default is to wrap long lines; that  is,
+              display the remainder on the next line.
 
        -t[4mtag[24m or --tag=[4mtag[0m
               The -t option, followed immediately by a TAG, will edit the file
@@ -1677,7 +1677,7 @@ LESS(1)                     General Commands Manual                    LESS(1)
 
 
 [1mCOPYRIGHT[0m
-       Copyright (C) 1984-2019  Mark Nudelman
+       Copyright (C) 1984-2020  Mark Nudelman
 
        less  is  part of the GNU project and is free software.  You can redis-
        tribute it and/or modify it under the terms of either (1) the GNU  Gen-
@@ -1703,4 +1703,4 @@ LESS(1)                     General Commands Manual                    LESS(1)
 
 
 
-                           Version 551: 11 Jun 2019                    LESS(1)
+                           Version 557: 21 Mar 2020                    LESS(1)
