@@ -3,6 +3,13 @@
 
 # `make -f Makefile.win.clang.gnu`
 
+# spell-checker:ignore (acronyms/names) Borland Borland's MSVC MinGW POSIX VCvars
+# spell-checker:ignore (cmd) COMSPEC SystemDrive SystemRoot findstr windir
+# spell-checker:ignore (flags/options) DDEBUG DNDEBUG NDEBUG Werror Wextra Xclang defaultlib flto flto-visibility-public-std libcmt nologo nothrow
+# spell-checker:ignore (make) CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE EXEEXT LDFLAGS LIBDIR LIBPATH MAKEDIR OBJDEP distclean firstword ifeq ifndef ifneq realclean undefine vclean veryclean
+# spell-checker:ignore (utils) ilink nmake
+# spell-checker:ignore () brac cmdbuf forwback funcs ifile lessecho lesskey linenum lsystem optfunc opttbl stdext ttyin
+
 #### Start of system configuration section. ####
 
 # !! WIP: get the target correct
