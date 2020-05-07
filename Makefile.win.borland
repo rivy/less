@@ -2,11 +2,15 @@
 # Windows version
 # Borland C++ 5.5.1 free command line tools
 
-# spell-checker:ignore (acronyms/names) Borland Borland's MSVC MinGW POSIX VCvars
-# spell-checker:ignore (cmd) COMSPEC SystemDrive SystemRoot findstr windir
-# spell-checker:ignore (flags/options) DDEBUG DNDEBUG NDEBUG Werror Wextra Xclang defaultlib flto flto-visibility-public-std libcmt nologo nothrow
-# spell-checker:ignore (make) CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE EXEEXT LDFLAGS LIBDIR LIBPATH MAKEDIR OBJDEP distclean firstword ifeq ifndef ifneq realclean undefine vclean veryclean
-# spell-checker:ignore (utils) ilink nmake
+# spell-checker:ignore (targets) distclean realclean vclean veryclean
+# spell-checker:ignore (make) abspath firstword ifeq ifndef ifneq lastword undefine vclean veryclean
+#
+# spell-checker:ignore (acronyms/names) Borland Borland's LLVM MSVC MinGW POSIX VCvars
+# spell-checker:ignore (flags/options) DDEBUG DNDEBUG NDEBUG Werror Wextra Xclang defaultlib dumpmachine flto flto-visibility-public-std libcmt nologo nothrow
+# spell-checker:ignore (jargon) multilib
+# spell-checker:ignore (shell/win) COMSPEC SystemDrive SystemRoot findstr findstring windir
+# spell-checker:ignore (utils) ilink nmake printf
+# spell-checker:ignore (vars) BQUOTE CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE DQUOTE EXEEXT LDFLAGS LIBDIR LIBPATH MAKEDIR OBJDEP SHELLSTATUS devnull mkfile
 # spell-checker:ignore () brac cmdbuf forwback funcs ifile lessecho lesskey linenum lsystem optfunc opttbl stdext ttyin
 
 #### Start of system configuration section. ####
@@ -24,6 +28,18 @@ LD = ilink32
 LIBS = ${LIBDIR}\import32.lib ${LIBDIR}\cw32.lib
 
 #### End of system configuration section. ####
+
+# Set SHELL to `cmd` for Windows OS (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
+# * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
+ifeq (${OS},Windows_NT)
+	# use case and location fallbacks; note: assumes *no spaces* within ${ComSpec}, ${SystemRoot}, or ${windir}
+	COMSPEC := $(or ${ComSpec},${COMSPEC},${comspec})
+	SystemRoot := $(or ${SystemRoot},${SYSTEMROOT},${systemroot},${windir})
+	SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
+endif
+# $(info SHELL=${SHELL})
+
+####
 
 #
 # This rule allows us to supply the necessary -D options
@@ -66,13 +82,12 @@ clean:
 	-del *.il?
 	-del *.tds
 	-del defines.h
-
-spotless: clean
 	-del less.exe
 	-del lesskey.exe
 	-del lessecho.exe
 
-realclean: spotless
-
-distclean: spotless
-
+build: all
+compile: ${OBJ}
+realclean: clean
+rebuild: clean build
+veryclean: realclean
