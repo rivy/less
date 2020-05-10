@@ -2675,7 +2675,7 @@ WIN32setcolors(fg, bg)
     public void
 WIN32textout(text, len)
     char *text;
-    int len;
+    size_t len;
 {
 #if MSDOS_COMPILER==WIN32C
     DWORD written;

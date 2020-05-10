@@ -1175,7 +1175,7 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos)
     char *sp, *ep;
     int line_match;
     int cvt_ops;
-    int cvt_len;
+    size_t cvt_len;
     int *chpos;
     POSITION linepos, oldpos;
 

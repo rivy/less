@@ -888,7 +888,7 @@ getcc_repl(orig, repl, gr_getc, gr_ungetc)
         {
     LWCHAR c;
     LWCHAR keys[16];
-    int ki = 0;
+    size_t ki = 0;
 
     c = (*gr_getc)();
     if (orig == NULL || orig[0] == '\0')

@@ -393,6 +393,9 @@
 #ifdef _MSC_VER
 #define popen   _popen
 #define pclose  _pclose
+#if (_MSC_VER < 1300)
+#define intptr_t long
+#endif
 #if !defined(_MSC_VER) || (_MSC_VER < 1900)
 #define snprintf    _snprintf
 #endif

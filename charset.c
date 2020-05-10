@@ -533,10 +533,10 @@ utf_len(ch)
     public int
 is_utf8_well_formed(ss, slen)
     char *ss;
-    int slen;
+    size_t slen;
 {
-    int i;
-    int len;
+    size_t i;
+    size_t len;
     unsigned char *s = (unsigned char *) ss;
 
     if (IS_UTF8_INVALID(s[0]))
