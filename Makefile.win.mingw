@@ -24,7 +24,11 @@ LIBS =
 EXEEXT = .exe
 O = o
 
-CP = copy
+CP = $(shell command -v cp >/dev/null 2>&1 && echo 'cp')
+
+ifneq ($(CP),cp)
+	CP = copy
+endif
 
 DEFINETYPE = wn
 OBJDEP = defines.h less.h
