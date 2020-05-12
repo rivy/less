@@ -33,7 +33,8 @@ jobs:
           - { os: ubuntu-latest, compiler: clang, arch: x64, static: static }
           - { os: ubuntu-latest, compiler: gcc, arch: x32, static: static }
           - { os: ubuntu-latest, compiler: gcc, arch: x64, static: static }
-          # - { os: macos-latest, compiler: xcode, version: "11.3" }
+          - { os: macos-latest, compiler: clang, arch: x64 }
+          - { os: macos-latest, compiler: clang, arch: x64, static: static }
           - { os: windows-latest, compiler: cl, arch: x32 }
           - { os: windows-latest, compiler: cl, arch: x64 }
           - { os: windows-latest, compiler: clang, arch: x32 }
@@ -132,7 +133,7 @@ jobs:
         run: |
           ## install/setup prerequisites
           case '${{ matrix.job.os }}' in
-            ubuntu-*)
+            ubuntu-* | macos-*)
               sudo dpkg --add-architecture i386
               sudo dpkg --add-architecture amd64
               # note: list of current dpkg architectures held at '/var/lib/dpkg/arch'
@@ -175,7 +176,7 @@ jobs:
         shell: bash
         run: |
           case '${{ matrix.job.os }}' in
-            ubuntu-*)
+            ubuntu-* | macos-*)
               sudo chmod a+x ./configure
               CFLAGS="-g -O2 -m${{ steps.vars.outputs.CC_ARCH_ID }}"
               LDFLAGS="-m${{ steps.vars.outputs.CC_ARCH_ID }} ${{ steps.vars.outputs.LDFLAGS_STATIC }}"
