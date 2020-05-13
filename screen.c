@@ -2686,11 +2686,11 @@ WIN32textout(text, len)
          * wide and use WriteConsoleW.
          */
         WCHAR wtext[1024];
-        len = MultiByteToWideChar(CP_UTF8, 0, text, len, wtext,
+        len = MultiByteToWideChar(CP_UTF8, 0, text, (int)len, wtext,
                       sizeof(wtext)/sizeof(*wtext));
-        WriteConsoleW(con_out, wtext, len, &written, NULL);
+        WriteConsoleW(con_out, wtext, (int)len, &written, NULL);
     } else
-    WriteConsole(con_out, text, len, &written, NULL);
+    WriteConsole(con_out, text, (int)len, &written, NULL);
 #else
     char c = text[len];
     text[len] = '\0';
