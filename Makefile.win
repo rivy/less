@@ -16,7 +16,7 @@ NAME := less ## empty/null => autoset to name of containing folder
 # spell-checker:ignore () brac cmdbuf forwback funcs ifile lessecho lesskey linenum lsystem optfunc opttbl scrsize ttyin
 
 # spell-checker:ignore (targets) realclean vclean veryclean
-# spell-checker:ignore (make) CURDIR MAKEFLAGS SHELLSTATUS TERMERR TERMOUT abspath addprefix addsuffix endef eval findstring firstword gmake ifeq ifneq lastword notdir undefine
+# spell-checker:ignore (make) CURDIR MAKEFLAGS SHELLSTATUS TERMERR TERMOUT abspath addprefix addsuffix endef eval findstring firstword gmake ifeq ifneq lastword notdir prepend undefine wordlist
 #
 # spell-checker:ignore (CC) DDEBUG DNDEBUG NDEBUG Ofast Werror Wextra Xclang Xlinker dumpmachine flto flto-visibility-public-std fpie nodefaultlib nologo nothrow
 # spell-checker:ignore (abbrev/acronyms) LLVM MSVC MinGW POSIX VCvars
@@ -26,7 +26,7 @@ NAME := less ## empty/null => autoset to name of containing folder
 # spell-checker:ignore (shell/nix) mkdir printf rmdir uname
 # spell-checker:ignore (shell/win) COMSPEC SystemDrive SystemRoot findstr findstring mkdir windir
 # spell-checker:ignore (utils) goawk ilink
-# spell-checker:ignore (vars) BQUOTE CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE DQUOTE EXEEXT LDFLAGS LIBDIR LIBPATH MAKEDIR OBJ_deps OSID SQUOTE devnull falsey fileset truthy
+# spell-checker:ignore (vars) BQUOTE CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE DQUOTE EXEEXT LDFLAGS LIBDIR LIBPATH MAKEDIR OBJ_deps OSID PAREN SQUOTE devnull falsey fileset punct truthy
 
 #### Start of system configuration section. ####
 
@@ -61,6 +61,7 @@ CFLAGS_ARCH_64 := -m64
 CFLAGS_DEBUG_true := -DDEBUG -O0 -g
 CFLAGS_DEBUG_false := -DNDEBUG -O3
 CFLAGS_VERBOSE_true := -v
+CFLAGS_machine := -dumpmachine
 CFLAGS_v := --version
 CPPFLAGS := $()
 ## see <https://stackoverflow.com/questions/42545078/clang-version-5-and-lnk4217-warning/42752769#42752769>@@<https://archive.is/bK4Di>
@@ -157,23 +158,56 @@ endif ## `cl` (MSVC)
 DEFINETYPE := wn
 OBJ_deps := defines.h less.h funcs.h cmd.h
 
-COLOR ?= $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)
-DEBUG ?= false
-STATIC ?= true
-VERBOSE ?= false
-MAKEFLAGS_debug ?= $(if $(findstring d,${MAKEFLAGS}),true,false)## NOTE: use `-d` or `MAKEFLAGS_debug=1`, `--debug[=FLAGS]` does not set MAKEFLAGS correctly (see <https://savannah.gnu.org/bugs/?func=detailitem&item_id=58341>)
+# `make` command line flags/options
+COLOR ?= $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)## enable colorized output ('truthy'-type)
+DEBUG ?= false## enable compiler debug flags/options ('truthy'-type; default == false)
+STATIC ?= true## compile to statically linked executable ('truthy'-type; default == true)
+VERBOSE ?= false## verbose `make` output ('truthy'-type; default == false)
+MAKEFLAGS_debug ?= $(if $(findstring d,${MAKEFLAGS}),true,false)## Makefile debug output ('truthy'-type; default == false) ## NOTE: use `-d` or `MAKEFLAGS_debug=1`, `--debug[=FLAGS]` does not set MAKEFLAGS correctly (see <https://savannah.gnu.org/bugs/?func=detailitem&item_id=58341>)
 
 #### End of system configuration section. ####
 
-falsey := false 0 f n no off
 OSID := $(or $(filter win,${OS:Windows_NT=win}),nix)## OSID == [nix,win]
 
+falsey := false 0 f n no off
+false := $()
+true := true
+truthy := ${true}
+ESC := $()$()## literal ANSI escape character (required for ANSI color display output; also used for some string matching)
+int_max := 2147483647## largest signed 32-bit integer; arbitrary max expected list length
+[lower] := a b c d e f g h i j k l m n o p q r s t u v w x y z
+[upper] := A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+[alpha] := ${[lower]} ${[upper]}
+[digit] := 1 2 3 4 5 6 7 8 9 0
+[punct] = ~ ` ! @ ${HASH} ${DOLLAR} % ^ & * ${OPEN_PAREN} ${CLOSE_PAREN} _ - + = { } [ ] | ${BACKSLASH} : ; " ' < > ${COMMA} ? ${SLASH} .
+
+%not = $(if ${1},${false},${true})
 %eq = $(and $(findstring $(1),$(2)),$(findstring $(2),$(1)))
-%as_lowercase = $(subst A,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$1))))))))))))))))))))))))))
-%as_truthy = $(if $(call %is_truthy,${1}),true,false)
-%is_truthy = $(filter-out ${falsey},$(call %as_lowercase,${1}))
-%is_falsey = $(if $(call %is_truthy,${1}),,true)
+%neq = $(call %not,$(call %eq,${1},${2}))
+
+%falsey = $(firstword ${falsey})
+%truthy = $(firstword ${truthy})
+
+%as_truthy = $(if $(call %is_truthy,${1}),$(call %truthy),$(call %falsey))
+%is_truthy = $(if $(filter-out ${falsey},$(call %lc,${1})),${true},${false})
+%is_falsey = $(call %not,$(call %is_truthy,${1}))
+
+%range = $(if $(word ${1},${2}),$(wordlist 1,${1},${2}),$(call %range,${1},${2} $(words _ ${2})))
+%repeat = $(if $(word ${2},${1}),$(wordlist 1,${2},${1}),$(call %repeat,${1} ${1},${2}))
+
+%head = $(firstword ${1})
+%tail = $(words 2,${int_max},${1})
+%chop = $(wordlist 2,$(words ${1}),_ ${1})
+%append = ${2} ${1}
+%prepend = ${1} ${2}
+%length = $(words ${1})
+
+%filter_map = $(strip $(foreach elem,${2},$(call ${1},${elem})))
 %uniq = $(if ${1},$(firstword ${1}) $(call %uniq,$(filter-out $(firstword ${1}),${1})))
+
+%tr = $(strip $(if ${1},$(call %tr,$(wordlist 2,$(words ${1}),${1}),$(wordlist 2,$(words ${2}),${2}),$(subst $(firstword ${1}),$(firstword ${2}),${3})),${3}))
+%lc = $(call %tr,${[upper]},${[lower]},${1})
+%uc = $(call %tr,${[lower]},${[upper]},${1})
 
 ifeq (${OSID},win)
 %rm_dir = if EXIST "${1}" ${RMDIR} "${1}" && echo $(call %info_text,"${1}" removed)
@@ -189,16 +223,15 @@ endif
 
 ####
 
-ESCAPE := $()$()## literal ANSI escape character (required for ANSI color display)
-color_black := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0;30m,)
-color_blue := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0;34m,)
-color_cyan := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0;36m,)
-color_green := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0;32m,)
-color_magenta := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0;35m,)
-color_red := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0;31m,)
-color_yellow := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0;33m,)
-color_white := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0;37m,)
-color_reset := $(if $(call %is_truthy,${COLOR}),${ESCAPE}[0m,)
+color_black := $(if $(call %is_truthy,${COLOR}),${ESC}[0;30m,)
+color_blue := $(if $(call %is_truthy,${COLOR}),${ESC}[0;34m,)
+color_cyan := $(if $(call %is_truthy,${COLOR}),${ESC}[0;36m,)
+color_green := $(if $(call %is_truthy,${COLOR}),${ESC}[0;32m,)
+color_magenta := $(if $(call %is_truthy,${COLOR}),${ESC}[0;35m,)
+color_red := $(if $(call %is_truthy,${COLOR}),${ESC}[0;31m,)
+color_yellow := $(if $(call %is_truthy,${COLOR}),${ESC}[0;33m,)
+color_white := $(if $(call %is_truthy,${COLOR}),${ESC}[0;37m,)
+color_reset := $(if $(call %is_truthy,${COLOR}),${ESC}[0m,)
 #
 color_success := ${color_green}
 color_debug := ${color_cyan}
@@ -280,9 +313,15 @@ $(call %debug_var,LIB)
 devnull := $(if $(filter win,${OSID}),NUL,/dev/null)
 , := ,
 COMMA := ,
+DOT := .
+HASH := \#
 BQUOTE := `
 DQUOTE := "
 SQUOTE := '
+SLASH := /
+OPEN_PAREN := $()($()
+CLOSE_PAREN := $())$()
+BACKSLASH := $()\$()
 NULL := $()
 SPACE := $() $()
 
@@ -313,11 +352,11 @@ LD_o       := $(or $(if $(filter cl,${CC_ID}),/out:),-o${SPACE})
 EXEEXT     := .exe
 O          := $(if $(filter cl,${CC_ID}),obj,o)
 #
-AWK        := goawk ## from `go get github.com/benhoyt/goawk`
+AWK        := gawk ## from `scoop install gawk`; or "goawk" from `go get github.com/benhoyt/goawk`
 CAT        := "${SystemRoot}\System32\findstr" /r .*
 CP         := copy /y
 ECHO       := echo
-GREP       := grep
+GREP       := grep ## from `scoop install grep`
 MKDIR      := mkdir
 RM         := del
 RM_r       := $(RM) /s
@@ -327,7 +366,7 @@ FINDSTR    := "${SystemRoot}\System32\findstr"
 MORE       := "${SystemRoot}\System32\more"
 SORT       := "${SystemRoot}\System32\sort"
 #
-ECHO_NL    := echo.
+ECHO_NL    := echo:
 ECHO_DQ    := $()
 ECHO_SQ    := $()
 else
@@ -394,12 +433,19 @@ ifneq (${ARCH},$(filter ${ARCH},${ARCH_allowed}))
 $(call %error,Unknown architecture "$(ARCH)"; valid values are [""$(subst $(SPACE),$(),$(addprefix ${COMMA}${DQUOTE},$(addsuffix ${DQUOTE},${ARCH_allowed})))])
 endif
 
-CC_machine := $(shell ${CC} $(if $(filter cl,${CC_ID}),,-dumpmachine) 2>&1)
-CC_ARCH := $(or $(filter $(subst -, ,${CC_machine}),${ARCH_i686} ${ARCH_x86_64}),${ARCH_default})
+ifeq (${OSID},win)
+CC_machine_raw := $(shell ${CC} ${CFLAGS_machine} 2>&1 | ${FINDSTR} /n /r .* | ${FINDSTR} /b /r "1:")
+else ## nix
+CC_machine_raw := $(shell ${CC} ${CFLAGS_machine} 2>&1 | ${GREP} -n ".*" | ${GREP} "^1:" )
+endif
+CC_machine_raw := $(subst ${ESC}1:,$(),${ESC}${CC_machine_raw})
+CC_ARCH := $(or $(filter $(subst -, ,${CC_machine_raw}),${ARCH_i686} ${ARCH_x86_64}),${ARCH_default})
+CC_machine := $(or $(and $(call %eq,cl,${CC}),${CC_ARCH}),${CC_machine_raw})
 CC_ARCH_ID := $(if $(filter ${CC_ARCH},32 x32 ${ARCH_i686}),32,64)
 override ARCH := $(or ${ARCH},${CC_ARCH})
 ARCH_ID := $(if $(filter ${ARCH},32 x32 ${ARCH_i686}),32,64)
 
+$(call %debug_var,CC_machine_raw)
 $(call %debug_var,CC_machine)
 $(call %debug_var,CC_ARCH)
 $(call %debug_var,CC_ARCH_ID)
@@ -409,25 +455,49 @@ $(call %debug_var,ARCH_ID)
 
 ####
 
-ifeq (${OSID},win)
-ifeq (${CC_ID},cl)
-# ref: <http://stackoverflow.com/questions/26878278/microsoft-nmake-is-it-possible-to-define-macros-from-shell-command-output/27646085#27646085>
-# ref: <http://stackoverflow.com/questions/2806325/nmake-exe-is-there-a-way-to-exclude-a-file-from-a-set-of-files-specified-in-a-m/2806609#2806609>
-# maint:* [2016-02] current algorithm works for `cl` v12 (as "1200"; aka VS6/VC6/1998) through v19 (as "1900", aka VS14/VC14/2015); dependent on output of `cl`, which *has* changed between versions
-CC_ver := $(word 1,$(shell ${CC} ${CFLAGS_v} 2>&1 | @for /f "tokens=6-10 delims=. " %%g in ('${CAT}') do @if /i "%%g"=="version" (@echo %%h%%i) else @if /i "%%h"=="version" (@echo %%i%%j) else @echo 0))
-is_VC6 := $(call %as_truthy,$(shell "${CC}" 2>&1 | ${FINDSTR} /i /c:"compiler version 12."))
-endif
-ifeq (${CC_ID},clang)
-CC_ver := $(word 1,$(shell ${CC} ${CFLAGS_v} 2>&1 | @for /f "tokens=2-5 delims=. " %%g in ('${CAT}') do @if /i "%%g"=="version" (@echo %%h.%%i) else @echo 0))
-endif
-ifeq (${CC_ID},gcc)
-CC_ver := $(word 1,$(shell ${CC} ${CFLAGS_v} 2>&1 | @for /f "tokens=1-10 delims=. " %%g in ('${CAT}') do @if /i "%%p"=="" (@echo %%m.%%n) else @echo 0))
-endif
-else
-CC_ver := $(word 1,$(shell ${CC} ${CFLAGS_v} 2>&1 | grep -Po "\d+[.]\d+[.]\d+" | grep -m 1 -Po "\d+[.]\d+"))
-endif
+# "version heuristic" => parse first line of ${CC} version output, remove all non-version-compatible characters, take first word that starts with number and contains a ${DOT}
+# maint; [2020-05-14;rivy] heuristic is dependant on version output of various compilers; works for all known versions as of
 
-$(call %debug_var,CC_ver)
+ifeq (${OSID},win)
+CC_version_raw := $(shell ${CC} ${CFLAGS_v} 2>&1 | ${FINDSTR} /n /r .* | ${FINDSTR} /b /r "1:")
+else ## nix
+CC_version_raw := $(shell ${CC} ${CFLAGS_v} 2>&1 | ${GREP} -n ".*" | ${GREP} "^1:" )
+endif
+$(call %debug_var,CC_version_raw)
+
+s := ${CC_version_raw}
+
+# remove "1:" leader
+s := $(subst ${ESC}1:,$(),${ESC}${s})
+# $(call %debug_var,s)
+# remove all non-version-compatible characters (leaving common version characters [${BACKSLASH} ${SLASH} ${DOT} _ - +])
+s := $(call %tr,$(filter-out ${SLASH} ${BACKSLASH} ${DOT} _ - +,${[punct]}),$(),${s})
+# $(call %debug_var,s)
+# filter_map ${DOT}-containing words
+%f = $(and $(findstring ${DOT},${1}),${1})
+s := $(call %filter_map,%f,${s})
+$(call %debug_var,s)
+# filter_map all words with leading digits
+%f = $(and $(findstring ${ESC}_,${ESC}$(call %tr,${[digit]} ${ESC},$(call %repeat,_,$(words ${[digit]})),${1})),${1})
+s := $(call %filter_map,%f,${s})
+# $(call %debug_var,s)
+
+# take first word as full version
+CC_version := $(firstword ${s})
+CC_version_parts := $(strip $(subst ${DOT},${SPACE},${CC_version}))
+CC_version_M := $(strip $(word 1,${CC_version_parts}))
+CC_version_m := $(strip $(word 2,${CC_version_parts}))
+CC_version_r := $(strip $(word 3,${CC_version_parts}))
+CC_version_Mm := $(strip ${CC_version_M}.${CC_version_m})
+
+is_VC6 := $(and $(call %eq,cl,${CC}),$(call %eq,12,${CC_version_M}),${true})
+
+$(call %debug_var,CC_version)
+$(call %debug_var,CC_version_parts)
+$(call %debug_var,CC_version_M)
+$(call %debug_var,CC_version_m)
+$(call %debug_var,CC_version_r)
+$(call %debug_var,CC_version_Mm)
 $(call %debug_var,is_VC6)
 
 ####
@@ -435,7 +505,7 @@ $(call %debug_var,is_VC6)
 OUT_DIR_EXT := $(if $(call %is_truthy,${STATIC}),,.dynamic)
 
 ifeq (,${TARGET})
-OUT_DIR_EXT :=.x${ARCH_ID}
+OUT_DIR_EXT :=-x${ARCH_ID}
 else
 CFLAGS_TARGET := --target=${TARGET}
 LDFLAGS_TARGET := --target=${TARGET}
@@ -482,23 +552,33 @@ $(call %debug_var,LDFLAGS)
 # note: set LIB as `make` doesn't export the LIB change into `$(shell ...)` invocations
 test_file_stem := $(subst ${SPACE},_,__MAKE__${CC}_${ARCH}_${TARGET}_test__)
 test_file_cc_string := ${CC_e}${test_file_stem}${EXEEXT}
+test_success_text := ..TEST-COMPILE-SUCCESSFUL..
 $(call %debug_var,test_file_stem)
 $(call %debug_var,test_file_cc_string)
 ifeq (${OSID},win)
-ARCH_available := $(shell set "LIB=${LIB}" && ${ECHO} \#include ^<stdio.h^> > ${test_file_stem}.c && ${ECHO} int main(void){printf("${test_file_stem}");return 0;} >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} >${devnull} 2>&1 && ${ECHO} true& ${RM} ${test_file_stem}${EXEEXT} ${test_file_stem}.*)
+# erase the LIB environment variable for non-`cl` compilers (specifically `clang` has issues)
+test_lib_setting_win := $(if $(call %neq,cl,${CC}),set "LIB=${LIB}",set "LIB=%LIB%")
+$(call %debug_var,test_lib_setting_win)
+# test_output := $(shell ${test_lib_setting_win} && ${ECHO} \#include ^<stdio.h^> > ${test_file_stem}.c && ${ECHO} int main(void){printf("${test_file_stem}");return 0;} >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text})
+test_output := $(shell ${test_lib_setting_win} && ${ECHO} \#include ^<stdio.h^> > ${test_file_stem}.c && ${ECHO} int main(void){printf("${test_file_stem}");return 0;} >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text}& ${RM} ${test_file_stem}${EXEEXT} ${test_file_stem}.*)
 else
-ARCH_available := $(shell LIB='${LIB}' && ${ECHO} '\#include <stdio.h>' > ${test_file_stem}.c && ${ECHO} 'int main(void){printf("${test_file_stem}");return 0;}' >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} >${devnull} 2>&1 && ${ECHO} true; ${RM} -f ${test_file_stem}${EXEEXT} ${test_file_stem}.*)
+test_output := $(shell LIB='${LIB}' && ${ECHO} '\#include <stdio.h>' > ${test_file_stem}.c && ${ECHO} 'int main(void){printf("${test_file_stem}");return 0;}' >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text}; ${RM} -f ${test_file_stem}${EXEEXT} ${test_file_stem}.*)
 endif
+ARCH_available := $(call %is_truthy,$(findstring ${test_success_text},${test_output}))
 $(call %debug_var,.SHELLSTATUS)
+$(call %debug_var,test_output)
 $(call %debug_var,ARCH_available)
 
-ifeq (,$(or $(call %eq,${ARCH_available},true), $(and $(call %eq,cl,${CC_ID}), $(call %eq,${ARCH_ID},${CC_ARCH_ID}))))
-$(call %error,$(if ${TARGET},Architecture/Target "${ARCH}/${TARGET}",Architecture "${ARCH}") is unavailable/unimplemented for this version of `${CC}` (v${CC_ver}/${CC_machine}))
+$(call %debug_var,ARCH_ID)
+$(call %debug_var,CC_ARCH_ID)
+
+ifeq (${false},$(and ${ARCH_available},$(or $(call %eq,${ARCH_ID},${CC_ARCH_ID}),$(call %neq,cl,${CC}))))
+$(call %error,$(if ${TARGET},Architecture/Target "${ARCH}/${TARGET}",Architecture "${ARCH}") is unavailable/unimplemented for this version of `${CC}` (v${CC_version}/${CC_machine}))
 endif
 
 ####
 
-BUILD_DIR ?= \#build
+BUILD_DIR ?= ${HASH}build
 CONFIG    ?= $(if $(call %is_truthy,${DEBUG}),debug,release)
 
 SRC_DIR := .
