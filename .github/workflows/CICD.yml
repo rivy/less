@@ -1,0 +1,230 @@
+name: CICD
+
+# Copyright (C) 2020 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
+
+# spell-checker:ignore (abbrev/acronyms) ASAN CICD CodeCOV LLVM MSVC MacOS MinGW OSID TSAN UBSAN
+# spell-checker:ignore (env/flags) CFLAGS CXXFLAGS LDFLAGS Ccodegen Coverflow fsanitize
+# spell-checker:ignore (jargon) SHAs deps falsey softprops toolchain truthy
+# spell-checker:ignore (names) Bionic Bionic's Peltoche Xenial ilammy rivy
+# spell-checker:ignore (shell/tools) chmod choco clippy cmake ctest dmake dpkg esac fakeroot gmake grcov halium lcov libssl libtsan mkdir popd printf pushd rustc rustfmt rustup shopt valgrind xargs xcode
+# spell-checker:ignore (misc) alnum gnueabihf issuecomment libc libncurses maint multilib ncurses nullglob onexitbegin onexitend uutils
+
+# spell-checker:ignore () lessecho lesskey
+
+env:
+  PROJECT_NAME: less
+  PROJECT_DESC: "`less` is more"
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.job.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - { os: ubuntu-latest, compiler: clang, arch: x32 }
+          - { os: ubuntu-latest, compiler: clang, arch: x64 }
+          - { os: ubuntu-latest, compiler: gcc, arch: x32 }
+          - { os: ubuntu-latest, compiler: gcc, arch: x64 }
+          - { os: ubuntu-latest, compiler: clang, arch: x32, static: static }
+          - { os: ubuntu-latest, compiler: clang, arch: x64, static: static }
+          - { os: ubuntu-latest, compiler: gcc, arch: x32, static: static }
+          - { os: ubuntu-latest, compiler: gcc, arch: x64, static: static }
+          # - { os: macos-latest, compiler: xcode, version: "11.3" }
+          - { os: windows-latest, compiler: cl, arch: x32 }
+          - { os: windows-latest, compiler: cl, arch: x64 }
+          - { os: windows-latest, compiler: clang, arch: x32 }
+          - { os: windows-latest, compiler: clang, arch: x64 }
+          # - { os: windows-latest, compiler: gcc, arch: x32 } ## unavailable
+          - { os: windows-latest, compiler: gcc, arch: x64 }
+          - { os: windows-latest, compiler: cl, arch: x32, static: static }
+          - { os: windows-latest, compiler: cl, arch: x64, static: static }
+          - { os: windows-latest, compiler: clang, arch: x32, static: static }
+          - { os: windows-latest, compiler: clang, arch: x64, static: static }
+          # - { os: windows-latest, compiler: gcc, arch: x32, static: static } ## unavailable
+          - { os: windows-latest, compiler: gcc, arch: x64, static: static }
+    steps:
+      - uses: actions/checkout@v1
+      - name: Initialize workflow variables
+        id: vars
+        shell: bash
+        run: |
+          ## VARs setup
+          log() { for var in "$@" ; do echo ${var}="${!var}"; done; }
+          outputs() { for var in "$@" ; do echo steps.vars.outputs.${var}="${!var}"; echo ::set-output name=${var}::${!var}; done; }
+          # staging directory
+          STAGING='_staging'
+          outputs STAGING
+          # normalize ARCH_ID
+          case '${{ matrix.job.arch }}' in
+            32 | x32 | x86 | i686) ARCH_ID='x86' ; CONFIG_ARCH_ID='i686' ; CC_ARCH_ID='32' ;;
+            64 | x64 | x86_64) ARCH_ID='x64' ; CONFIG_ARCH_ID='x86_64' ; CC_ARCH_ID='64' ;;
+            *) ARCH_ID='${{ matrix.job.arch }}' ;;
+          esac;
+          outputs ARCH_ID CONFIG_ARCH_ID CC_ARCH_ID
+          # handle STATIC
+          LDFLAGS_STATIC="$( if [ '${{ matrix.job.static }}' == 'static' ]; then echo '-static'; fi; )"
+          outputs LDFLAGS_STATIC
+          # determine EXE suffix
+          EXE_suffix="$( case '${{ matrix.job.os }}' in windows-*) echo '.exe' ;; esac; )"
+          outputs EXE_suffix
+          # parse commit reference info
+          log GITHUB_REF GITHUB_SHA
+          REF_NAME=${GITHUB_REF#refs/*/}
+          unset REF_BRANCH ; case "${GITHUB_REF}" in refs/heads/*) REF_BRANCH=${GITHUB_REF#refs/heads/} ;; esac;
+          unset REF_TAG ; case "${GITHUB_REF}" in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
+          REF_SHAS=${GITHUB_SHA:0:8}
+          outputs REF_NAME REF_BRANCH REF_TAG REF_SHAS
+          # package name
+          PKG_suffix=".tar.gz" ; case '${{ matrix.job.os }}' in windows-*) PKG_suffix=".zip" ;; esac;
+          OS_name=$( echo "${{ matrix.job.os }}" | grep -Eo '^\s*([^-]+)' | tr '[:upper:]' '[:lower:]' )
+          PKG_OSID=${OS_name}
+          case "${OS_name}" in macos) PKG_OSID=mac ;; ubuntu) PKG_OSID=nix ;; windows) PKG_OSID=win ;; esac;
+          if [ '${{ matrix.job.static }}' == 'static' ]; then
+            STATIC_suffix=".static"
+            PKG_prefix="${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${PKG_OSID}-${{ matrix.job.arch }}"
+          else
+            STATIC_suffix=".dyn"
+            PKG_prefix="${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${OS_name}-${{ matrix.job.arch }}"
+          fi
+          PKG_stem="${PKG_prefix}${STATIC_suffix}.(${{ matrix.job.compiler }})"
+          PKG_name="${PKG_stem}${PKG_suffix}"
+          PUB_name="${PKG_prefix}${PKG_suffix}"
+          outputs PKG_prefix PKG_suffix PKG_stem PKG_name PUB_name
+          # deployable tag? (ie, leading "vM" or "M"; M == version number)
+          # * restrict publishing to specific 'static' builds
+          unset DEPLOYABLE
+          if [[ $REF_TAG =~ ^[vV]?[0-9].* ]] && [[ '${{ matrix.job.static }}' == 'static' ]]; then
+            case '${{ matrix.job.os }}' in
+              windows-*)
+                if [ "${ARCH_ID}" == 'x86' ] && [ '${{ matrix.job.compiler }}' == 'cl' ]; then DEPLOYABLE='true' ; fi
+                if [ "${ARCH_ID}" == 'x64' ] && [ '${{ matrix.job.compiler }}' == 'gcc' ]; then DEPLOYABLE='true' ; fi
+                ;;
+              ubuntu-*)
+                if [ '${{ matrix.job.compiler }}' == 'clang' ]; then DEPLOYABLE='true' ; fi
+                ;;
+            esac
+          fi
+          outputs DEPLOYABLE
+          # * strip executable?
+          STRIP="strip" ; case '${{ matrix.job.os }}' in windows-*) STRIP='' ;; esac;
+          outputs STRIP
+      - name: Create all needed build/work directories
+        shell: bash
+        run: |
+          ## create build/work space
+          mkdir -p '${{ steps.vars.outputs.STAGING }}'
+          mkdir -p '${{ steps.vars.outputs.STAGING }}'/publish
+          mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}'
+          mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/bin'
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ steps.vars.outputs.ARCH_ID }}
+      # ref: <https://github.com/actions/virtual-environments/issues/104#issuecomment-596259045>@@<http://archive.is/orSp7>
+      - name: Install LLVM
+        run: choco install -y llvm
+        if: runner.os == 'Windows' && matrix.job.compiler == 'clang'
+      - name: Install/setup prerequisites
+        shell: bash
+        run: |
+          ## install/setup prerequisites
+          case '${{ matrix.job.os }}' in
+            ubuntu-*)
+              sudo dpkg --add-architecture i386
+              sudo dpkg --add-architecture amd64
+              # note: list of current dpkg architectures held at '/var/lib/dpkg/arch'
+              sudo apt-get -y update
+              sudo apt-get -y install lib32ncurses5-dev libncurses5-dev gcc-multilib clang
+            ;;
+            windows-*)
+              case '${{ matrix.job.compiler }}' in clang) echo "::add-path::C:/Program Files/LLVM/bin" ;; esac;
+            ;;
+          esac
+          case '${{ matrix.job.compiler }}' in
+            cl) CC=cl ; CXX=cl
+              # repair for link path error (o/w '/usr/bin/link' takes priority)
+              LD=$(which "${CC}")/../link.exe
+              ;;
+            clang) CC=clang ; CXX=clang++ ; LD=${CXX} ;;
+            gcc) CC=gcc ; CXX=g++ ; LD=${CXX} ;;
+          esac
+          echo "::set-env name=CC::${CC}"
+          echo "::set-env name=CXX::${CXX}"
+          echo "::set-env name=LD::${LD}"
+      - name: Info
+        shell: bash
+        run: |
+          # Info
+          ### environment
+          ## commit info
+          echo "## commit"
+          echo GITHUB_REF=${GITHUB_REF}
+          echo GITHUB_SHA=${GITHUB_SHA}
+          ## tooling info display
+          echo "## tooling"
+          which cl 2>/dev/null && (cl 2>&1 | head -1) || true
+          which clang 2>/dev/null && (clang --version | head -1) || true
+          which gcc 2>/dev/null && (gcc --version | head -1) || true
+          which link 2>/dev/null || true
+          echo "CC=${CC}"
+          echo "CXX=${CXX}"
+      - name: Build
+        shell: bash
+        run: |
+          case '${{ matrix.job.os }}' in
+            ubuntu-*)
+              sudo chmod a+x ./configure
+              CFLAGS="-g -O2 -m${{ steps.vars.outputs.CC_ARCH_ID }}"
+              LDFLAGS="-m${{ steps.vars.outputs.CC_ARCH_ID }} ${{ steps.vars.outputs.LDFLAGS_STATIC }}"
+              CFLAGS="$(echo "${CFLAGS}" | xargs echo)" ## compress/trim whitespace
+              LDFLAGS="$(echo "${LDFLAGS}" | xargs echo)" ## compress/trim whitespace
+              ./configure CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
+            ;;
+            windows-*)
+              cp Makefile.win Makefile
+            ;;
+          esac
+          make CC="${CC}" CXX="${CXX}" LD="${LD}" ARCH='${{ steps.vars.outputs.ARCH_ID }}' STATIC='${{ matrix.job.static }}' all
+          for exe in '${{ env.PROJECT_NAME }}' lessecho lesskey ; do
+            cp "${exe}${{ steps.vars.outputs.EXE_suffix }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/bin/'
+          done
+          # `strip` binary (if needed)
+          if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' ; fi
+      # - name: Test
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+      #     command: test
+      #     args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }} ${{ steps.vars.outputs.CARGO_FEATURES_OPTION }}
+      - name: Archive artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ steps.vars.outputs.PKG_stem }}
+          path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}
+      - name: Package
+        # if: steps.vars.outputs.DEPLOYABLE
+        shell: bash
+        run: |
+          ## package artifact(s)
+          # add README and LICENSE to package
+          ## * spell-checker:ignore EADME ICENSE
+          (shopt -s nullglob; for f in [R]"EADME"{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/' ; done)
+          (shopt -s nullglob; for f in [L]"ICENSE"{-*,}{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/' ; done)
+          # compression/finalize package
+          pushd '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}' >/dev/null
+          case '${{ matrix.job.os }}' in
+            windows-*) 7z -y a ../publish/'${{ steps.vars.outputs.PUB_name }}' * ;;
+            *) tar czf ../publish/'${{ steps.vars.outputs.PUB_name }}' * ;;
+          esac
+          popd >/dev/null
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        if: steps.vars.outputs.DEPLOYABLE
+        with:
+          files: |
+            ${{ steps.vars.outputs.STAGING }}/publish/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

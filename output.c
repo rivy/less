@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -210,6 +210,7 @@ flush(VOID_PARAM)
             static int fg, fgi, bg, bgi;
             static int at;
             int f, b;
+            int slop;
 #if MSDOS_COMPILER==WIN32C
             /* Screen colors used by 3x and 4x SGR commands. */
             static unsigned char screen_color[] = {
@@ -248,7 +249,7 @@ flush(VOID_PARAM)
                     if (p > anchor) {
                         WIN32textout(anchor, p-anchor);
                     }
-                    int slop = (int)(ob - p);
+                    slop = (int)(ob - p);
                     /* {{ strcpy args overlap! }} */
                     strcpy(obuf, p);
                     ob = &obuf[slop];

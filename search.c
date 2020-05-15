@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -636,7 +636,7 @@ is_hilited(pos, epos, nohide, p_matches)
     /*
      * Report matches, even if we're hiding highlights.
      */
-        *p_matches = 1;
+    *p_matches = 1;
 
     if (hilite_search == 0)
         /*
@@ -1175,7 +1175,7 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos)
     char *sp, *ep;
     int line_match;
     int cvt_ops;
-    int cvt_len;
+    size_t cvt_len;
     int *chpos;
     POSITION linepos, oldpos;
 
@@ -1757,4 +1757,3 @@ regerror(s)
     error("%s", &parg);
 }
 #endif
-

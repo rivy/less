@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -174,7 +174,7 @@ set_linebuf(n, ch, a)
     char ch;
     char a;
 {
-    linebuf[n] = (char) ch;
+    linebuf[n] = ch;
     attr[n] = a;
 }
 
@@ -794,7 +794,7 @@ flush_mbc_buf(pos)
  */
     public int
 pappend(c, pos)
-    PARAM_unsigned_char c;
+    int c;
     POSITION pos;
 {
     int r;
@@ -1164,7 +1164,7 @@ pdone(endline, chopped, forw)
  */
     public void
 set_status_col(c)
-    PARAM_char c;
+    int c;
 {
     set_linebuf(0, c, AT_NORMAL|AT_HILITE);
 }

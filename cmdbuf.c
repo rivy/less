@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -34,7 +34,7 @@ static int literal;     /* Next input char should not be interpreted */
 static int updown_match = -1;   /* Prefix length in up/down movement */
 
 #if TAB_COMPLETE_FILENAME
-static int cmd_complete();
+static int cmd_complete LESSPARAMS((int action));
 /*
  * These variables are statics used by cmd_complete.
  */
@@ -1275,7 +1275,7 @@ cmd_char(c)
 #endif
             else if (IS_UTF8_LEAD(c))
             {
-                cmd_mbc_buf_len = utf_len((unsigned char)c);
+                cmd_mbc_buf_len = utf_len(c);
                 return (CC_OK);
             } else
             {

@@ -1,5 +1,20 @@
 # NOTE: GLOBSTAR syntax [see `git help gitignore`]
 
+# ignore generated object files
+*.o
+*.obj
+
+# ignore generated headers
+defines.h
+
+# ignore generated executables
+less
+less.exe
+lessecho
+lessecho.exe
+lesskey
+lesskey.exe
+
 # ignore localized VSCode settings
 .vscode/c_cpp_properties.json
 # ignore VSCode precompiled headers for IntelliSense

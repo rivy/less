@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -220,8 +220,9 @@ extern int binattr;
 extern int one_screen;
 
 #if !MSDOS_COMPILER
-static char *cheaper();
-static void tmodes();
+static char *cheaper LESSPARAMS((char *t1, char *t2, char *def));
+static void tmodes LESSPARAMS((char *incap, char *outcap, char **instr,
+    char **outstr, char *def_instr, char *def_outstr, char **spp));
 #endif
 
 /*
@@ -643,7 +644,6 @@ ltget_env(capname)
     char *capname;
 {
     char name[64];
-    char *s;
 
     if (termcap_debug)
     {
@@ -1132,8 +1132,11 @@ get_term(VOID_PARAM)
     char *sp;
     char *t1, *t2;
     char *term;
-    char termbuf[TERMBUF_SIZE];
-
+    /*
+     * Some termcap libraries assume termbuf is static
+     * (accessible after tgetent returns).
+     */
+    static char termbuf[TERMBUF_SIZE];
     static char sbuf[TERMSBUF_SIZE];
 
 #if OS2
@@ -1159,6 +1162,7 @@ get_term(VOID_PARAM)
     if ((term = lgetenv("TERM")) == NULL)
         term = DEFAULT_TERM;
     hardcopy = 0;
+    /* {{ Should probably just pass NULL instead of termbuf. }} */
     if (tgetent(termbuf, term) != TGETENT_OK)
         hardcopy = 1;
     if (ltgetflag("hc"))
@@ -1535,13 +1539,9 @@ win32_init_term(VOID_PARAM)
                 output_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     }
 
-    // FixME: [2019-08-15]; this is a workaround for <https://github.com/microsoft/terminal/issues/2449>; plan removal when addressed or fixed
-    //    ... this code is not usually needed since creating `con_out_ours` via `CreateConsoleScreenBuffer()` creates a copy of the active screen buffer with "Buffer Size" == "Display Window Size"
-    //    ... used here with a "+ 1" as a temporary workaround for display issues when using the "Disable Scroll-forward" console feature
-    // ref: <https://docs.microsoft.com/en-us/windows/console/createconsolescreenbuffer>[`@`](https://archive.is/xBtEA)
     GetConsoleScreenBufferInfo(con_out_save, &scr);
     size.X = scr.srWindow.Right - scr.srWindow.Left + 1;
-    size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1 + 1;
+    size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1;
     SetConsoleScreenBufferSize(con_out_ours, size);
 
     SetConsoleActiveScreenBuffer(con_out_ours);
@@ -2675,7 +2675,7 @@ WIN32setcolors(fg, bg)
     public void
 WIN32textout(text, len)
     char *text;
-    int len;
+    size_t len;
 {
 #if MSDOS_COMPILER==WIN32C
     DWORD written;
@@ -2686,11 +2686,11 @@ WIN32textout(text, len)
          * wide and use WriteConsoleW.
          */
         WCHAR wtext[1024];
-        len = MultiByteToWideChar(CP_UTF8, 0, text, len, wtext,
+        len = MultiByteToWideChar(CP_UTF8, 0, text, (int)len, wtext,
                       sizeof(wtext)/sizeof(*wtext));
-        WriteConsoleW(con_out, wtext, len, &written, NULL);
+        WriteConsoleW(con_out, wtext, (int)len, &written, NULL);
     } else
-    WriteConsole(con_out, text, len, &written, NULL);
+    WriteConsole(con_out, text, (int)len, &written, NULL);
 #else
     char c = text[len];
     text[len] = '\0';

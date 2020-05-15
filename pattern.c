@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -315,7 +315,7 @@ match_pattern(pattern, tpattern, line, line_len, sp, ep, notbol, search_type)
     PATTERN_TYPE pattern;
     char *tpattern;
     char *line;
-    int line_len;
+    size_t line_len;
     char **sp;
     char **ep;
     int notbol;

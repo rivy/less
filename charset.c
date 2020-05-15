@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2019  Mark Nudelman
+ * Copyright (C) 1984-2020  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -509,7 +509,7 @@ prutfchar(ch)
  */
     public int
 utf_len(ch)
-    PARAM_unsigned_char ch;
+    int ch;
 {
     if ((ch & 0x80) == 0)
         return 1;
@@ -533,10 +533,10 @@ utf_len(ch)
     public int
 is_utf8_well_formed(ss, slen)
     char *ss;
-    int slen;
+    size_t slen;
 {
-    int i;
-    int len;
+    size_t i;
+    size_t len;
     unsigned char *s = (unsigned char *) ss;
 
     if (IS_UTF8_INVALID(s[0]))
@@ -813,7 +813,8 @@ is_ubin_char(ch)
          * Consider it binary if it can't be converted.
          */
         BOOL used_default = TRUE;
-        WideCharToMultiByte(GetConsoleOutputCP(), 0, (LPCWSTR) &ch, 1, NULL, 0, NULL, &used_default);
+        // NOTE: avoid use of WC_NO_BEST_FIT_CHARS as it is incompatible with various code page settings and unavailable earlier that Windows 2000
+        WideCharToMultiByte(GetConsoleOutputCP(), 0 /* *not* WC_NO_BEST_FIT_CHARS */, (LPCWSTR) &ch, 1, NULL, 0, NULL, &used_default);
         if (used_default)
             ubin = 1;
     }
