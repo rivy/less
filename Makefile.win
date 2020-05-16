@@ -54,7 +54,7 @@ STRIP_CC_gcc := strip
 ## -Wno-int-to-void-pointer-cast :: suppress cast to void from int warnings; ref: <https://stackoverflow.com/questions/22751762/how-to-make-compiler-not-show-int-to-void-pointer-cast-warnings>
 ## -D_CRT_SECURE_NO_WARNINGS :: compiler directive == suppress "unsafe function" compiler warning
 ## note: CFLAGS == C flags; CPPFLAGS == C PreProcessor flags; CXXFLAGS := C++ flags; ref: <https://stackoverflow.com/questions/495598/difference-between-cppflags-and-cxxflags-in-gnu-make>
-CFLAGS := -I. -pedantic-errors -Werror -Wall -Wno-comment -Wno-deprecated-declarations -Wno-int-to-void-pointer-cast -D_CRT_SECURE_NO_WARNINGS
+CFLAGS := -I. -pedantic-errors -Werror -Wall -Wno-comment -Wno-deprecated-declarations -D_CRT_SECURE_NO_WARNINGS
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_ARCH_32 := -m32
 CFLAGS_ARCH_64 := -m64
@@ -167,7 +167,18 @@ MAKEFLAGS_debug ?= $(if $(findstring d,${MAKEFLAGS}),true,false)## Makefile debu
 
 #### End of system configuration section. ####
 
-OSID := $(or $(filter win,${OS:Windows_NT=win}),nix)## OSID == [nix,win]
+OSID := $(or $(and $(filter .exe,$(patsubst %.exe,.exe,$(subst $() $(),_,${SHELL}))),$(filter win,${OS:Windows_NT=win})),nix)## OSID == [nix,win]
+
+# for Windows OS, set SHELL to `%ComSpec%` or `cmd` (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
+# * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
+ifeq (${OSID},win)
+# use case and location fallbacks; note: assumes *no spaces* within ${ComSpec}, ${SystemRoot}, or ${windir}
+COMSPEC := $(or ${ComSpec},${COMSPEC},${comspec})
+SystemRoot := $(or ${SystemRoot},${SYSTEMROOT},${systemroot},${windir})
+SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
+endif
+
+####
 
 falsey := false 0 f n no off
 false := $()
@@ -261,6 +272,9 @@ override VERBOSE := $(call %as_truthy,${VERBOSE})
 
 override MAKEFLAGS_debug := $(call %as_truthy,$(or $(call %is_truthy,${MAKEFLAGS_debug}),$(call %is_truthy,${MAKEFILE_debug})))
 
+$(call %debug_var,OSID)
+$(call %debug_var,SHELL)
+
 $(call %debug_var,COLOR)
 $(call %debug_var,DEBUG)
 $(call %debug_var,STATIC)
@@ -284,18 +298,6 @@ $(call %debug_var,MAKE_VERSION_fail)
 ifneq ($(MAKE_VERSION_fail),)
 $(call %error,`make` v4.0+ required (currently using v${MAKE_VERSION}))
 endif
-
-####
-
-# for Windows OS, set SHELL to `%ComSpec%` or `cmd` (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
-# * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
-ifeq (${OSID},win)
-# use case and location fallbacks; note: assumes *no spaces* within ${ComSpec}, ${SystemRoot}, or ${windir}
-COMSPEC := $(or ${ComSpec},${COMSPEC},${comspec})
-SystemRoot := $(or ${SystemRoot},${SYSTEMROOT},${systemroot},${windir})
-SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
-endif
-$(call %debug_var,SHELL)
 
 ####
 
@@ -559,10 +561,10 @@ ifeq (${OSID},win)
 # erase the LIB environment variable for non-`cl` compilers (specifically `clang` has issues)
 test_lib_setting_win := $(if $(call %neq,cl,${CC}),set "LIB=${LIB}",set "LIB=%LIB%")
 $(call %debug_var,test_lib_setting_win)
-# test_output := $(shell ${test_lib_setting_win} && ${ECHO} \#include ^<stdio.h^> > ${test_file_stem}.c && ${ECHO} int main(void){printf("${test_file_stem}");return 0;} >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text})
-test_output := $(shell ${test_lib_setting_win} && ${ECHO} \#include ^<stdio.h^> > ${test_file_stem}.c && ${ECHO} int main(void){printf("${test_file_stem}");return 0;} >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text}& ${RM} ${test_file_stem}${EXEEXT} ${test_file_stem}.*)
+# test_output := $(shell ${test_lib_setting_win} && ${ECHO} ${HASH}include ^<stdio.h^> > ${test_file_stem}.c && ${ECHO} int main(void){printf("${test_file_stem}");return 0;} >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text})
+test_output := $(shell ${test_lib_setting_win} && ${ECHO} ${HASH}include ^<stdio.h^> > ${test_file_stem}.c && ${ECHO} int main(void){printf("${test_file_stem}");return 0;} >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text}& ${RM} ${test_file_stem}${EXEEXT} ${test_file_stem}.*)
 else
-test_output := $(shell LIB='${LIB}' && ${ECHO} '\#include <stdio.h>' > ${test_file_stem}.c && ${ECHO} 'int main(void){printf("${test_file_stem}");return 0;}' >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text}; ${RM} -f ${test_file_stem}${EXEEXT} ${test_file_stem}.*)
+test_output := $(shell LIB='${LIB}' && ${ECHO} '${HASH}include <stdio.h>' > ${test_file_stem}.c && ${ECHO} 'int main(void){printf("${test_file_stem}");return 0;}' >> ${test_file_stem}.c && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) ${test_file_stem}.c ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text}; ${RM} -f ${test_file_stem}${EXEEXT} ${test_file_stem}.*)
 endif
 ARCH_available := $(call %is_truthy,$(findstring ${test_success_text},${test_output}))
 $(call %debug_var,.SHELLSTATUS)
@@ -586,7 +588,7 @@ OUT_DIR := .
 OUT_bin := .
 OUT_obj := .
 out_dirs := $(strip $(call %uniq,${OUT_DIR} ${OUT_bin} ${OUT_obj}))
-out_dirs_for_rules := $(strip $(subst \#,\\\#,${out_dirs}))
+out_dirs_for_rules := $(strip $(subst ${HASH},${BACKSLASH}${HASH},${out_dirs}))
 
 $(call %debug_var,out_dirs)
 $(call %debug_var,out_dirs_for_rules)
@@ -644,9 +646,9 @@ help: ## Display help
 	@${ECHO} MAKE_TARGETs:
 	@${ECHO_NL}
 ifeq (${OSID},win)
-	@${FINDSTR} "^[a-zA-Z-]*:.*##" "${makefile_path}" | ${SORT} | for /f "tokens=1-2,* delims=:#" %%g in ('${MORE}') do @(@call set "t=%%g                " & @call echo ${color_success}%%t:~0,15%%${color_reset} ${color_info}%%i${color_reset})
+	@${FINDSTR} "^[a-zA-Z-]*:.*${HASH}${HASH}" "${makefile_path}" | ${SORT} | for /f "tokens=1-2,* delims=:${HASH}" %%g in ('${MORE}') do @(@call set "t=%%g                " & @call echo ${color_success}%%t:~0,15%%${color_reset} ${color_info}%%i${color_reset})
 else
-	@${GREP} -P "(?i)^[[:alpha:]-]+:" "${makefile_path}" | ${SORT} | ${AWK} 'match($$0,"^([[:alpha:]]+):.*?##\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }'
+	@${GREP} -P "(?i)^[[:alpha:]-]+:" "${makefile_path}" | ${SORT} | ${AWK} 'match($$0,"^([[:alpha:]]+):.*?${HASH}${HASH}\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }'
 endif
 
 .PHONY: run
