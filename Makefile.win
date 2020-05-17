@@ -445,11 +445,11 @@ endif
 ####
 
 ARCH_default := i686
-ARCH_i686 := i686 x86
+ARCH_x86 := i386 i586 i686 x86
 ARCH_x86_64 := x64 x86_64
-ARCH_allowed := $(sort 32 x32 ${ARCH_i686} 64 ${ARCH_x86_64})
+ARCH_allowed := $(sort 32 x32 ${ARCH_x86} 64 ${ARCH_x86_64})
 ifneq (${ARCH},$(filter ${ARCH},${ARCH_allowed}))
-$(call %error,Unknown architecture "$(ARCH)"; valid values are [""$(subst $(SPACE),$(),$(addprefix ${COMMA}${DQUOTE},$(addsuffix ${DQUOTE},${ARCH_allowed})))])
+$(call %error,Unknown architecture "$(ARCH)"; valid values are [""$(subst $(SPACE),$(),$(addprefix ${COMMA}",$(addsuffix ",${ARCH_allowed})))])
 endif
 
 ifeq (${OSID},win)
@@ -458,11 +458,11 @@ else ## nix
 CC_machine_raw := $(shell ${CC} ${CFLAGS_machine} 2>&1 | ${GREP} -n ".*" | ${GREP} "^1:" )
 endif
 CC_machine_raw := $(subst ${ESC}1:,$(),${ESC}${CC_machine_raw})
-CC_ARCH := $(or $(filter $(subst -, ,${CC_machine_raw}),${ARCH_i686} ${ARCH_x86_64}),${ARCH_default})
+CC_ARCH := $(or $(filter $(subst -, ,${CC_machine_raw}),${ARCH_x86} ${ARCH_x86_64}),${ARCH_default})
 CC_machine := $(or $(and $(call %eq,cl,${CC}),${CC_ARCH}),${CC_machine_raw})
-CC_ARCH_ID := $(if $(filter ${CC_ARCH},32 x32 ${ARCH_i686}),32,64)
+CC_ARCH_ID := $(if $(filter ${CC_ARCH},32 x32 ${ARCH_x86}),32,64)
 override ARCH := $(or ${ARCH},${CC_ARCH})
-ARCH_ID := $(if $(filter ${ARCH},32 x32 ${ARCH_i686}),32,64)
+ARCH_ID := $(if $(filter ${ARCH},32 x32 ${ARCH_x86}),32,64)
 
 $(call %debug_var,CC_machine_raw)
 $(call %debug_var,CC_machine)
