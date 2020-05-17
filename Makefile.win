@@ -205,9 +205,9 @@ SPACE := $() $()
 [digit] := 1 2 3 4 5 6 7 8 9 0
 [punct] := ~ ` ! @ ${HASH} ${DOLLAR} % ^ & * ${PAREN_OPEN} ${PAREN_CLOSE} _ - + = { } [ ] | ${BACKSLASH} : ; " ' < > ${COMMA} ? ${SLASH} ${DOT}
 
-%not = $(if ${1},${false},${true})
-%eq = $(and $(findstring $(1),$(2)),$(findstring $(2),$(1)))
-%neq = $(call %not,$(call %eq,${1},${2}))
+%not = $(if ${1},${false},$(or ${1},${true}))
+%eq = $(or $(and $(findstring ${1},${2}),$(findstring ${2},${1})),$(if ${1}${2},${false},${true}))# note: `call %eq,$(),$()` => ${true}
+%neq = $(if $(call %eq,${1},${2}),${false},$(or ${1},${2},${true}))# note: ${1} != ${2} => ${false}; ${1} == ${2} => first non-empty value (or ${true})
 
 %falsey = $(firstword ${falsey})
 %truthy = $(firstword ${truthy})
@@ -238,9 +238,15 @@ ifeq (${OSID},win)
 %rm_file = if EXIST "${1}" ${RM} "${1}" && echo $(call %info_text,"${1}" removed)
 %rm_fileset = $(if $(shell for %%G in (${1}) do ${RM} "%%G" >${devnull} && echo done),$(shell echo echo $(call %info_text,"${1}" removed)),)
 else
-%rm_dir = ls -d "${1}" >${devnull} 2>&1 && { ${RMDIR} "${1}" && echo ${ECHO_SQ}$(call %info_text,"${1}" removed)${ECHO_SQ}; } || true
-%rm_file = ls -d "${1}" >${devnull} 2>&1 && { ${RM} "${1}" && echo ${ECHO_SQ}$(call %info_text,"${1}" removed)${ECHO_SQ}; } || true
-%rm_fileset = for file in ${1}; do ls -d "${1}" >${devnull} 2>&1 && ${RM} "$${file}"; done && echo ${ECHO_SQ}$(call %info_text,"${1}" removed)${ECHO_SQ} || true
+%rm_dir = ls -d "${1}" >${devnull} 2>&1 && { ${RMDIR} "${1}" && echo $(call %shell_quote,$(call %info_text,"${1}" removed)); } || true
+%rm_file = ls -d "${1}" >${devnull} 2>&1 && { ${RM} "${1}" && echo $(call %shell_quote,$(call %info_text,"${1}" removed)); } || true
+%rm_fileset = for file in ${1}; do ls -d "${1}" >${devnull} 2>&1 && ${RM} "$${file}"; done && echo $(call %shell_quote,$(call %info_text,"${1}" removed)) || true
+endif
+
+ifeq (${OSID},win)
+%shell_quote = $(call %tr,^ | < > %,^^ ^| ^< ^> ^%,${1})
+else
+%shell_quote = '$(call %tr,','"'"',${1})'
 endif
 
 @mkdir_rule = ${1} : ${2} ; ${MKDIR} "$$@"
@@ -630,27 +636,28 @@ $(call %debug_var,OBJ_files)
 ${AUX_targets}: %${EXEEXT}: %.${O} version.${O} ${makefile_abs_path} | ${OUT_bin}
 	${LD} ${LDFLAGS} "$<" "version.${O}" ${LIBS} ${LD_o}"$@"
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
-	@${ECHO} ${ECHO_DQ}$(call %success_text,made '$@'.)${ECHO_DQ}
+	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
 ${OBJ_files}: ${OBJ_deps} | ${OUT_obj}
 
 defines.h: defines.${DEFINETYPE}
-	${CP} defines.${DEFINETYPE} defines.h
+	@${CP} defines.${DEFINETYPE} defines.h >${devnull}
+	@${ECHO} $(call %shell_quote,$(call %info_text,created '$@' from '$<'.))
 
 ####
 
 .PHONY: help
 help: ## Display help
-	@${ECHO} ${BQUOTE}${make_invoke_alias}${BQUOTE}
-	@${ECHO} Usage: ${BQUOTE}${make_invoke_alias} [ARCH=..] [COLOR=..] [DEBUG=..] [STATIC=..] [TARGET=..] [VERBOSE=..] [MAKE_TARGET...]${BQUOTE}
-	@${ECHO} Builds ${SQUOTE}${PROJECT_TARGET}${SQUOTE} within ${DQUOTE}$(current_dir)${DQUOTE}
-	@${ECHO_NL}
-	@${ECHO} MAKE_TARGETs:
-	@${ECHO_NL}
+	@${ECHO} $(call %shell_quote,`${make_invoke_alias}`)
+	@${ECHO} $(call %shell_quote,Usage: `${make_invoke_alias} [ARCH=..] [COLOR=..] [DEBUG=..] [STATIC=..] [TARGET=..] [VERBOSE=..] [MAKE_TARGET...]`)
+	@${ECHO} $(call %shell_quote,Builds '${PROJECT_TARGET}' within "$(current_dir)")
+	@${ECHO_newline}
+	@${ECHO} $(call %shell_quote,MAKE_TARGETs:)
+	@${ECHO_newline}
 ifeq (${OSID},win)
 	@${FINDSTR} "^[a-zA-Z-]*:.*${HASH}${HASH}" "${makefile_path}" | ${SORT} | for /f "tokens=1-2,* delims=:${HASH}" %%g in ('${MORE}') do @(@call set "t=%%g                " & @call echo ${color_success}%%t:~0,15%%${color_reset} ${color_info}%%i${color_reset})
 else
-	@${GREP} -P "(?i)^[[:alpha:]-]+:" "${makefile_path}" | ${SORT} | ${AWK} 'match($$0,"^([[:alpha:]]+):.*?${HASH}${HASH}\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }'
+	@${GREP} -P "(?i)^[[:alpha:]-]+:" "${makefile_path}" | ${SORT} | ${AWK} 'match($$0,"^([[:alpha:]]+):.*?${HASH}${HASH}\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }END{printf "\n"}'
 endif
 
 .PHONY: run
@@ -686,7 +693,7 @@ veryclean: realclean
 ${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_bin}
 	${LD} ${LDFLAGS} $(addprefix ",$(addsuffix ",${OBJ_files})) ${LIBS} ${LD_o}"$@"
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
-	@${ECHO} ${ECHO_DQ}$(call %success_text,made '$@'.)${ECHO_DQ}
+	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
 ${OUT_obj}/%.${O}: ${SRC_DIR}/%.c ${makefile_abs_path} | ${OUT_obj}
 	${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} "$<" ${CC_o}"$@"
