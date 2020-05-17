@@ -28,6 +28,18 @@ NAME := less ## empty/null => autoset to name of containing folder
 # spell-checker:ignore (utils) goawk ilink
 # spell-checker:ignore (vars) BQUOTE CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE DQUOTE EXEEXT LDFLAGS LIBDIR LIBPATH MAKEDIR OBJ_deps OSID PAREN SQUOTE devnull falsey fileset punct truthy
 
+####
+
+OSID := $(or $(and $(filter .exe,$(patsubst %.exe,.exe,$(subst $() $(),_,${SHELL}))),$(filter win,${OS:Windows_NT=win})),nix)## OSID == [nix,win]
+# for Windows OS, set SHELL to `%ComSpec%` or `cmd` (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
+# * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
+ifeq (${OSID},win)
+# use case and location fallbacks; note: assumes *no spaces* within ${ComSpec}, ${SystemRoot}, or ${windir}
+COMSPEC := $(or ${ComSpec},${COMSPEC},${comspec})
+SystemRoot := $(or ${SystemRoot},${SYSTEMROOT},${systemroot},${windir})
+SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
+endif
+
 #### Start of system configuration section. ####
 
 # * default to `clang`
