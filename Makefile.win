@@ -16,7 +16,7 @@ NAME := less ## empty/null => autoset to name of containing folder
 # spell-checker:ignore () brac cmdbuf forwback funcs ifile lessecho lesskey linenum lsystem optfunc opttbl scrsize ttyin
 
 # spell-checker:ignore (targets) realclean vclean veryclean
-# spell-checker:ignore (make) CURDIR MAKEFLAGS SHELLSTATUS TERMERR TERMOUT abspath addprefix addsuffix endef eval findstring firstword gmake ifeq ifneq lastword notdir prepend undefine wordlist
+# spell-checker:ignore (make) CURDIR MAKEFLAGS SHELLSTATUS TERMERR TERMOUT abspath addprefix addsuffix endef eval findstring firstword gmake ifeq ifneq lastword notdir patsubst prepend undefine wordlist
 #
 # spell-checker:ignore (CC) DDEBUG DNDEBUG NDEBUG Ofast Werror Wextra Xclang Xlinker dumpmachine flto flto-visibility-public-std fpie nodefaultlib nologo nothrow
 # spell-checker:ignore (abbrev/acronyms) LLVM MSVC MinGW POSIX VCvars
@@ -26,7 +26,7 @@ NAME := less ## empty/null => autoset to name of containing folder
 # spell-checker:ignore (shell/nix) mkdir printf rmdir uname
 # spell-checker:ignore (shell/win) COMSPEC SystemDrive SystemRoot findstr findstring mkdir windir
 # spell-checker:ignore (utils) goawk ilink
-# spell-checker:ignore (vars) BQUOTE CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE DQUOTE EXEEXT LDFLAGS LIBDIR LIBPATH MAKEDIR OBJ_deps OSID PAREN SQUOTE devnull falsey fileset punct truthy
+# spell-checker:ignore (vars) CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE EXEEXT LDFLAGS LIBPATH MAKEDIR OBJ_deps OSID PAREN devnull falsey fileset globset globsets punct truthy
 
 ####
 
