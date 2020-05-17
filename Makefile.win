@@ -288,6 +288,14 @@ override MAKEFLAGS_debug := $(call %as_truthy,$(or $(call %is_truthy,${MAKEFLAGS
 $(call %debug_var,OSID)
 $(call %debug_var,SHELL)
 
+$(call %debug_var,CC)
+$(call %debug_var,CXX)
+$(call %debug_var,LD)
+$(call %debug_var,CFLAGS)
+$(call %debug_var,CPPFLAGS)
+$(call %debug_var,CXXFLAGS)
+$(call %debug_var,LDFLAGS)
+
 $(call %debug_var,COLOR)
 $(call %debug_var,DEBUG)
 $(call %debug_var,STATIC)
