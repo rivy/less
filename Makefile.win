@@ -50,8 +50,8 @@ CC_ID := $(lastword $(subst -,$() $(),${CC}))
 
 ifeq (,$(filter-out clang gcc,${CC_ID}))
 ## `clang` or `gcc`
-CXX = ${CC:gcc=g}++
-LD = ${CXX}
+CXX := ${CC:gcc=g}++
+LD := ${CXX}
 STRIP_CC_clang_OSID_nix := strip
 STRIP_CC_clang_OSID_win := llvm-strip
 STRIP_CC_gcc := strip
@@ -107,9 +107,9 @@ LIBS := $()
 endif ## `clang` or `gcc`
 
 ifeq (cl,${CC_ID})
-CXX = cl
-LD = link
-STRIP = $()
+CXX := cl
+LD := link
+STRIP := $()
 ## `cl` (MSVC)
 ## ref: <https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category> @@ <https://archive.is/PTPDN>
 ## /nologo :: startup without logo display
@@ -159,24 +159,24 @@ endif ## `cl` (MSVC)
 
 # ifeq (bcc32,${CC_ID})
 # # NOTE: *untested* configuration
-# CXX = ${CC_ID}
-# LD = ilink32
+# CXX := ${CC_ID}
+# LD := ilink32
 # CFLAGS := -I. -O2 -w-pro -TWC -P-c -v- -d -f- -ff- -vi
 # CFLAGS_COMPILE_ONLY := -c
 # LDFLAGS := -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE
-# LIBDIR = $(MAKEDIR)\..\lib
-# LIBS = ${LIBDIR}\import32.lib ${LIBDIR}\cw32.lib
+# LIBDIR := $(MAKEDIR)\..\lib
+# LIBS := ${LIBDIR}\import32.lib ${LIBDIR}\cw32.lib
 # endif ## `bcc32` (Borland)
 
 DEFINETYPE := wn
 OBJ_deps := defines.h less.h funcs.h cmd.h
 
 # `make` command line flags/options
-COLOR ?= $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)## enable colorized output ('truthy'-type)
-DEBUG ?= false## enable compiler debug flags/options ('truthy'-type; default == false)
-STATIC ?= true## compile to statically linked executable ('truthy'-type; default == true)
-VERBOSE ?= false## verbose `make` output ('truthy'-type; default == false)
-MAKEFLAGS_debug ?= $(if $(findstring d,${MAKEFLAGS}),true,false)## Makefile debug output ('truthy'-type; default == false) ## NOTE: use `-d` or `MAKEFLAGS_debug=1`, `--debug[=FLAGS]` does not set MAKEFLAGS correctly (see <https://savannah.gnu.org/bugs/?func=detailitem&item_id=58341>)
+COLOR := $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)## enable colorized output ('truthy'-type)
+DEBUG := false## enable compiler debug flags/options ('truthy'-type; default == false)
+STATIC := true## compile to statically linked executable ('truthy'-type; default == true)
+VERBOSE := false## verbose `make` output ('truthy'-type; default == false)
+MAKEFLAGS_debug := $(if $(findstring d,${MAKEFLAGS}),true,false)## Makefile debug output ('truthy'-type; default == false) ## NOTE: use `-d` or `MAKEFLAGS_debug=1`, `--debug[=FLAGS]` does not set MAKEFLAGS correctly (see <https://savannah.gnu.org/bugs/?func=detailitem&item_id=58341>)
 
 #### End of system configuration section. ####
 
@@ -184,13 +184,26 @@ falsey := false 0 f n no off
 false := $()
 true := true
 truthy := ${true}
+
+devnull := $(if $(filter win,${OSID}),NUL,/dev/null)
+int_max := 2147483647## largest signed 32-bit integer; used as arbitrary max expected list length
+
+NULL := $()
+BACKSLASH := $()\$()
+COMMA := ,
+DOT := .
 ESC := $()$()## literal ANSI escape character (required for ANSI color display output; also used for some string matching)
-int_max := 2147483647## largest signed 32-bit integer; arbitrary max expected list length
+HASH := \#
+PAREN_OPEN := $()($()
+PAREN_CLOSE := $())$()
+SLASH := /
+SPACE := $() $()
+
 [lower] := a b c d e f g h i j k l m n o p q r s t u v w x y z
 [upper] := A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
 [alpha] := ${[lower]} ${[upper]}
 [digit] := 1 2 3 4 5 6 7 8 9 0
-[punct] = ~ ` ! @ ${HASH} ${DOLLAR} % ^ & * ${OPEN_PAREN} ${CLOSE_PAREN} _ - + = { } [ ] | ${BACKSLASH} : ; " ' < > ${COMMA} ? ${SLASH} .
+[punct] := ~ ` ! @ ${HASH} ${DOLLAR} % ^ & * ${PAREN_OPEN} ${PAREN_CLOSE} _ - + = { } [ ] | ${BACKSLASH} : ; " ' < > ${COMMA} ? ${SLASH} ${DOT}
 
 %not = $(if ${1},${false},${true})
 %eq = $(and $(findstring $(1),$(2)),$(findstring $(2),$(1)))
@@ -312,21 +325,6 @@ $(call %debug_var,LIB)
 
 ####
 
-devnull := $(if $(filter win,${OSID}),NUL,/dev/null)
-, := ,
-COMMA := ,
-DOT := .
-HASH := \#
-BQUOTE := `
-DQUOTE := "
-SQUOTE := '
-SLASH := /
-OPEN_PAREN := $()($()
-CLOSE_PAREN := $())$()
-BACKSLASH := $()\$()
-NULL := $()
-SPACE := $() $()
-
 # detect ${CC}
 CC_check_flags := $(if $(filter cl,${CC_ID}),,-v)
 ifeq (,$(shell "${CC}" ${CC_check_flags} >${devnull} 2>&1 && echo ${CC} present))
@@ -346,7 +344,7 @@ endif
 
 OS_PREFIX=
 ifeq (${OSID},win)
-OSID_name  ?= windows
+OSID_name  := windows
 OS_PREFIX  := win.
 CC_e       := $(or $(if $(filter cl,${CC_ID}),/Fe),-o${SPACE})
 CC_o       := $(or $(if $(filter cl,${CC_ID}),/Fo),-o${SPACE})
@@ -368,9 +366,7 @@ FINDSTR    := "${SystemRoot}\System32\findstr"
 MORE       := "${SystemRoot}\System32\more"
 SORT       := "${SystemRoot}\System32\sort"
 #
-ECHO_NL    := echo:
-ECHO_DQ    := $()
-ECHO_SQ    := $()
+ECHO_newline := echo.
 else
 OSID_name  ?= $(shell uname | tr '[:upper:]' '[:lower:]')
 OS_PREFIX  := ${OSID_name}.
@@ -391,9 +387,7 @@ RM_r       := ${RM} -r
 RMDIR      := ${RM} -r
 SORT       := sort
 #
-ECHO_NL    := echo
-ECHO_DQ    := "
-ECHO_SQ    := '
+ECHO_newline := echo
 endif
 
 # calculate `strip` for ${CC_ID} and ${OSID}
@@ -580,8 +574,8 @@ endif
 
 ####
 
-BUILD_DIR ?= ${HASH}build
-CONFIG    ?= $(if $(call %is_truthy,${DEBUG}),debug,release)
+BUILD_DIR := ${HASH}build
+CONFIG    := $(if $(call %is_truthy,${DEBUG}),debug,release)
 
 SRC_DIR := .
 OUT_DIR := .
