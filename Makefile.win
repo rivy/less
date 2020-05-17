@@ -404,11 +404,20 @@ SORT       := sort
 ECHO_newline := echo
 endif
 
-# calculate `strip` for ${CC_ID} and ${OSID}
-STRIP := $(or ${STRIP_CC_${CC_ID}_OSID_${OSID}}, ${STRIP_CC_${CC_ID}}, ${STRIP})
-$(call %debug_var,STRIP)
-# * and... ${STRIP} available? (missing in some distributions)
+# find/calculate best available `strip`
 STRIP_check_flags := --version
+# * calculate `strip`; general overrides for ${CC_ID} and ${OSID}
+STRIP := $(or ${STRIP_CC_${CC_ID}_OSID_${OSID}},${STRIP_CC_${CC_ID}},${STRIP})
+# $(call %debug_var,STRIP)
+# * available as ${CC}-prefixed variant?
+STRIP_CC_${CC}_name := $(call %neq,${CC:-${CC_ID}=-strip},${CC})
+$(call %debug_var,STRIP_CC_${CC}_name)
+STRIP_CC_${CC} := $(or ${STRIP_CC_${CC}},$(and ${STRIP_CC_${CC}_name},$(shell "${STRIP_CC_${CC}_name}" ${STRIP_check_flags} >${devnull} 2>&1 && echo ${STRIP_CC_${CC}_name})))
+$(call %debug_var,STRIP_CC_${CC})
+# * calculate `strip`; specific overrides for ${CC}
+STRIP := $(or ${STRIP_CC_${CC}},${STRIP})
+# $(call %debug_var,STRIP)
+# * and... ${STRIP} available? (missing in some distributions)
 STRIP := $(shell "${STRIP}" ${STRIP_check_flags} >${devnull} 2>&1 && echo ${STRIP})
 $(call %debug_var,STRIP)
 
