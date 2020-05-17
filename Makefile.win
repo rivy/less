@@ -1,13 +1,13 @@
 # Makefile for `less`
-# Windows version; MS Visual C/C++
-# make (GNU make) version
-
+# Cross-platform (bash/sh + CMD/PowerShell)
+# `cl`, `clang`, and `gcc` (defaults to `CC=clang`)
+# GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
 # Copyright (C) 2020 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
 # NOTE: * requires `make` version 4.0+ (minimum needed for correct path functions)
 # NOTE: `make` doesn't handle spaces within file names without gyrations (see <https://stackoverflow.com/questions/9838384/can-gnu-make-handle-filenames-with-spaces>@@<https://archive.is/PYKKq>)
 
-# `make -f Makefile.win.msvc`
+# `make -f Makefile.win`
 
 NAME := less ## empty/null => autoset to name of containing folder
 
@@ -695,5 +695,7 @@ ${OUT_obj}/%.${O}: ${SRC_DIR}/%.cpp ${makefile_abs_path} | ${OUT_obj}
 ${OUT_obj}/%.${O}: ${SRC_DIR}/%.cxx ${makefile_abs_path} | ${OUT_obj}
 	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CFLAGS} "$<" ${CC_o}"$@"
 #or ${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} "$<" ${CC_o}"$@"
+
+####
 
 $(foreach dir,${out_dirs_for_rules},$(eval $(call @mkdir_rule,${dir})))
