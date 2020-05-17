@@ -42,8 +42,9 @@ endif
 
 #### Start of system configuration section. ####
 
-# * default to `clang`
-CC = clang
+# * default to `clang` (fallback to `gcc`; via a portable shell test)
+CC := $(and $(filter-out default,$(origin CC)),${CC})## use any non-make defined value as default ## note: used to avoid requiring a recursive definition of ${CC} with I/O in the later default determination
+CC := $(or ${CC},$(subst -FOUND,,$(filter clang-FOUND,$(shell clang --version 2>&1 && echo clang-FOUND))),gcc)
 
 CC_ID := $(lastword $(subst -,$() $(),${CC}))
 
@@ -273,6 +274,14 @@ override MAKEFLAGS_debug := $(call %as_truthy,$(or $(call %is_truthy,${MAKEFLAGS
 
 $(call %debug_var,OSID)
 $(call %debug_var,SHELL)
+
+$(call %debug_var,CC)
+$(call %debug_var,CXX)
+$(call %debug_var,LD)
+$(call %debug_var,CFLAGS)
+$(call %debug_var,CPPFLAGS)
+$(call %debug_var,CXXFLAGS)
+$(call %debug_var,LDFLAGS)
 
 $(call %debug_var,COLOR)
 $(call %debug_var,DEBUG)
