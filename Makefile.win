@@ -74,6 +74,7 @@ CFLAGS_ARCH_64 := -m64
 CFLAGS_DEBUG_true := -DDEBUG -O0 -g
 CFLAGS_DEBUG_false := -DNDEBUG -O3
 CFLAGS_VERBOSE_true := -v
+CFLAGS_check := -v
 CFLAGS_machine := -dumpmachine
 CFLAGS_v := --version
 CPPFLAGS := $()
@@ -340,8 +341,7 @@ $(call %debug_var,LIB)
 ####
 
 # detect ${CC}
-CC_check_flags := $(if $(filter cl,${CC_ID}),,-v)
-ifeq (,$(shell "${CC}" ${CC_check_flags} >${devnull} 2>&1 && echo ${CC} present))
+ifeq (,$(shell "${CC}" ${CFLAGS_check} >${devnull} 2>&1 && echo ${CC} present))
 $(call %error,Missing required compiler (`${CC}`))
 endif
 
