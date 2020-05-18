@@ -343,17 +343,17 @@ $(call %debug_var,MAKEFLAGS_debug)
 ####
 
 # require at least `make` v4.0 (minimum needed for correct path functions)
-MAKE_VERSION_major := $(word 1,$(subst ., ,$(MAKE_VERSION)))
-MAKE_VERSION_minor := $(word 2,$(subst ., ,$(MAKE_VERSION)))
-MAKE_VERSION_fail := $(filter $(MAKE_VERSION_major),3 2 1 0)
+MAKE_VERSION_major := $(word 1,$(subst ., ,${MAKE_VERSION}))
+MAKE_VERSION_minor := $(word 2,$(subst ., ,${MAKE_VERSION}))
+MAKE_VERSION_fail := $(filter ${MAKE_VERSION_major},3 2 1 0)
 ifeq (${MAKE_VERSION_major},4)
-MAKE_VERSION_fail := $(filter $(MAKE_VERSION_minor),)
+MAKE_VERSION_fail := $(filter ${MAKE_VERSION_minor},)
 endif
 $(call %debug_var,MAKE_VERSION)
 $(call %debug_var,MAKE_VERSION_major)
 $(call %debug_var,MAKE_VERSION_minor)
 $(call %debug_var,MAKE_VERSION_fail)
-ifneq ($(MAKE_VERSION_fail),)
+ifneq (${MAKE_VERSION_fail},)
 $(call %error,`make` v4.0+ required (currently using v${MAKE_VERSION}))
 endif
 
@@ -380,7 +380,7 @@ $(call %error,<SPACE>'s within project directory may cause issues)
 endif
 
 # Since we rely on paths relative to the makefile location, abort if make isn't being run from there.
-ifneq ($(makefile_dir),$(current_dir))
+ifneq (${makefile_dir},${current_dir})
 $(call %error,Invalid current directory; this makefile must be invoked from the directory it resides in)
 endif
 
