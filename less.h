@@ -566,5 +566,8 @@ void inttoa LESSPARAMS ((int, char*));
 int lstrtoi LESSPARAMS ((char*, char**));
 POSITION lstrtopos LESSPARAMS ((char*, char**));
 #if MSDOS_COMPILER==WIN32C && !defined(MINGW)
+#ifndef _CRTIMP
+#define _CRTIMP
+#endif
 _CRTIMP int __cdecl pclose LESSPARAMS ((FILE*));
 #endif
