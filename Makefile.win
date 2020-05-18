@@ -155,19 +155,37 @@ LDFLAGS_ARCH_32 := /machine:I386
 ## /ignore:4254 :: suppress "merging sections with different attributes" warning (LNK4254)
 LDFLAGS_VC6_true := /ignore:4254
 
+CC_${CC_ID}_e := /Fe
+CC_${CC_ID}_o := /Fo
+LD_${CC_ID}_o := /out:
+
+O_${CC_ID} := obj
+
 LIBS := user32.lib
 endif ## `cl` (MSVC)
 
-# ifeq (bcc32,${CC_ID})
-# # NOTE: *untested* configuration
-# CXX := ${CC_ID}
-# LD := ilink32
-# CFLAGS := -I. -O2 -w-pro -TWC -P-c -v- -d -f- -ff- -vi
-# CFLAGS_COMPILE_ONLY := -c
-# LDFLAGS := -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE
-# LIBDIR := $(MAKEDIR)\..\lib
-# LIBS := ${LIBDIR}\import32.lib ${LIBDIR}\cw32.lib
-# endif ## `bcc32` (Borland)
+ifeq (,$(filter-out bcc32,${CC_ID}))
+# NOTE: initial *untested* configuration; ToDO: attempt improved configuration/use of BCC55
+CXX := ${CC}
+LD := ${CC}
+INC_path := $(abspath $(shell where ${CC} 2>NUL))/../../include## `where` can be used as `bcc32` only exists on Windows hosts
+LIB_path := $(abspath $(shell where ${CC} 2>NUL))/../../lib## `where` can be used as `bcc32` only exists on Windows hosts
+## -q :: suppress banner logo
+CFLAGS := -q -I. -I"${INC_path}" -L"${LIB_path}" -O2 -w-pro -TWC -v- -d -f- -ff- -vi
+CXXFLAGS := -P
+CFLAGS_COMPILE_ONLY := -q -c
+CFLAGS_v :=
+# LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L"${LIB_path}"
+LDFLAGS := -q
+
+CC_${CC_ID}_e := -e
+CC_${CC_ID}_o := -o
+LD_${CC_ID}_o := -e
+
+O_${CC_ID} := obj
+
+LIBS := ${LIB_path}\import32.lib ${LIB_path}\cw32.lib
+endif ## `bcc32` (Borland)
 
 DEFINETYPE := wn
 OBJ_deps := defines.h less.h funcs.h cmd.h
@@ -303,6 +321,18 @@ $(call %debug_var,CPPFLAGS)
 $(call %debug_var,CXXFLAGS)
 $(call %debug_var,LDFLAGS)
 
+CC_e := $(or ${CC_${CC_ID}_e},-o${SPACE})
+CC_o := $(or ${CC_${CC_ID}_o},-o${SPACE})
+LD_o := $(or ${LD_${CC_ID}_o},-o${SPACE})
+
+$(call %debug_var,CC_e)
+$(call %debug_var,CC_o)
+$(call %debug_var,LD_o)
+
+O := $(or ${O_${CC_ID}},o)
+
+$(call %debug_var,O)
+
 $(call %debug_var,COLOR)
 $(call %debug_var,DEBUG)
 $(call %debug_var,STATIC)
@@ -360,11 +390,7 @@ OS_PREFIX=
 ifeq (${OSID},win)
 OSID_name  := windows
 OS_PREFIX  := win.
-CC_e       := $(or $(if $(filter cl,${CC_ID}),/Fe),-o${SPACE})
-CC_o       := $(or $(if $(filter cl,${CC_ID}),/Fo),-o${SPACE})
-LD_o       := $(or $(if $(filter cl,${CC_ID}),/out:),-o${SPACE})
 EXEEXT     := .exe
-O          := $(if $(filter cl,${CC_ID}),obj,o)
 #
 AWK        := gawk ## from `scoop install gawk`; or "goawk" from `go get github.com/benhoyt/goawk`
 CAT        := "${SystemRoot}\System32\findstr" /r .*
@@ -379,16 +405,13 @@ FIND       := "${SystemRoot}\System32\find"
 FINDSTR    := "${SystemRoot}\System32\findstr"
 MORE       := "${SystemRoot}\System32\more"
 SORT       := "${SystemRoot}\System32\sort"
+WHICH      := where
 #
 ECHO_newline := echo.
 else
 OSID_name  ?= $(shell uname | tr '[:upper:]' '[:lower:]')
 OS_PREFIX  := ${OSID_name}.
-CC_e       := -o${SPACE}
-CC_o       := -o${SPACE}
-LD_o       := -o${SPACE}
 EXEEXT     := $()
-O          := o
 #
 AWK        := awk
 CAT        := cat
@@ -400,6 +423,7 @@ RM         := rm
 RM_r       := ${RM} -r
 RMDIR      := ${RM} -r
 SORT       := sort
+WHICH      := which
 #
 ECHO_newline := echo
 endif
@@ -459,7 +483,7 @@ CC_machine_raw := $(shell ${CC} ${CFLAGS_machine} 2>&1 | ${GREP} -n ".*" | ${GRE
 endif
 CC_machine_raw := $(subst ${ESC}1:,$(),${ESC}${CC_machine_raw})
 CC_ARCH := $(or $(filter $(subst -, ,${CC_machine_raw}),${ARCH_x86} ${ARCH_x86_64}),${ARCH_default})
-CC_machine := $(or $(and $(call %eq,cl,${CC}),${CC_ARCH}),${CC_machine_raw})
+CC_machine := $(or $(and $(filter cl bcc32,${CC_ID}),${CC_ARCH}),${CC_machine_raw})
 CC_ARCH_ID := $(if $(filter ${CC_ARCH},32 x32 ${ARCH_x86}),32,64)
 override ARCH := $(or ${ARCH},${CC_ARCH})
 ARCH_ID := $(if $(filter ${ARCH},32 x32 ${ARCH_x86}),32,64)
@@ -700,19 +724,19 @@ veryclean: realclean
 # ref: [make ~ `eval()`](http://make.mad-scientist.net/the-eval-function) @ <https://archive.is/rpUfG>
 
 ${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_bin}
-	${LD} ${LDFLAGS} $(addprefix ",$(addsuffix ",${OBJ_files})) ${LIBS} ${LD_o}"$@"
+	${LD} ${LDFLAGS} ${LD_o}"$@" $(addprefix ",$(addsuffix ",${OBJ_files})) ${LIBS}
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
 	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
 ${OUT_obj}/%.${O}: ${SRC_DIR}/%.c ${makefile_abs_path} | ${OUT_obj}
-	${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} "$<" ${CC_o}"$@"
+	${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CC_o}"$@" "$<"
 
 ${OUT_obj}/%.${O}: ${SRC_DIR}/%.cpp ${makefile_abs_path} | ${OUT_obj}
-	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CFLAGS} "$<" ${CC_o}"$@"
+	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CC_o}"$@" ${CFLAGS} "$<"
 
 ${OUT_obj}/%.${O}: ${SRC_DIR}/%.cxx ${makefile_abs_path} | ${OUT_obj}
-	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CFLAGS} "$<" ${CC_o}"$@"
-#or ${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} "$<" ${CC_o}"$@"
+	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CC_o}"$@" ${CFLAGS} "$<"
+#or ${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CC_o}"$@" "$<"
 
 ####
 
