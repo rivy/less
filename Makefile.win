@@ -572,6 +572,8 @@ CFLAGS += ${CFLAGS_DEBUG_${DEBUG}}
 CFLAGS += ${CFLAGS_DEBUG_${DEBUG}_STATIC_${STATIC}}
 CFLAGS += ${CFLAGS_VERBOSE_${VERBOSE}}
 
+CPPFLAGS += -D_CC="${CC}" -D_CC_ID="${CC_ID}" -D_CC_version="${CC_version}" -D_CC_machine="${CC_machine}" -D_ARCH="${ARCH_ID}"
+
 CXXFLAGS += ${CXXFLAGS_${CC_ID}}
 
 LDFLAGS += ${LDFLAGS_ARCH_${ARCH_ID}}
@@ -582,10 +584,12 @@ LDFLAGS += ${LDFLAGS_${CC_ID}}
 LDFLAGS += ${LDFLAGS_${CC_ID}_${OSID}}
 
 CFLAGS := $(strip ${CFLAGS})
+CPPFLAGS := $(strip ${CPPFLAGS})
 CXXFLAGS := $(strip ${CXXFLAGS})
 LDFLAGS := $(strip ${LDFLAGS})
 
 $(call %debug_var,CFLAGS)
+$(call %debug_var,CPPFLAGS)
 $(call %debug_var,CXXFLAGS)
 $(call %debug_var,LDFLAGS)
 
