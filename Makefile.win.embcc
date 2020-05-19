@@ -1,9 +1,9 @@
 # Makefile for `less`
-# `bcc32` (Borland C++ 5.5.1 free command line tools); CMD/PowerShell host
+# `embcc32` (Embarcadero Borland C++ free command line tools); CMD/PowerShell host
 # GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
 # Copyright (C) 2020 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
-# spell-checker:ignore () INCDIRS LIBDIRS bcc32 embcc32 embcc
+# spell-checker:ignore () INCDIRS LIBDIRS bcc32 embcc32 embcc psdk
 #
 # spell-checker:ignore (targets) distclean realclean vclean veryclean
 # spell-checker:ignore (make) abspath firstword gmake ifeq ifndef ifneq lastword undefine vclean veryclean
@@ -30,19 +30,19 @@ endif
 
 #### Start of system configuration section. ####
 
-CC := bcc32
+CC := embcc32
 
 CXX := ${CC}
 LD := ilink32
 STRIP := $()
 
 # * find CC base directory (for include and library directories, as needed)
-CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..))
+CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..))
 
-CFLAGS := -q -O2 -TWC -P-c -v- -d -f- -ff- -vi -w-pro -I. -I"${CC_BASEDIR}\include"
+CFLAGS := -q -O2 -TWC -P-c -v- -d -f- -vi -I.
 CFLAGS_COMPILE_ONLY := -c
 
-LIBDIRS := "${CC_BASEDIR}\lib"
+LIBDIRS := "${CC_BASEDIR}\lib\win32c\release";"${CC_BASEDIR}\lib\win32c\release\psdk"
 
 LD_INIT_OBJ := "${CC_LIBDIR}\c0x32.obj"
 
