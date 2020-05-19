@@ -164,29 +164,6 @@ O_${CC_ID} := obj
 LIBS := user32.lib
 endif ## `cl` (MSVC)
 
-ifeq (,$(filter-out bcc32,${CC_ID}))
-# NOTE: initial *untested* configuration; ToDO: attempt improved configuration/use of BCC55
-CXX := ${CC}
-LD := ${CC}
-INC_path := $(abspath $(shell where ${CC} 2>NUL))/../../include## `where` can be used as `bcc32` only exists on Windows hosts
-LIB_path := $(abspath $(shell where ${CC} 2>NUL))/../../lib## `where` can be used as `bcc32` only exists on Windows hosts
-## -q :: suppress banner logo
-CFLAGS := -q -I. -I"${INC_path}" -L"${LIB_path}" -O2 -w-pro -TWC -v- -d -f- -ff- -vi
-CXXFLAGS := -P
-CFLAGS_COMPILE_ONLY := -q -c
-CFLAGS_v :=
-# LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L"${LIB_path}"
-LDFLAGS := -q
-
-CC_${CC_ID}_e := -e
-CC_${CC_ID}_o := -o
-LD_${CC_ID}_o := -e
-
-O_${CC_ID} := obj
-
-LIBS := ${LIB_path}\import32.lib ${LIB_path}\cw32.lib
-endif ## `bcc32` (Borland)
-
 DEFINETYPE := wn
 OBJ_deps := defines.h less.h funcs.h cmd.h
 
