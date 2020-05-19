@@ -569,5 +569,8 @@ POSITION lstrtopos LESSPARAMS ((char*, char**));
 #ifndef _CRTIMP
 #define _CRTIMP
 #endif
+#ifndef __cdecl
+#define __cdecl
+#endif
 _CRTIMP int __cdecl pclose LESSPARAMS ((FILE*));
 #endif
