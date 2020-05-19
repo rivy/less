@@ -73,6 +73,8 @@ CFLAGS_ARCH_32 := -m32
 CFLAGS_ARCH_64 := -m64
 CFLAGS_DEBUG_true := -DDEBUG -O0 -g
 CFLAGS_DEBUG_false := -DNDEBUG -O3
+# CFLAGS_STATIC_false := -shared
+# CFLAGS_STATIC_true := -static
 CFLAGS_VERBOSE_true := -v
 CFLAGS_check := -v
 CFLAGS_machine := -dumpmachine
@@ -91,6 +93,8 @@ LDFLAGS := $()
 LDFLAGS_ARCH_32 := -m32
 LDFLAGS_ARCH_64 := -m64
 LDFLAGS_DEBUG_false := -Xlinker --strip-all
+# LDFLAGS_STATIC_false := -pie
+# LDFLAGS_STATIC_false := -shared
 # LDFLAGS_STATIC_true := -static -static-libgcc -static-libstdc++
 LDFLAGS_STATIC_true := -static
 LDFLAGS_clang_nix := -lstdc++
@@ -555,6 +559,7 @@ $(call %debug_var,OUT_DIR_EXT)
 CFLAGS += ${CFLAGS_ARCH_${ARCH_ID}}
 CFLAGS += ${CFLAGS_TARGET}
 CFLAGS += ${CFLAGS_DEBUG_${DEBUG}}
+CFLAGS += ${CFLAGS_STATIC_${STATIC}}
 CFLAGS += ${CFLAGS_DEBUG_${DEBUG}_STATIC_${STATIC}}
 CFLAGS += ${CFLAGS_VERBOSE_${VERBOSE}}
 
