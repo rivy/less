@@ -448,7 +448,7 @@ endif
 
 ARCH_default := i686
 ARCH_x86 := i386 i586 i686 x86
-ARCH_x86_64 := x64 x86_64
+ARCH_x86_64 := amd64 x64 x86_64 x86_amd64
 ARCH_allowed := $(sort 32 x32 ${ARCH_x86} 64 ${ARCH_x86_64})
 ifneq (${ARCH},$(filter ${ARCH},${ARCH_allowed}))
 $(call %error,Unknown architecture "$(ARCH)"; valid values are [""$(subst $(SPACE),$(),$(addprefix ${COMMA}",$(addsuffix ",${ARCH_allowed})))])
