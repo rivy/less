@@ -565,7 +565,7 @@ flush(VOID_PARAM)
                     }
                     if (!is_ansi_end(*p) || p == p_next)
                         break;
-                    /*                    /*
+                    /*
                      * In SGR mode, the ANSI sequence is
                      * always honored; otherwise if an attr
                      * is used by itself ("\e[1m" versus
