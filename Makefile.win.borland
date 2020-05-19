@@ -3,8 +3,10 @@
 # GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
 # Copyright (C) 2020 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
+# spell-checker:ignore () INCDIRS LIBDIRS bcc32 embcc32 embcc
+#
 # spell-checker:ignore (targets) distclean realclean vclean veryclean
-# spell-checker:ignore (make) abspath firstword ifeq ifndef ifneq lastword undefine vclean veryclean
+# spell-checker:ignore (make) abspath firstword gmake ifeq ifndef ifneq lastword undefine vclean veryclean
 #
 # spell-checker:ignore (acronyms/names) Borland Borland's LLVM MSVC MinGW POSIX VCvars
 # spell-checker:ignore (flags/options) DDEBUG DNDEBUG NDEBUG Werror Wextra Xclang defaultlib dumpmachine flto flto-visibility-public-std libcmt nologo nothrow
@@ -17,14 +19,17 @@
 #### Start of system configuration section. ####
 
 CC = bcc32
+LD := ilink32
+
 LIBDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..\lib))
-INCDIR := $(subst /,\,$(abspath ${LIBDIR}\..\include))
+INCDIRS := "$(subst /,\,$(abspath ${LIBDIR}\..\include))"
 LIBDIRS := "${LIBDIR}"
 
-CFLAGS = -q -O2 -w-pro -TWC -P-c -v- -d -f- -ff- -vi
-LDFLAGS = -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIBDIRS}
-LD = ilink32
-LIBS = import32.lib cw32.lib
+CFLAGS := -q -O2 -w-pro -TWC -P-c -v- -d -f- -ff- -vi
+LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIBDIRS}
+
+LD_INIT_OBJ := ${LIBDIR}\c0x32.obj
+LIBS := import32.lib cw32.lib
 
 #### End of system configuration section. ####
 
@@ -54,13 +59,13 @@ OBJ = \
 all: less lesskey lessecho
 
 less: ${OBJ}
-	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $^, $@,,${LIBS}
+	${LD} ${LDFLAGS} ${LD_INIT_OBJ} $^, $@,,${LIBS}
 
 lesskey: lesskey.obj version.obj
-	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $^, $@,,${LIBS}
+	${LD} ${LDFLAGS} ${LD_INIT_OBJ} $^, $@,,${LIBS}
 
 lessecho: lessecho.obj version.obj
-	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $^, $@,,${LIBS}
+	${LD} ${LDFLAGS} ${LD_INIT_OBJ} $^, $@,,${LIBS}
 
 defines.h: defines.wn
 	-@if EXIST "defines.h" del "defines.h" && echo "defines.h" removed
