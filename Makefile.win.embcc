@@ -1,9 +1,12 @@
-# Makefile for less.
-# Windows version
-# Borland C++ 5.5.1 free command line tools
+# Makefile for `less`
+# `embcc32` (Embarcadero Borland C++ free command line tools); CMD/PowerShell host
+# GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
+# Copyright (C) 2020 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
+# spell-checker:ignore () INCDIRS LIBDIRS bcc32 embcc32 embcc psdk
+#
 # spell-checker:ignore (targets) distclean realclean vclean veryclean
-# spell-checker:ignore (make) abspath firstword ifeq ifndef ifneq lastword undefine vclean veryclean
+# spell-checker:ignore (make) abspath firstword gmake ifeq ifndef ifneq lastword undefine vclean veryclean
 #
 # spell-checker:ignore (acronyms/names) Borland Borland's LLVM MSVC MinGW POSIX VCvars
 # spell-checker:ignore (flags/options) DDEBUG DNDEBUG NDEBUG Werror Wextra Xclang defaultlib dumpmachine flto flto-visibility-public-std libcmt nologo nothrow
@@ -20,18 +23,17 @@
 #
 
 CC = embcc32
+LD = ilink32
+
 LIBDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..\lib\win32c\release))
 LIBDIRS := "${LIBDIR}";"${LIBDIR}\psdk"
-
-# $(info LIBDIR=${LIBDIR})
-# $(info LIBDIRS=${LIBDIRS})
 
 # CFLAGS = -q -O2 -w-pro -TWC -P-c -v- -d -f- -ff- -vi
 CFLAGS = -q -O2 -TWC -P-c -v- -d -f- -vi
 LDFLAGS = -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIBDIRS}
 # LDFLAGS = -q -x -c -Gn -L${LIBDIRS}
-LD = ilink32
-# LIBS = "${LIBDIR}\import32.lib" "${LIBDIR}\cw32.lib"
+
+LD_INIT_OBJ := ${LIBDIR}\c0x32.obj
 LIBS = import32.lib cw32.lib
 
 #### End of system configuration section. ####
@@ -48,14 +50,6 @@ LIBS = import32.lib cw32.lib
 
 ####
 
-#
-# This rule allows us to supply the necessary -D options
-# in addition to whatever the user asks for.
-#
-# borland make
-.c.obj:
-	${CC} -c -I. ${CPPFLAGS} ${CFLAGS} $<
-# gnu make
 %.obj: %.c
 	${CC} -c -I. ${CPPFLAGS} ${CFLAGS} $<
 
@@ -69,34 +63,29 @@ OBJ = \
 
 all: less lesskey lessecho
 
-#
-# This is really horrible, but the command line is too long for
-# MS-DOS if we try to link ${OBJ}.
-#
 less: ${OBJ}
-#	${LD} ${LDFLAGS} "${LIBDIR}\c0x32.obj" ${OBJ} "${LIBDIR}\c0x32.obj", $@.exe,, ${LIBS}
-	${LD} ${LDFLAGS} "${LIBDIR}\c0x32.obj" ${OBJ}, $@.exe,, ${LIBS}
+	${LD} ${LDFLAGS} ${LIB_INIT_OBJ} $^, $@,,${LIBS}
 
 lesskey: lesskey.obj version.obj
-	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $^, $@,,${LIBS}
+	${LD} ${LDFLAGS} ${LIB_INIT_OBJ} $^, $@,,${LIBS}
 
 lessecho: lessecho.obj version.obj
-	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $^, $@,,${LIBS}
+	${LD} ${LDFLAGS} ${LIB_INIT_OBJ} $^, $@,,${LIBS}
 
 defines.h: defines.wn
-	-del defines.h
-	-copy defines.wn defines.h
+	-@if EXIST "defines.h" del "defines.h" && echo "defines.h" removed
+	-copy defines.wn defines.h >NUL
 
 ${OBJ}: less.h defines.h funcs.h cmd.h
 
 clean:
-	-del *.obj
-	-del *.il?
-	-del *.tds
-	-del defines.h
-	-del less.exe
-	-del lesskey.exe
-	-del lessecho.exe
+	-@if EXIST "*.obj" del "*.obj" && echo "*.obj" removed
+	-@if EXIST "*.il?" del "*.il?" && echo "*.il?" removed
+	-@if EXIST "*.tds" del "*.tds" && echo "*.tds" removed
+	-@if EXIST "defines.h" del "defines.h" && echo "defines.h" removed
+	-@if EXIST "less.exe" del "less.exe" && echo "less.exe" removed
+	-@if EXIST "lessecho.exe" del "lessecho.exe" && echo "lessecho.exe" removed
+	-@if EXIST "lesskey.exe" del "lesskey.exe" && echo "lesskey.exe" removed
 
 build: all
 compile: ${OBJ}
