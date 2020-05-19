@@ -191,6 +191,7 @@ DEFINETYPE := wn
 OBJ_deps := defines.h less.h funcs.h cmd.h
 
 # `make` command line flags/options
+CC_DEFINES := false## provide `CC_...` defines to compiler ('truthy'-type)
 COLOR := $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)## enable colorized output ('truthy'-type)
 DEBUG := false## enable compiler debug flags/options ('truthy'-type; default == false)
 STATIC := true## compile to statically linked executable ('truthy'-type; default == true)
@@ -572,7 +573,7 @@ CFLAGS += ${CFLAGS_DEBUG_${DEBUG}}
 CFLAGS += ${CFLAGS_DEBUG_${DEBUG}_STATIC_${STATIC}}
 CFLAGS += ${CFLAGS_VERBOSE_${VERBOSE}}
 
-CPPFLAGS += -D_CC="${CC}" -D_CC_ID="${CC_ID}" -D_CC_version="${CC_version}" -D_CC_machine="${CC_machine}" -D_ARCH="${ARCH_ID}"
+CPPFLAGS += $(if $(call %is_truthy,${CC_DEFINES}),-D_CC="${CC}" -D_CC_ID="${CC_ID}" -D_CC_version="${CC_version}" -D_CC_machine="${CC_machine}" -D_CC_target="${TARGET}" -D_CC_target_arch="${ARCH_ID}",$())
 
 CXXFLAGS += ${CXXFLAGS_${CC_ID}}
 
@@ -686,7 +687,7 @@ defines.h: defines.${DEFINETYPE}
 .PHONY: help
 help: ## Display help
 	@${ECHO} $(call %shell_quote,`${make_invoke_alias}`)
-	@${ECHO} $(call %shell_quote,Usage: `${make_invoke_alias} [ARCH=..] [COLOR=..] [DEBUG=..] [STATIC=..] [TARGET=..] [VERBOSE=..] [MAKE_TARGET...]`)
+	@${ECHO} $(call %shell_quote,Usage: `${make_invoke_alias} [ARCH=..] [CC_DEFINES=..] [COLOR=..] [DEBUG=..] [STATIC=..] [TARGET=..] [VERBOSE=..] [MAKE_TARGET...]`)
 	@${ECHO} $(call %shell_quote,Builds '${PROJECT_TARGET}' within "$(current_dir)")
 	@${ECHO_newline}
 	@${ECHO} $(call %shell_quote,MAKE_TARGETs:)
