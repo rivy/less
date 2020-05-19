@@ -1,6 +1,7 @@
-# Makefile for less.
-# Windows version
-# Borland C++ 5.5.1 free command line tools
+# Makefile for `less`
+# `bcc32` (Borland C++ 5.5.1 free command line tools); CMD/PowerShell host
+# GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
+# Copyright (C) 2020 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
 # spell-checker:ignore (targets) distclean realclean vclean veryclean
 # spell-checker:ignore (make) abspath firstword ifeq ifndef ifneq lastword undefine vclean veryclean
@@ -14,39 +15,33 @@
 # spell-checker:ignore () brac cmdbuf forwback funcs ifile lessecho lesskey linenum lsystem optfunc opttbl stdext ttyin
 
 #### Start of system configuration section. ####
-#
-# Borland's make knows its own location in the
-# filesystem.
-#
 
 CC = bcc32
-LIBDIR = $(MAKEDIR)\..\lib
+LIBDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..\lib))
+INCDIR := $(subst /,\,$(abspath ${LIBDIR}\..\include))
+LIBDIRS := "${LIBDIR}"
 
-CFLAGS = -O2 -w-pro -TWC -P-c -v- -d -f- -ff- -vi
-LDFLAGS = -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE
+CFLAGS = -q -O2 -w-pro -TWC -P-c -v- -d -f- -ff- -vi
+LDFLAGS = -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIBDIRS}
 LD = ilink32
-LIBS = ${LIBDIR}\import32.lib ${LIBDIR}\cw32.lib
+LIBS = import32.lib cw32.lib
 
 #### End of system configuration section. ####
 
-# Set SHELL to `cmd` for Windows OS (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
-# * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
-ifeq (${OS},Windows_NT)
-	# use case and location fallbacks; note: assumes *no spaces* within ${ComSpec}, ${SystemRoot}, or ${windir}
-	COMSPEC := $(or ${ComSpec},${COMSPEC},${comspec})
-	SystemRoot := $(or ${SystemRoot},${SYSTEMROOT},${systemroot},${windir})
-	SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
-endif
-# $(info SHELL=${SHELL})
+# # Set SHELL to `cmd` for Windows OS (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
+# # * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
+# ifeq (${OS},Windows_NT)
+# 	# use case and location fallbacks; note: assumes *no spaces* within ${ComSpec}, ${SystemRoot}, or ${windir}
+# 	COMSPEC := $(or ${ComSpec},${COMSPEC},${comspec})
+# 	SystemRoot := $(or ${SystemRoot},${SYSTEMROOT},${systemroot},${windir})
+# 	SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
+# endif
+# # $(info SHELL=${SHELL})
 
 ####
 
-#
-# This rule allows us to supply the necessary -D options
-# in addition to whatever the user asks for.
-#
-.c.obj:
-	${CC} -c -I. ${CPPFLAGS} ${CFLAGS} $<
+%.obj: %.c
+	${CC} -c -I. -I${INCDIRS} ${CPPFLAGS} ${CFLAGS} $<
 
 OBJ = \
 	main.obj screen.obj brac.obj ch.obj charset.obj cmdbuf.obj \
@@ -58,33 +53,29 @@ OBJ = \
 
 all: less lesskey lessecho
 
-#
-# This is really horrible, but the command line is too long for
-# MS-DOS if we try to link ${OBJ}.
-#
 less: ${OBJ}
-	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $**, $@,,${LIBS}
+	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $^, $@,,${LIBS}
 
 lesskey: lesskey.obj version.obj
-	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $**, $@,,${LIBS}
+	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $^, $@,,${LIBS}
 
 lessecho: lessecho.obj version.obj
-	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $**, $@,,${LIBS}
+	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $^, $@,,${LIBS}
 
 defines.h: defines.wn
-	-del defines.h
-	-copy defines.wn defines.h
+	-@if EXIST "defines.h" del "defines.h" && echo "defines.h" removed
+	-copy defines.wn defines.h >NUL
 
 ${OBJ}: less.h defines.h funcs.h cmd.h
 
 clean:
-	-del *.obj
-	-del *.il?
-	-del *.tds
-	-del defines.h
-	-del less.exe
-	-del lesskey.exe
-	-del lessecho.exe
+	-@if EXIST "*.obj" del "*.obj" && echo "*.obj" removed
+	-@if EXIST "*.il?" del "*.il?" && echo "*.il?" removed
+	-@if EXIST "*.tds" del "*.tds" && echo "*.tds" removed
+	-@if EXIST "defines.h" del "defines.h" && echo "defines.h" removed
+	-@if EXIST "less.exe" del "less.exe" && echo "less.exe" removed
+	-@if EXIST "lessecho.exe" del "lessecho.exe" && echo "lessecho.exe" removed
+	-@if EXIST "lesskey.exe" del "lesskey.exe" && echo "lesskey.exe" removed
 
 build: all
 compile: ${OBJ}
