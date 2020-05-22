@@ -627,7 +627,7 @@ $(call %debug_var,OBJ_files)
 
 ${AUX_targets}: %${EXEEXT}: %.${O} version.${O} ${makefile_abs_path} | ${OUT_bin}
 	${LD} ${LDFLAGS} "$<" "version.${O}" ${LIBS} ${LD_o}"$@"
-	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
+	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$(@:.exe=).exe",)
 	@${ECHO} ${ECHO_DQ}$(call %success_text,made '$@'.)${ECHO_DQ}
 
 ${OBJ_files}: ${OBJ_deps} | ${OUT_obj}
@@ -683,7 +683,7 @@ veryclean: realclean
 
 ${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_bin}
 	${LD} ${LDFLAGS} $(addprefix ",$(addsuffix ",${OBJ_files})) ${LIBS} ${LD_o}"$@"
-	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
+	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$(@:.exe=).exe",)
 	@${ECHO} ${ECHO_DQ}$(call %success_text,made '$@'.)${ECHO_DQ}
 
 ${OUT_obj}/%.${O}: ${SRC_DIR}/%.c ${makefile_abs_path} | ${OUT_obj}
