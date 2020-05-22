@@ -354,7 +354,7 @@ $(call %debug_var,LIB)
 
 # detect ${CC}
 ifeq (,$(shell "${CC}" ${CFLAGS_check} >${devnull} 2>&1 && echo ${CC} present))
-$(call %error,Missing required compiler (`${CC}`))
+$(if $(MSYSCON),,$(call %error,Missing required compiler (`${CC}`)))
 endif
 
 ifeq (${SPACE},$(findstring ${SPACE},${makefile_abs_path}))
@@ -655,7 +655,7 @@ $(call %debug_var,OBJ_files)
 
 ${AUX_targets}: %${EXEEXT}: %.${O} version.${O} ${makefile_abs_path} | ${OUT_bin}
 	${LD} ${LDFLAGS} "$<" "version.${O}" ${LIBS} ${LD_o}"$@"
-	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
+	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$(@:.exe=).exe",)
 	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
 ${OBJ_files}: ${OBJ_deps} | ${OUT_obj}
@@ -712,7 +712,7 @@ veryclean: realclean
 
 ${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_bin}
 	${LD} ${LDFLAGS} ${LD_o}"$@" $(addprefix ",$(addsuffix ",${OBJ_files})) ${LIBS}
-	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
+	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$(@:.exe=).exe",)
 	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
 ${OUT_obj}/%.${O}: ${SRC_DIR}/%.c ${makefile_abs_path} | ${OUT_obj}
