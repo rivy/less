@@ -44,7 +44,7 @@ endif
 
 # * default to `clang` (fallback to `gcc`; via a portable shell test)
 CC := $(and $(filter-out default,$(origin CC)),${CC})## use any non-make defined value as default ## note: used to avoid requiring a recursive definition of ${CC} with I/O in the later default determination
-CC := $(or ${CC},$(subst -FOUND,,$(filter clang-FOUND,$(shell clang --version 2>&1 && echo clang-FOUND))),gcc)
+CC := $(or ${CC},$(subst -FOUND,,$(filter clang-FOUND,$(shell clang --version 2>&1 && echo clang-FOUND || echo))),gcc)
 
 CC_ID := $(lastword $(subst -,$() $(),${CC}))
 
