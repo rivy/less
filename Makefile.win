@@ -43,7 +43,7 @@ endif
 #### Start of system configuration section. ####
 
 # * default to `clang` (fallback to `gcc`; via a portable shell test)
-CC := $(and $(filter-out default,$(origin CC)),${CC})## use any non-make defined value as default ## note: used to avoid requiring a recursive definition of ${CC} with I/O in the later default determination
+CC := $(and $(filter-out default,$(origin CC)),${CC})## use any non-make defined value as default ## note: used to avoid a recursive definition of ${CC} within the the shell ${CC} presence check when determining default ${CC}
 CC := $(or ${CC},$(subst -FOUND,,$(filter clang-FOUND,$(shell clang --version 2>&1 && echo clang-FOUND || echo))),gcc)
 
 CC_ID := $(lastword $(subst -,$() $(),${CC}))
@@ -191,7 +191,7 @@ DEFINETYPE := wn
 OBJ_deps := defines.h less.h funcs.h cmd.h
 
 # `make` command line flags/options
-CC_DEFINES := false## provide `CC_...` defines to compiler ('truthy'-type)
+CC_DEFINES := false## provide compiler info (as `CC_...` defines) to compiling targets ('truthy'-type)
 COLOR := $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)## enable colorized output ('truthy'-type)
 DEBUG := false## enable compiler debug flags/options ('truthy'-type; default == false)
 STATIC := true## compile to statically linked executable ('truthy'-type; default == true)
@@ -728,7 +728,7 @@ build-aux: ${AUX_targets} ## Build auxillary executables (`lessecho` and `lesske
 compile: ${OBJ_files} ## Build intermediate files
 realclean: clean
 rebuild: clean build ## Clean and rebuild project
-vclean: realclean
+vclean: veryclean
 veryclean: realclean
 
 ####
