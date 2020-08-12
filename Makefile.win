@@ -254,14 +254,17 @@ SPACE := $() $()
 %uc = $(call %tr,${[lower]},${[upper]},${1})
 
 ifeq (${OSID},win)
-%rm_dir = if EXIST "${1}" ${RMDIR} "${1}" && echo $(call %info_text,"${1}" removed)
-%rm_file = if EXIST "${1}" ${RM} "${1}" && echo $(call %info_text,"${1}" removed)
-%rm_fileset = $(if $(shell for %%G in (${1}) do ${RM} "%%G" >${devnull} && echo done),$(shell echo echo $(call %info_text,"${1}" removed)),)
+%rm_dir = $(call %filter_map,$(eval %f=$$(shell if EXIST "$${1}" ${RMDIR} "$${1}" && ${ECHO} ${true}))%f,${1})
+%rm_file = $(call %filter_map,$(eval %f=$$(shell if EXIST "$${1}" ${RM} "$${1}" && ${ECHO} ${true}))%f,${1})
+%rm_file_globset = $(call %filter_map,$(eval %f=$$(shell for %%G in ($${1}) do ${RM} "%%G" >${devnull} && ${ECHO} ${true}))%f,${1})
 else
-%rm_dir = ls -d "${1}" >${devnull} 2>&1 && { ${RMDIR} "${1}" && echo $(call %shell_quote,$(call %info_text,"${1}" removed)); } || true
-%rm_file = ls -d "${1}" >${devnull} 2>&1 && { ${RM} "${1}" && echo $(call %shell_quote,$(call %info_text,"${1}" removed)); } || true
-%rm_fileset = for file in ${1}; do ls -d "${1}" >${devnull} 2>&1 && ${RM} "$${file}"; done && echo $(call %shell_quote,$(call %info_text,"${1}" removed)) || true
+%rm_dir = $(call %filter_map,$(eval %f=$$(shell ls -d "$${1}" >${devnull} 2>&1 && { ${RMDIR} "$${1}" && ${ECHO} ${true}; } || true))%f,${1})
+%rm_file = $(call %filter_map,$(eval %f=$$(shell ls -d "$${1}" >${devnull} 2>&1 && { ${RM} "$${1}" && ${ECHO} ${true}; } || true))%f,${1})
+%rm_file_globset = $(call %filter_map,$(eval %f=$$(shell for file in $${1}; do ls -d "$$$${file}" >${devnull} 2>&1 && ${RM} "$$$${file}"; done && ${ECHO} "${true}"; done))%f,${1})
 endif
+%rm_dir_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_dir,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
+%rm_file_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_file,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
+%rm_file_globset_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_file_globset,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
 
 ifeq (${OSID},win)
 %shell_quote = $(call %tr,^ | < > %,^^ ^| ^< ^> ^%,${1})
@@ -270,6 +273,8 @@ else
 endif
 
 @mkdir_rule = ${1} : ${2} ; ${MKDIR} "$$@"
+
+!shell_noop = ${ECHO} >${devnull}
 
 ####
 
@@ -706,10 +711,10 @@ run: ${PROJECT_TARGET} ## Build/execute project executable
 
 .PHONY: clean
 clean: ## Remove build artifacts (including intermediate files)
-	@$(call %rm_fileset,*.${O})
-	@$(call %rm_file,defines.h)
-	@$(call %rm_file,${PROJECT_TARGET})
-	@$(call %rm_files,${AUX_targets})
+	@$(call !shell_noop,$(call %filter_map,%rm_file_globset_verbose,*.${O}))
+	@$(call !shell_noop,$(call %filter_map,%rm_file_verbose,defines.h))
+	@$(call !shell_noop,$(call %filter_map,%rm_file_verbose,${PROJECT_TARGET}))
+	@$(call !shell_noop,$(call %filter_map,%rm_file_verbose,${AUX_targets}))
 
 ####
 
