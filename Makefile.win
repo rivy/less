@@ -254,17 +254,20 @@ SPACE := $() $()
 %uc = $(call %tr,${[lower]},${[upper]},${1})
 
 ifeq (${OSID},win)
-%rm_dir = $(call %filter_map,$(eval %f=$$(shell if EXIST "$${1}" ${RMDIR} "$${1}" && ${ECHO} ${true}))%f,${1})
-%rm_file = $(call %filter_map,$(eval %f=$$(shell if EXIST "$${1}" ${RM} "$${1}" && ${ECHO} ${true}))%f,${1})
-%rm_file_globset = $(call %filter_map,$(eval %f=$$(shell for %%G in ($${1}) do ${RM} "%%G" >${devnull} && ${ECHO} ${true}))%f,${1})
+%rm_dir = $(shell if EXIST "${1}" ${RMDIR} "${1}" && ${ECHO} ${true})
+%rm_file = $(shell if EXIST "${1}" ${RM} "${1}" && ${ECHO} ${true})
+%rm_file_globset = $(shell for %%G in (${1}) do ${RM} "%%G" >${devnull} && ${ECHO} ${true})
 else
-%rm_dir = $(call %filter_map,$(eval %f=$$(shell ls -d "$${1}" >${devnull} 2>&1 && { ${RMDIR} "$${1}" && ${ECHO} ${true}; } || true))%f,${1})
-%rm_file = $(call %filter_map,$(eval %f=$$(shell ls -d "$${1}" >${devnull} 2>&1 && { ${RM} "$${1}" && ${ECHO} ${true}; } || true))%f,${1})
-%rm_file_globset = $(call %filter_map,$(eval %f=$$(shell for file in $${1}; do ls -d "$$$${file}" >${devnull} 2>&1 && ${RM} "$$$${file}"; done && ${ECHO} "${true}"; done))%f,${1})
+%rm_dir = $(shell ls -d "${1}" >${devnull} 2>&1 && { ${RMDIR} "${1}" && ${ECHO} ${true}; } || true)
+%rm_file = $(shell ls -d "${1}" >${devnull} 2>&1 && { ${RM} "${1}" && ${ECHO} ${true}; } || true)
+%rm_file_globset = $(shell for file in ${1}; do ls -d "$${file}" >${devnull} 2>&1 && ${RM} "$${file}"; done && ${ECHO} "${true}"; done)
 endif
-%rm_dir_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_dir,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
-%rm_file_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_file,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
-%rm_file_globset_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_file_globset,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
+%rm_dirs = $(call %filter_map,%rm_dir,${1})
+%rm_dirs_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_dir,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
+%rm_files = $(call %filter_map,%rm_file,${1})
+%rm_files_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_file,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
+%rm_file_globsets = $(call %filter_map,%rm_file_globset,${1})
+%rm_file_globsets_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_file_globset,$${1}),$$(call %info,"$${1}" removed),))%f,${1})
 
 ifeq (${OSID},win)
 %shell_quote = $(call %tr,^ | < > %,^^ ^| ^< ^> ^%,${1})
@@ -711,10 +714,10 @@ run: ${PROJECT_TARGET} ## Build/execute project executable
 
 .PHONY: clean
 clean: ## Remove build artifacts (including intermediate files)
-	@$(call !shell_noop,$(call %filter_map,%rm_file_globset_verbose,*.${O}))
-	@$(call !shell_noop,$(call %filter_map,%rm_file_verbose,defines.h))
-	@$(call !shell_noop,$(call %filter_map,%rm_file_verbose,${PROJECT_TARGET}))
-	@$(call !shell_noop,$(call %filter_map,%rm_file_verbose,${AUX_targets}))
+	@$(call !shell_noop,$(call %rm_file_globsets_verbose,*.${O}))
+	@$(call !shell_noop,$(call %rm_files_verbose,defines.h))
+	@$(call !shell_noop,$(call %rm_files_verbose,${PROJECT_TARGET}))
+	@$(call !shell_noop,$(call %rm_files_verbose,${AUX_targets}))
 
 ####
 
