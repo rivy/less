@@ -803,7 +803,7 @@ lrealpath(path)
 {
 #if HAVE_REALPATH
 	char *rpath = realpath(path, NULL);
-    if (rpath != NULL)
+	if (rpath != NULL)
 		return (rpath);
 #endif
 	return (save(path));
