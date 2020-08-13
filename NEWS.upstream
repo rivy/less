@@ -11,7 +11,7 @@
 
 ======================================================================
 
-    Major changes between "less" versions 551 and 557
+    Major changes between "less" versions 551 and 562
 
 * Update Unicode tables.
 
@@ -19,6 +19,14 @@
 
 * Display error message immediately when -o is toggled and
   input is not a pipe.
+
+* Fix regression: make screen repaint when "squished" and
+  a no-movement command is given.
+
+* Fix erroneous EOF calculation when F command is interrupted.
+
+* Make WIN32C version include this fix from 551:
+  Don't count lines in initial screen if using -X with -F.
 
 * Fix display bug in WIN32C version.
 
@@ -173,7 +181,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 451 and 458
+    Major changes between "less" versions 451 and 458
 
 * Allow backslash escaping of metacharacters in LESS environment variable
   after the --use-backslash option.
@@ -192,7 +200,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 444 and 451
+    Major changes between "less" versions 444 and 451
 
 * Add ESC-F command to keep reading data until a pattern is found.
 
@@ -219,7 +227,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 443 and 444
+    Major changes between "less" versions 443 and 444
 
 * Fix bug in unget handling that can cause strange effects on the
   command line.
@@ -228,7 +236,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 436 and 443
+    Major changes between "less" versions 436 and 443
 
 * Change search behavior such that when a search is given an explicit
   pattern, the entire displayed screen is included in the search and
@@ -259,7 +267,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 429 and 436
+    Major changes between "less" versions 429 and 436
 
 * Don't pass "-" to non-pipe LESSOPEN unless it starts with "-".
 
@@ -271,7 +279,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 424 and 429
+    Major changes between "less" versions 424 and 429
 
 * LESSOPEN pipe will now be used on standard input, if the LESSOPEN
   environment variable begins with "|-".
@@ -294,7 +302,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 418 and 424
+    Major changes between "less" versions 418 and 424
 
 * New "&" command allows filtering of lines based on a pattern.
 
@@ -312,7 +320,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 416 and 418
+    Major changes between "less" versions 416 and 418
 
 * Color escape sequences are now supported in WIN32 build.
 
@@ -328,7 +336,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 409 and 416
+    Major changes between "less" versions 409 and 416
 
 * New --follow-name option makes F command follow the name of a file
   rather than the file descriptor if an open file is renamed.
@@ -339,7 +347,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 406 and 409
+    Major changes between "less" versions 406 and 409
 
 * Support CSI escape sequences, like SGR escape sequences.
 
@@ -353,7 +361,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 394 and 406
+    Major changes between "less" versions 394 and 406
 
 * Allow decimal point in number for % (percent) command.
 
@@ -400,7 +408,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 382 and 394
+    Major changes between "less" versions 382 and 394
 
 * Add history file to save search and shell command history between
   invocations of less.
@@ -449,14 +457,14 @@
 
 ======================================================================
 
-  Major changes between "less" versions 381 and 382
+    Major changes between "less" versions 381 and 382
 
 * Removed some old copyrighted code.
   This probably breaks OS/9 support.
 
 ======================================================================
 
-  Major changes between "less" versions 378 and 381
+    Major changes between "less" versions 378 and 381
 
 * New -L option to disable LESSOPEN processing.
 
@@ -477,7 +485,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 376 and 378
+    Major changes between "less" versions 376 and 378
 
 * Bug fixes:
   Default buffer space is now 64K as documented.
@@ -487,7 +495,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 358 and 376
+    Major changes between "less" versions 358 and 376
 
 * -x option can now specify multiple variable-width tab stops.
 
@@ -536,7 +544,7 @@
 
 ======================================================================
 
-  Major changes between "less" versions 354 and 358
+    Major changes between "less" versions 354 and 358
 
 * Add -J (--status-column) option to display a status column.
 
@@ -550,7 +558,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 352 and 354
+    Major changes between "less" versions 352 and 354
 
 * Allow space after numeric-valued command line options.
 
@@ -566,7 +574,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 346 and 352
+    Major changes between "less" versions 346 and 352
 
 * Enable UTF-8 if "UTF-8" appears in locale-related environment variables.
 
@@ -588,7 +596,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 340 and 346
+    Major changes between "less" versions 340 and 346
 
 * The UTF-8 character set is now supported.
 
@@ -615,7 +623,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 337 and 340
+    Major changes between "less" versions 337 and 340
 
 * Command line options for less may now be given in either the old
   single-letter form, or a new long name form (--option-name).
@@ -646,14 +654,14 @@
 ======================================================================
 
 
-  Major changes between "less" versions 335 and 337
+    Major changes between "less" versions 335 and 337
 
 * Fixed bugs in "make install".
 
 ======================================================================
 
 
-  Major changes between "less" versions 332 and 335
+    Major changes between "less" versions 332 and 335
 
 * The old -w flag (suppress tildes after end-of-file) has been removed.
 
@@ -677,7 +685,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 330 and 332
+    Major changes between "less" versions 330 and 332
 
 * Filenames from the command line are entered into the command history,
   so UPARROW/DOWNARROW can be used to retrieve them from the :e command.
@@ -700,7 +708,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 321 and 330
+    Major changes between "less" versions 321 and 330
 
 * Now supports filenames containing spaces (in double quotes).
   New option -" can be used to change the quoting characters.
@@ -728,7 +736,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 291 and 321
+    Major changes between "less" versions 291 and 321
 
 * Command line at bottom of screen now scrolls, so it can be longer
   than the screen width.
@@ -772,7 +780,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 290 and 291
+    Major changes between "less" versions 290 and 291
 
 * Less environment variables can be specified in lesskey files.
 
@@ -781,7 +789,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 278 and 290
+    Major changes between "less" versions 278 and 290
 
 * Accepts GNU-style options "--help" and "--version".
 
@@ -792,7 +800,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 252 and 278
+    Major changes between "less" versions 252 and 278
 
 * A LESSOPEN preprocessor may now pipe the converted file data to less,
   rather than writing it to a temporary file.
@@ -816,7 +824,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 237 and 252
+    Major changes between "less" versions 237 and 252
 
 * Changes in line-editing keys:
   The literal key is now ^V or ^A rather than \ (backslash).
@@ -839,7 +847,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 170 and 237
+    Major changes between "less" versions 170 and 237
 
 * By popular demand, text which matches the current search pattern
   is highlighted.  New -F flag disables this feature.
@@ -896,7 +904,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 123 and 170
+    Major changes between "less" versions 123 and 170
 
 * New option -j allows target lines to be positioned anywhere on screen.
 
@@ -926,12 +934,12 @@
 * New command :x directly jumps to a file in the command line list.
 
 * Search commands have been enhanced and reorganized:
-  n Repeat search, same direction.
-  N Repeat search, opposite direction.
-  ESC-/ Search forward thru file boundaries
-  ESC-? Search backward thru file boundaries
-  ESC-n Repeat search thru file boundaries, same direction.
-  ESC-N Repeat search thru file boundaries, opposite direction.
+    n   Repeat search, same direction.
+    N   Repeat search, opposite direction.
+    ESC-/   Search forward thru file boundaries
+    ESC-?   Search backward thru file boundaries
+    ESC-n   Repeat search thru file boundaries, same direction.
+    ESC-N   Repeat search thru file boundaries, opposite direction.
   Special character * causes search to search thru file boundaries.
   Special character @ causes search to begin at start/end of file list.
 
@@ -949,7 +957,7 @@
 ======================================================================
 
 
-  Major changes between "less" versions 97 and 123
+    Major changes between "less" versions 97 and 123
 
 * New option (-N) causes line numbers to be displayed in the
   text of the file (like vi "set nu").

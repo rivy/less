@@ -573,11 +573,10 @@ utf_skip_to_lead(pp, limit)
     char **pp;
     char *limit;
 {
-            /* Skip to next lead byte. */
-            do {
+    do {
         ++(*pp);
     } while (*pp < limit && !IS_UTF8_LEAD((*pp)[0] & 0377) && !IS_ASCII_OCTET((*pp)[0]));
-        }
+}
 
 
 /*

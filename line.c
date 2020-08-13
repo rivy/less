@@ -226,7 +226,7 @@ plinenum(pos)
         else
         {
             c = ' ';
-        if (start_attnpos != NULL_POSITION &&
+            if (start_attnpos != NULL_POSITION &&
                 pos >= start_attnpos && pos <= end_attnpos)
                 a |= AT_HILITE;
         }
@@ -1099,7 +1099,7 @@ pdone(endline, chopped, forw)
          */
         if (column >= sc_width)
         {
-        /* Switch to normal attribute at end of line. */
+            /* We've already written in the rightmost char. */
             column = right_column;
             curr = right_curr;
         }

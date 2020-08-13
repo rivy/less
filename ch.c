@@ -843,7 +843,8 @@ seekable(f)
     public void
 ch_set_eof(VOID_PARAM)
 {
-    ch_fsize = ch_fpos;
+    if (ch_fsize != NULL_POSITION && ch_fsize < ch_fpos)
+        ch_fsize = ch_fpos;
 }
 
 

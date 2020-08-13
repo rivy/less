@@ -350,8 +350,8 @@ undo_search(VOID_PARAM)
     {
         if (hilite_anchor.first == NULL)
         {
-        error("No previous regular expression", NULL_PARG);
-        return;
+            error("No previous regular expression", NULL_PARG);
+            return;
         }
         clr_hilite(); /* Next time, hilite_anchor.first will be NULL. */
     }
@@ -629,7 +629,7 @@ is_hilited(pos, epos, nohide, p_matches)
         /*
          * Kinda kludgy way to recognize that caller is checking for
          * hilite in status column. In this case we want to return
-         * Report matches, even if we're hiding highlights.
+         * hilite status even if hiliting is disabled or hidden.
          */
         return (1);
 

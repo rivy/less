@@ -247,12 +247,6 @@ typedef off_t       LINENUM;
 
 #define NULL_POSITION   ((POSITION)(-1))
 
-#if HAVE_TIME_T
-#define time_type time_t
-#else
-#define time_type long
-#endif
-
 /*
  * Flags for open()
  */

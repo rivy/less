@@ -15,7 +15,7 @@
  * Settings always true for Windows systems.
  */
 
-/***/
+
 /* User preferences.  */
 
 /*
@@ -121,7 +121,7 @@
 #define DEF_LESSKEYINFILE   "_lesskey"
 #define LESSHISTFILE        "_lesshst"
 
-/***/
+
 /* Settings always true for Windows systems.  */
 
 #define MSDOS_COMPILER  WIN32C
