@@ -15,7 +15,7 @@
  * Settings always true for the emx compiler for OS/2 systems.
  */
 
-/***/
+
 /* User preferences.  */
 
 /*
@@ -117,7 +117,7 @@
 #define DEF_LESSKEYINFILE   "lesskey.ini"
 #define LESSHISTFILE        "lesshst.ini"
 
-/***/
+
 /* Settings always true for the emx compiler for OS/2 systems.  */
 #define OS2 1
 

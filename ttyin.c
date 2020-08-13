@@ -23,7 +23,7 @@
 #define _WIN32_WINNT 0x400
 #endif
 #include <windows.h>
-static DWORD console_mode;
+public DWORD console_mode;
 public HANDLE tty;
 #else
 public int tty;
@@ -98,7 +98,7 @@ close_getchr(VOID_PARAM)
 #endif
 }
 
-#if MSDOS_COMPILER==WIN32C
+#if MSDOS_COMPILER==WIN32C && !defined(_MSC_VER) && !defined(MINGW)
 /*
  * Close the pipe, restoring the keyboard (CMD resets it, losing the mouse).
  */
@@ -215,5 +215,6 @@ getchr(VOID_PARAM)
             c = '\340';
     } while (result != 1);
 
+    // fprintf(stderr, "getchr():result=%d,c=%d\n", result, c);
     return (c & 0xFF);
 }

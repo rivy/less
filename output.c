@@ -42,7 +42,7 @@ extern int so_fg_color, so_bg_color;
 extern int bl_fg_color, bl_bg_color;
 extern int sgr_mode;
 #if MSDOS_COMPILER==WIN32C
-extern int have_ul;
+extern int have_full_ansi;
 #endif
 #endif
 
@@ -88,42 +88,41 @@ map_rgb_to_ANSI16( r, g, b )
 {
     long color = 0;
 
-    const int MAX_RGB_COLOR_VALUE = 0xff;
     const int COLOR_INTENSE = 0x8;
     const int COLOR_RED = 0x1;      // ANSI16 "RED"
     const int COLOR_GREEN = 0x2;    // ANSI16 "GREEN"
     const int COLOR_BLUE = 0x4;     // ANSI16 "BLUE"
-    // const int COLOR_GRAY = COLOR_RED|COLOR_GREEN|COLOR_BLUE;
-    // const int COLOR_DARKGRAY = COLOR_INTENSE|0;
-    // const int COLOR_WHITE = COLOR_INTENSE|COLOR_GRAY;
+    const int COLOR_BLACK = 0x0;
+    const int COLOR_DARKGRAY = COLOR_INTENSE|COLOR_BLACK;
 
-    // partition color-space into [off, on (dark), on(intense)]
-    long color_partition_value = MAX_RGB_COLOR_VALUE / 3;
-    long color_threshold = color_partition_value;
-    long intensity_threshold = color_partition_value * 2;
+    // heuristics
+    long base_color_threshold = 0x80;
+    long intensity_threshold = 0xd0;
+    long min_color_threshold = 0x20;
+    long intensity_grouping_boundary = 25; // as a percentage
+
+    long color_threshold;
 
     long combined_intensity_threshold;
     long combined_intensity = 0;
     int contributing_colors = 0;
 
-    // combine intensities of contributing colors
+    long max_intensity = 0;
+    if ( r > max_intensity ) { max_intensity = r; }
+    if ( g > max_intensity ) { max_intensity = g; }
+    if ( b > max_intensity ) { max_intensity = b; }
+
+    color_threshold = max_intensity - (max_intensity * intensity_grouping_boundary / 100);
+    if (color_threshold < min_color_threshold) { color_threshold = min_color_threshold; }
+
     if ( r >= color_threshold ) { color |= COLOR_RED; contributing_colors++; combined_intensity += r; }
     if ( g >= color_threshold ) { color |= COLOR_GREEN; contributing_colors++; combined_intensity += g; }
     if ( b >= color_threshold ) { color |= COLOR_BLUE; contributing_colors++; combined_intensity += b; }
-    // combine all intensities if two or more colors contribute (heuristic)
-    if ( contributing_colors >= 2 ) { combined_intensity = r + g + b; }
 
-    combined_intensity_threshold = contributing_colors * intensity_threshold;
+    combined_intensity_threshold = intensity_threshold * contributing_colors;
 
-    // heuristic to spread the colors more evenly
-    if ( contributing_colors == 2 ) { combined_intensity_threshold += (color_partition_value/2); }
-
-    if (( contributing_colors > 0 ) && (combined_intensity >= combined_intensity_threshold )) { color |= COLOR_INTENSE; }
-
-//    // add "intense black" == "dark gray" (replacing some "white")
-//    // NOTE: this causes a visual change to the "usual" 6 x 6 x 6 color cube
-//    //   ... but this evens color distributions and allows some rgb values to downsample to "intense black"
-//    if ( ( color == COLOR_WHITE ) && ( (r < intensity_threshold) || (g < intensity_threshold) || (b < intensity_threshold) )) { color = COLOR_DARKGRAY; }
+    if ((contributing_colors > 0) && (combined_intensity > combined_intensity_threshold)) { color |= COLOR_INTENSE; }
+    if ((contributing_colors > 1) && (max_intensity < base_color_threshold)) { color = COLOR_DARKGRAY; }
 
     return color;
 }
@@ -145,8 +144,7 @@ map_xterm256_to_ANSI16( n )
     else
     { /* 6 x 6 x 6 color increments */
         // ref: http://www.mudpedia.org/mediawiki/index.php/Xterm_256_colors @@ https://archive.is/dtVov
-        // unsigned char color_level[] = { 0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff }; // commonly used xterm256 RGB values
-        unsigned char color_level[] = { 0x00, 0x33, 0x66, 0x99, 0xcc, 0xff };    // improves down-mapped color distribution
+        unsigned char color_level[] = { 0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff }; // commonly used xterm256 RGB values (ref: https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit)
         long r = color_level[ ((n - 16) / 36) % 6 ];
         long g = color_level[ ((n - 16) / 6) % 6 ];
         long b = color_level[ (n - 16) % 6 ];
@@ -197,7 +195,7 @@ flush(VOID_PARAM)
     if (is_tty && any_display)
     {
         *ob = '\0';
-        if (ctldisp != OPT_ONPLUS)
+        if ((sgr_mode && have_full_ansi) || (ctldisp != OPT_ONPLUS))
             WIN32textout(obuf, ob - obuf);
         else
         {
@@ -212,6 +210,7 @@ flush(VOID_PARAM)
             static int fg, fgi, bg, bgi;
             static int at;
             int f, b;
+            int slop;
 #if MSDOS_COMPILER==WIN32C
             /* Screen colors used by 3x and 4x SGR commands. */
             static unsigned char screen_color[] = {
@@ -245,6 +244,17 @@ flush(VOID_PARAM)
                  (p_next = memchr(p_next, ESC, ob - p_next)) != NULL; )
             {
                 p = p_next;
+                if ((int)(ob - p) < 3) {
+                    // possible incomplete sequence at end of obuf[] buffer; output any prior chars, copy to beginning of buffer, and return
+                    if (p > anchor) {
+                        WIN32textout(anchor, p-anchor);
+                    }
+                    slop = (int)(ob - p);
+                    /* {{ strcpy args overlap! }} */
+                    strcpy(obuf, p);
+                    ob = &obuf[slop];
+                    return;
+                }
                 if (p[1] == '[')  /* "ESC-[" sequence */
                 {
                     if (p > anchor)
@@ -347,7 +357,6 @@ flush(VOID_PARAM)
                             ob = &obuf[slop];
                             return;
                         }
-
                         if (q == p ||
                             code > 107 || code < 0 ||
                             (!is_ansi_end(*q) && *q != ';'))
@@ -397,11 +406,11 @@ flush(VOID_PARAM)
                             break;
                         case 4: /* underline on */
 #if MSDOS_COMPILER==WIN32C
-                            if (have_ul)
+                            if (have_full_ansi)
                                 bgi = COMMON_LVB_UNDERSCORE >> 4;
                             else
 #endif
-                            bgi = 8;
+                                bgi = 8;
                             at |= 4;
                             break;
                         case 5: /* slow blink on */
@@ -476,7 +485,7 @@ flush(VOID_PARAM)
                             at |= 32;
                             break;
                         case 39: /* default fg */
-                            fg = nm_fg_color;
+                            fg  = nm_fg_color;
                             at |= 32;
                             break;
                         case 40: case 41: case 42:
@@ -521,31 +530,42 @@ flush(VOID_PARAM)
                             at |= 32;
                             break;
                         case 49: /* default bg */
-                            bg = nm_bg_color & 7;
+                            bg  = nm_bg_color;
                             at |= 32;
                             break;
                         case 90: case 91: case 92:
                         case 93: case 94: case 95:
                         case 96: case 97:
                             /* bash ANSI: set high-intensity foreground */
-                            fg = screen_color[code - 90];
-                            at |= 1;
+                            fg = (screen_color[code - 90] | 0x8);
                             at |= 32;
                             break;
                         case 100: case 101: case 102:
                         case 103: case 104: case 105:
                         case 106: case 107:
                             /* bash ANSI: set high-intensity background */
-                            bg = screen_color[code - 100];
-                            at |= 4;
+                            bg = (screen_color[code - 100] | 0x8);
                             at |= 32;
                             break;
                         }
                         p = q;
+                        if (*q == '\0')
+                        {
+                            /*
+                             * Incomplete sequence.
+                             * Leave it unprocessed
+                             * in the buffer.
+                             */
+                            int slop = (int) (q - anchor);
+                            /* {{ strcpy args overlap! }} */
+                            strcpy(obuf, anchor);
+                            ob = &obuf[slop];
+                            return;
+                        }
                     }
                     if (!is_ansi_end(*p) || p == p_next)
                         break;
-                    /*                    /*
+                    /*
                      * In SGR mode, the ANSI sequence is
                      * always honored; otherwise if an attr
                      * is used by itself ("\e[1m" versus

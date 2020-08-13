@@ -24,14 +24,14 @@
 extern IFILE    curr_ifile;
 
 struct ifile {
-    struct ifile *h_next;       /* Links for command line list */
+    struct ifile *h_next;           /* Links for command line list */
     struct ifile *h_prev;
-    char *h_filename;       /* Name of the file */
-    void *h_filestate;      /* File state (used in ch.c) */
-    int h_index;            /* Index within command line list */
-    int h_hold;         /* Hold count */
-    char h_opened;          /* Has this ifile been opened? */
-    struct scrpos h_scrpos;     /* Saved position within the file */
+    char *h_filename;               /* Name of the file */
+    void *h_filestate;              /* File state (used in ch.c) */
+    int h_index;                    /* Index within command line list */
+    int h_hold;                     /* Hold count */
+    char h_opened;                  /* Has this ifile been opened? */
+    struct scrpos h_scrpos;         /* Saved position within the file */
     void *h_altpipe;                /* Alt pipe */
     char *h_altfilename;            /* Alt filename */
 };

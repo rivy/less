@@ -286,7 +286,7 @@ ch_get(VOID_PARAM)
      * If we have a log file, write the new data to it.
      */
     if (!secure && logfile >= 0 && n > 0)
-        write(logfile, (char *) &bp->data[bp->datasize], n);
+        (void)! write(logfile, (char *) &bp->data[bp->datasize], n);
 #endif
 
     ch_fpos += n;
@@ -435,7 +435,7 @@ sync_logfile(VOID_PARAM)
             bp = bufnode_buf(bn);
             if (bp->block == block)
             {
-                write(logfile, (char *) bp->data, bp->datasize);
+                (void)! write(logfile, (char *) bp->data, bp->datasize);
                 wrote = TRUE;
                 break;
             }
@@ -843,7 +843,8 @@ seekable(f)
     public void
 ch_set_eof(VOID_PARAM)
 {
-    ch_fsize = ch_fpos;
+    if (ch_fsize != NULL_POSITION && ch_fsize < ch_fpos)
+        ch_fsize = ch_fpos;
 }
 
 

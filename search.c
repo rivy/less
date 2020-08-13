@@ -350,8 +350,8 @@ undo_search(VOID_PARAM)
     {
         if (hilite_anchor.first == NULL)
         {
-        error("No previous regular expression", NULL_PARG);
-        return;
+            error("No previous regular expression", NULL_PARG);
+            return;
         }
         clr_hilite(); /* Next time, hilite_anchor.first will be NULL. */
     }
@@ -629,14 +629,14 @@ is_hilited(pos, epos, nohide, p_matches)
         /*
          * Kinda kludgy way to recognize that caller is checking for
          * hilite in status column. In this case we want to return
-         * Report matches, even if we're hiding highlights.
+         * hilite status even if hiliting is disabled or hidden.
          */
         return (1);
 
     /*
      * Report matches, even if we're hiding highlights.
      */
-        *p_matches = 1;
+    *p_matches = 1;
 
     if (hilite_search == 0)
         /*
@@ -1175,7 +1175,7 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos)
     char *sp, *ep;
     int line_match;
     int cvt_ops;
-    int cvt_len;
+    size_t cvt_len;
     int *chpos;
     POSITION linepos, oldpos;
 
@@ -1757,4 +1757,3 @@ regerror(s)
     error("%s", &parg);
 }
 #endif
-

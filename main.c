@@ -310,8 +310,8 @@ save(s)
  */
     public VOID_POINTER
 ecalloc(count, size)
-    int count;
-    unsigned int size;
+    size_t count;
+    size_t size;
 {
     VOID_POINTER p;
 

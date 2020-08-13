@@ -19,9 +19,9 @@ extern int utf_mode;
 /*
  * Get the length of a buffer needed to convert a string.
  */
-    public int
+    public size_t
 cvt_length(len, ops)
-    int len;
+    size_t len;
     int ops;
 {
     if (utf_mode)
@@ -39,9 +39,9 @@ cvt_length(len, ops)
  */
     public int *
 cvt_alloc_chpos(len)
-    int len;
+    size_t len;
 {
-    int i;
+    size_t i;
     int *chpos = (int *) ecalloc(sizeof(int), len);
     /* Initialize all entries to an invalid position. */
     for (i = 0;  i < len;  i++)

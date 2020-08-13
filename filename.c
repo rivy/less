@@ -480,7 +480,7 @@ bin_file(f)
     for (p = data;  p < edata;  )
     {
         if (utf_mode && !is_utf8_well_formed(p, edata-data))
-    {
+        {
             bin_count++;
             utf_skip_to_lead(&p, edata);
         } else
@@ -915,7 +915,7 @@ open_altfile(filename, pf, pfd)
 
         /*
          * The first time we open the file, read one char
-         * Read one char to see if the pipe will produce any data.
+         * to see if the pipe will produce any data.
          * If it does, push the char back on the pipe.
          */
         f = fileno(fd);
@@ -971,10 +971,6 @@ close_altfile(altfilename, filename)
     if (secure)
         return;
     ch_ungetchar(-1);
-        /*
-         * The pclose function of OS/2 emx sometimes fails.
-         * Send SIGINT to the piped process before closing it.
-         */
     if ((lessclose = lgetenv("LESSCLOSE")) == NULL)
             return;
     if (num_pct_s(lessclose) > 2)

@@ -315,7 +315,7 @@ match_pattern(pattern, tpattern, line, line_len, sp, ep, notbol, search_type)
     PATTERN_TYPE pattern;
     char *tpattern;
     char *line;
-    int line_len;
+    size_t line_len;
     char **sp;
     char **ep;
     int notbol;

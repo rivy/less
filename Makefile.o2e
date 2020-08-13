@@ -41,3 +41,21 @@ ${OBJ}: defines.h less.h
 
 defines.h: defines.o2
 	copy defines.o2 defines.h
+
+clean:
+	-if EXIST "*.${O}" del *.${O}
+	-if EXIST "defines.h" del defines.h
+	-if EXIST "less${EXEEXT}" del less${EXEEXT}
+	-if EXIST "lesskey${EXEEXT}" del lesskey${EXEEXT}
+
+build: all
+compile: ${OBJ}
+realclean: clean
+rebuild: clean build
+veryclean: realclean
+
+build: all
+compile: ${OBJ}
+rebuild: clean build
+realclean: clean
+veryclean: realclean

@@ -4,11 +4,37 @@
 
 # `nmake /f Makefile.win.msvc.nmake`
 
+# spell-checker:ignore (targets) distclean realclean vclean veryclean
+# spell-checker:ignore (make) abspath firstword ifeq ifndef ifneq lastword undefine vclean veryclean
+#
+# spell-checker:ignore (acronyms/names) Borland Borland's LLVM MSVC MinGW POSIX VCvars
+# spell-checker:ignore (flags/options) DDEBUG DNDEBUG NDEBUG Werror Wextra Xclang defaultlib dumpmachine flto flto-visibility-public-std libcmt nologo nothrow
+# spell-checker:ignore (jargon) multilib
+# spell-checker:ignore (shell/win) COMSPEC SystemDrive SystemRoot findstr findstring windir
+# spell-checker:ignore (utils) ilink nmake
+# spell-checker:ignore (vars) BQUOTE CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE DQUOTE EXEEXT LDFLAGS LIBDIR LIBPATH MAKEDIR OBJDEP SHELLSTATUS devnull mkfile
+# spell-checker:ignore () brac cmdbuf forwback funcs ifile lessecho lesskey linenum lsystem optfunc opttbl stdext ttyin
+
 #### Start of system configuration section. ####
 
 CC = cl
 
+!IF ([ \
+	@"$(CC)" 2>&1 | "%SystemRoot%\System32\findstr" /i /c:"compiler version 12." \
+	] == 0)
+is_VC6 = 1
+!ENDIF
+
 ## ref: [MSVC Compiler Options] https://msdn.microsoft.com/en-us/library/fwkeyyhe.aspx @@ https://archive.is/aOAtH
+
+## /c :: compile only
+CFLAGS_COMPILE_ONLY = /c
+
+# VC6-specific flags
+!IF "$(is_VC6)" != ""
+## /ignore:4254 :: suppress "merging sections with different attributes" warning (LNK4254)
+LDFLAGS_VC6 = /ignore:4254
+!ENDIF
 
 # Normal/usual flags
 ## /nologo :: startup without logo display
@@ -24,8 +50,8 @@ CC = cl
 ## /D "NDEBUG" :: deactivate assert()
 ## /D "_CRT_SECURE_NO_WARNING" :: compiler directive == suppress "unsafe function" compiler warning
 ## /c :: compile only
-CFLAGS = /nologo /W3 /wd4996 /WX /MT /EHsc /Ox /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS" /c
-LDFLAGS = /nologo /subsystem:console /incremental:no /machine:I386
+CFLAGS = /nologo /W3 /WX /MT /EHsc /Ox /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS"
+LDFLAGS = /nologo /subsystem:console /incremental:no /machine:I386 $(LDFLAGS_VC6)
 
 # DEBUG flags
 ## /MTd :: static linking to debug library
@@ -33,7 +59,7 @@ LDFLAGS = /nologo /subsystem:console /incremental:no /machine:I386
 ## /Gm :: enables minimal rebuild
 ## /Zi :: generates complete debugging information
 #CFLAGS = /nologo /W3 /MTd /EHsc /Od /Gm /Zi /I "." /D "WIN32" /D "DEBUG" /D "_CONSOLE" /c
-#LDFLAGS = /nologo /subsystem:console /incremental:yes /debug /machine:I386
+#LDFLAGS = /nologo /subsystem:console /incremental:yes /debug /machine:I386 $(LDFLAGS_VC6)
 
 LD = link
 LIBS = user32.lib
@@ -43,7 +69,7 @@ LIBS = user32.lib
 # This rule allows us to supply the necessary -D options
 # in addition to whatever the user asks for.
 .c.obj:
-	$(CC) $(CFLAGS) $<
+	$(CC) $(CFLAGS_COMPILE_ONLY) $(CPPFLAGS) $(CFLAGS) $<
 
 OBJ = \
 	main.obj screen.obj brac.obj ch.obj charset.obj cmdbuf.obj \
@@ -80,4 +106,4 @@ build: all
 compile: $(OBJ)
 realclean: clean
 rebuild: clean build
-vclean: realclean
+veryclean: realclean

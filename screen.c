@@ -159,6 +159,7 @@ static int sy_fg_color;     /* Color of system text (before less) */
 static int sy_bg_color;
 public int sgr_mode;        /* Honor ANSI sequences rather than using above */
 #if MSDOS_COMPILER==WIN32C
+public int have_full_ansi;  /* Is full Windows ANSI SGR support available? */
 public int have_ul;     /* Is underline available? */
 #endif
 #else
@@ -254,6 +255,11 @@ extern int hilite_search;
 #endif
 #if MSDOS_COMPILER==WIN32C
 extern HANDLE tty;
+extern DWORD console_mode;
+#ifndef ENABLE_EXTENDED_FLAGS
+#define ENABLE_EXTENDED_FLAGS 0x80
+#define ENABLE_QUICK_EDIT_MODE 0x40
+#endif
 #else
 extern int tty;
 #endif
@@ -1082,12 +1088,13 @@ get_term(VOID_PARAM)
     {
     CONSOLE_SCREEN_BUFFER_INFO scr;
 
-    con_out_save = con_out = GetStdHandle(STD_OUTPUT_HANDLE);
+    con_out_save = con_out = CreateFile((LPCSTR)"CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0L, NULL);
     /*
      * Always open stdin in binary. Note this *must* be done
      * before any file operations have been done on fd0.
      */
     SET_BINARY(0);
+
     GetConsoleScreenBufferInfo(con_out, &scr);
     curr_attr = scr.wAttributes;
     sy_bg_color = (curr_attr & BG_COLORS) >> 4; /* normalize */
@@ -1098,6 +1105,14 @@ get_term(VOID_PARAM)
 #endif
     nm_fg_color = sy_fg_color;
     nm_bg_color = sy_bg_color;
+
+    // ToDO: research Win10 bug creating consoles with FG=BG (start @ <https://github.com/Microsoft/Terminal/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+color>)
+    // FixME: find a researched definitive solution to use Win10 ANSI colors (either better FG/BG definition or better SGR use within `less`); remove "debug" fprintf statements
+    // fprintf(stderr, "FG=%d ; BG=%d\n", nm_fg_color, nm_bg_color);
+    if (nm_fg_color == nm_bg_color) {
+        nm_fg_color = ( nm_bg_color ^ 0x07 );
+        // fprintf(stderr, "(updated) FG=%d ; BG=%d\n", nm_fg_color, nm_bg_color);
+    }
 
     bo_fg_color = -1;
     bo_bg_color = -1;
@@ -1506,8 +1521,6 @@ win32_init_term(VOID_PARAM)
     if (con_out_save == INVALID_HANDLE_VALUE)
         return;
 
-    GetConsoleScreenBufferInfo(con_out_save, &scr);
-
     if (con_out_ours == INVALID_HANDLE_VALUE)
     {
         DWORD output_mode;
@@ -1525,14 +1538,17 @@ win32_init_term(VOID_PARAM)
         /*
          * Enable underline, if available.
          */
+        // ref: <https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences>[`@`](https://archive.is/L7wRJ)
         GetConsoleMode(con_out_ours, &output_mode);
-        have_ul = SetConsoleMode(con_out_ours,
+        have_full_ansi = SetConsoleMode(con_out_ours,
                 output_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     }
 
+    GetConsoleScreenBufferInfo(con_out_save, &scr);
     size.X = scr.srWindow.Right - scr.srWindow.Left + 1;
     size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1;
     SetConsoleScreenBufferSize(con_out_ours, size);
+
     SetConsoleActiveScreenBuffer(con_out_ours);
     con_out = con_out_ours;
 }
@@ -1566,7 +1582,9 @@ init_mouse(VOID_PARAM)
     tputs(sc_s_mousecap, sc_height, putchr);
 #else
 #if MSDOS_COMPILER==WIN32C
-    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
+    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT
+                | ENABLE_EXTENDED_FLAGS /* disable quick edit */);
+
 #endif
 #endif
 }
@@ -1584,7 +1602,8 @@ deinit_mouse(VOID_PARAM)
     tputs(sc_e_mousecap, sc_height, putchr);
 #else
 #if MSDOS_COMPILER==WIN32C
-    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT);
+    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_EXTENDED_FLAGS
+                | (console_mode & ENABLE_QUICK_EDIT_MODE));
 #endif
 #endif
 }
@@ -1620,8 +1639,13 @@ init(VOID_PARAM)
         line_left();
 #else
 #if MSDOS_COMPILER==WIN32C
-    if (!no_init)
-        win32_init_term();
+    if (!(quit_if_one_screen && one_screen))
+    {
+        if (!no_init)
+            win32_init_term();
+        init_mouse();
+
+    }
 #endif
     initcolor();
     flush();
@@ -1650,8 +1674,12 @@ deinit(VOID_PARAM)
     /* Restore system colors. */
     SETCOLORS(sy_fg_color, sy_bg_color);
 #if MSDOS_COMPILER==WIN32C
-    if (!no_init)
-        win32_deinit_term();
+    if (!(quit_if_one_screen && one_screen))
+    {
+        deinit_mouse();
+        if (!no_init)
+            win32_deinit_term();
+    }
 #else
     /* Need clreol to make SETCOLORS take effect. */
     clreol();
@@ -1813,6 +1841,36 @@ win32_clear(VOID_PARAM)
     topleft.Y = csbi.srWindow.Top;
 
     curr_attr = MAKEATTR(nm_fg_color, nm_bg_color);
+    FillConsoleOutputCharacter(con_out, ' ', winsz, topleft, &nchars);
+    FillConsoleOutputAttribute(con_out, curr_attr, winsz, topleft, &nchars);
+}
+
+/*
+ * Clear the screen (with inverted foreground and background colors).
+ */
+    static void
+win32_clear_inverted()
+{
+    /*
+     * This will clear only the currently visible rows of the NT
+     * console buffer, which means none of the precious scrollback
+     * rows are touched making for faster scrolling.  Note that, if
+     * the window has fewer columns than the console buffer (i.e.
+     * there is a horizontal scrollbar as well), the entire width
+     * of the visible rows will be cleared.
+     */
+    COORD topleft;
+    DWORD nchars;
+    DWORD winsz;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    /* get the number of cells in the current buffer */
+    GetConsoleScreenBufferInfo(con_out, &csbi);
+    winsz = csbi.dwSize.X * (csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
+    topleft.X = 0;
+    topleft.Y = csbi.srWindow.Top;
+
+    curr_attr = MAKEATTR(nm_bg_color, nm_fg_color);
     FillConsoleOutputCharacter(con_out, ' ', winsz, topleft, &nchars);
     FillConsoleOutputAttribute(con_out, curr_attr, winsz, topleft, &nchars);
 }
@@ -2078,7 +2136,7 @@ vbell(VOID_PARAM)
 #else
 #if MSDOS_COMPILER==WIN32C
     /* paint screen with an inverse color */
-    clear();
+    win32_clear_inverted();
 
     /* leave it displayed for 100 msec. */
     Sleep(100);
@@ -2503,6 +2561,7 @@ win32_kbhit(VOID_PARAM)
         if (read == 0)
             return (FALSE);
         ReadConsoleInput(tty, &ip, 1, &read);
+        // fprintf(stderr,"win32_kbhit():ip.EventType=%d,.KeyCode=%d,.ScanCode=%d\n", ip.EventType, ip.Event.KeyEvent.wVirtualKeyCode, ip.Event.KeyEvent.wVirtualScanCode);
         /* generate an X11 mouse sequence from the mouse event */
         if (mousecap && ip.EventType == MOUSE_EVENT &&
             ip.Event.MouseEvent.dwEventFlags != MOUSE_MOVED)
@@ -2533,7 +2592,7 @@ win32_kbhit(VOID_PARAM)
         }
     } while (ip.EventType != KEY_EVENT ||
         ip.Event.KeyEvent.bKeyDown != TRUE ||
-        ip.Event.KeyEvent.wVirtualScanCode == 0 ||
+        // ip.Event.KeyEvent.wVirtualScanCode == 0 ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_SHIFT ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_CONTROL ||
         ip.Event.KeyEvent.wVirtualKeyCode == VK_MENU);
@@ -2589,6 +2648,7 @@ WIN32getch(VOID_PARAM)
 
     if (pending_scancode)
     {
+        // fprintf(stderr, "WIN32getch():currentKey.ascii=%d,.scan=%d\n", currentKey.ascii, currentKey.scan);
         pending_scancode = 0;
         return ((char)(currentKey.scan & 0x00FF));
     }
@@ -2632,7 +2692,7 @@ WIN32setcolors(fg, bg)
     public void
 WIN32textout(text, len)
     char *text;
-    int len;
+    size_t len;
 {
 #if MSDOS_COMPILER==WIN32C
     DWORD written;
@@ -2643,11 +2703,11 @@ WIN32textout(text, len)
          * wide and use WriteConsoleW.
          */
         WCHAR wtext[1024];
-        len = MultiByteToWideChar(CP_UTF8, 0, text, len, wtext,
+        len = MultiByteToWideChar(CP_UTF8, 0, text, (int)len, wtext,
                       sizeof(wtext)/sizeof(*wtext));
-        WriteConsoleW(con_out, wtext, len, &written, NULL);
+        WriteConsoleW(con_out, wtext, (int)len, &written, NULL);
     } else
-    WriteConsole(con_out, text, len, &written, NULL);
+    WriteConsole(con_out, text, (int)len, &written, NULL);
 #else
     char c = text[len];
     text[len] = '\0';

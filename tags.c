@@ -471,7 +471,7 @@ ctagsearch(VOID_PARAM)
         } else
         {
             int cvt_ops = CVT_ANSI;
-            int cvt_len = cvt_length(line_len, cvt_ops);
+            size_t cvt_len = cvt_length(line_len, cvt_ops);
             int *chpos = cvt_alloc_chpos(cvt_len);
             char *cline = (char *) ecalloc(1, cvt_len);
             cvt_text(cline, line, chpos, &line_len, cvt_ops);

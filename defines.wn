@@ -15,7 +15,7 @@
  * Settings always true for Windows systems.
  */
 
-/***/
+
 /* User preferences.  */
 
 /*
@@ -77,7 +77,11 @@
  * This will generally work if your system provides the "popen" function
  * and the "echo" shell command.
  */
+#ifdef __GNUC__
+#define GLOB        1
+#else
 #define GLOB        0
+#endif
 
 /*
  * PIPEC is 1 if you wish to have the "|" command
@@ -117,10 +121,18 @@
 #define DEF_LESSKEYINFILE   "_lesskey"
 #define LESSHISTFILE        "_lesshst"
 
-/***/
+
 /* Settings always true for Windows systems.  */
 
 #define MSDOS_COMPILER  WIN32C
+
+/*
+ * Minimum Windows version.
+ * - see <https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt>
+ * - @@ <https://github.com/MicrosoftDocs/cpp-docs/blob/master/docs/porting/modifying-winver-and-win32-winnt.md> @@ <https://archive.is/n8fu1>
+ */
+#define WINVER          0x0400     // WinNT 4.0
+#define _WIN32_WINNT    0x0400     // WinNT 4.0
 
 /*
  * Pathname separator character.
@@ -218,18 +230,19 @@
 /* #undef HAVE_REGCMP */
 #ifdef MINGW
     #ifdef USE_POSIX_REGCOMP
-    #define HAVE_POSIX_REGCOMP 1
+        #define HAVE_POSIX_REGCOMP 1
     #else
-    #ifdef USE_GNU_REGEX
-        #define HAVE_GNU_REGEX  1
+        #ifdef USE_GNU_REGEX
+            #define HAVE_GNU_REGEX  1
         #else
             #ifdef USE_REGEXP_C
-        #define HAVE_V8_REGCOMP 1
-        #define HAVE_REGEXEC2   1
+                #define HAVE_V8_REGCOMP 1
+                #define HAVE_REGEXEC2   1
             #else
-                #define NO_REGEX 1
+                // #define NO_REGEX 1
+                #define HAVE_V8_REGCOMP 1
+            #endif
         #endif
-    #endif
     #endif
 #else
 #define HAVE_V8_REGCOMP 1
@@ -377,11 +390,38 @@
 #endif
 #endif
 
+#ifdef _MSC_VER
 #define popen   _popen
+#define pclose  _pclose
+#if (_MSC_VER < 1300)
+#define intptr_t long
+#endif
 #if !defined(_MSC_VER) || (_MSC_VER < 1900)
 #define snprintf    _snprintf
 #endif
+#endif
+
+#ifdef __clang__
+#define close   _close
+#define creat   _creat
+#define dup     _dup
+#define fileno  _fileno
+#define isatty  _isatty
+#define lseek   _lseek
+#define open    _open
+#define putenv  _putenv
+#define read    _read
+#define setmode _setmode
+#define write   _write
+#endif
+
+#if (defined __clang__) && (!defined __GNUC__)
+/* fix: find a better way to add *user32.lib* (ie, *user32.dll*) for use of `MessageBeep()` in *screen.c* */
+/* see <https://stackoverflow.com/questions/9198787/how-do-i-compile-a-window-api-program-using-cl/9199083#9199083> @@ <https://archive.is/goUzN> */
+#pragma comment(lib, "user32")
+#endif
 
 #ifndef MINGW
+/* disable warning C4996: ... POSIX name for this item is deprecated */
 #pragma warning(disable:4996)
 #endif
