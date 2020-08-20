@@ -29,9 +29,7 @@
                 "CC=gcc",
                 "clean"
             ],
-            "group": {
-                "kind": "none"
-            },
+            "group": "none",
             "problemMatcher": [
                 "$gcc"
             ]
