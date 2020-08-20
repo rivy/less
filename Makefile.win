@@ -34,7 +34,7 @@ OSID := $(or $(and $(filter .exe,$(patsubst %.exe,.exe,$(subst $() $(),_,${SHELL
 # for Windows OS, set SHELL to `%ComSpec%` or `cmd` (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
 # * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
 ifeq (${OSID},win)
-# use case and location fallbacks; note: assumes *no spaces* within ${ComSpec}, ${SystemRoot}, or ${windir}
+# use case and location fallbacks; note: assumes *no spaces* within the path values specified by ${ComSpec}, ${SystemRoot}, or ${windir}
 COMSPEC := $(or ${ComSpec},${COMSPEC},${comspec})
 SystemRoot := $(or ${SystemRoot},${SYSTEMROOT},${systemroot},${windir})
 SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
@@ -704,7 +704,7 @@ clean: ## Remove build artifacts (including intermediate files)
 ####
 
 .PHONY: all build build-aux compile realclean rebuild vclean veryclean
-all: build build-aux ## Build all project executables
+all: build build-aux ## Build all project targets
 build: ${PROJECT_TARGET} ## Build project (`less`)
 build-aux: ${AUX_targets} ## Build auxillary executables (`lessecho` and `lesskey`)
 compile: ${OBJ_files} ## Build intermediate files
