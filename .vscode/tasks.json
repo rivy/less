@@ -7,7 +7,8 @@
             "command": "make",
             "args": [
                 "-f",
-                "Makefile.win.mingw",
+                "Makefile.win",
+                "CC=gcc",
                 "DEBUG=1"
             ],
             "group": {
@@ -24,7 +25,8 @@
             "command": "make",
             "args": [
                 "-f",
-                "Makefile.win.mingw",
+                "Makefile.win",
+                "CC=gcc",
                 "clean"
             ],
             "group": {
