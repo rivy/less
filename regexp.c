@@ -1144,7 +1144,7 @@ static char *
 regprop(op)
 char *op;
 {
-    register char *p;
+    register char *p = 0;
     static char buf[50];
 
     (void) strcpy(buf, ":");
