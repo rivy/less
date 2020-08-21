@@ -57,6 +57,12 @@ extern int fd0;
 
 #if HAVE_TERMCAP_H
 #include <termcap.h>
+#else
+int tgetent (char *buffer, char *termtype);
+int tgetflag (char *name);
+int tgetnum (char *name);
+char *tgetstr (char *name, char **area);
+int tputs (char *string, int nlines, int (*outfun) ());
 #endif
 #ifdef _OSK
 #include <signal.h>
