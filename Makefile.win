@@ -735,4 +735,4 @@ ${OUT_obj}/%.${O}: ${SRC_DIR}/%.cxx ${makefile_abs_path} | ${OUT_obj}
 
 ####
 
-$(foreach dir,${out_dirs_for_rules},$(eval $(call @mkdir_rule,${dir})))
+$(foreach dir,$(filter-out . ..,${out_dirs_for_rules}),$(eval $(call @mkdir_rule,${dir})))
