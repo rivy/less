@@ -2,6 +2,21 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Build (clang; debug)",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-f",
+                "Makefile.win",
+                "CC=clang",
+                "DEBUG=1"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
             "label": "Build (gcc; debug)",
             "type": "shell",
             "command": "make",
@@ -26,7 +41,6 @@
             "args": [
                 "-f",
                 "Makefile.win",
-                "CC=gcc",
                 "clean"
             ],
             "group": "none",
@@ -35,22 +49,36 @@
             ]
         },
         {
+            "label": "REBuild (clang; debug)",
             "type": "shell",
-            "label": "clang.exe build active file",
-            "command": "C:\\Users\\Roy\\AppData\\Local\\scoop\\apps\\clang\\7.0.0\\bin\\clang.exe",
+            "command": "make",
             "args": [
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "rebuild",
+                "-f",
+                "Makefile.win",
+                "CC=clang",
+                "DEBUG=1"
             ],
-            "options": {
-                "cwd": "C:\\Users\\Roy\\AppData\\Local\\scoop\\apps\\clang\\7.0.0\\bin"
-            },
+            "group": "build",
             "problemMatcher": [
                 "$gcc"
+            ]
+        },
+        {
+            "label": "REBuild (gcc; debug)",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "rebuild",
+                "-f",
+                "Makefile.win",
+                "CC=gcc",
+                "DEBUG=1"
             ],
-            "group": "build"
-        }
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
     ]
 }
