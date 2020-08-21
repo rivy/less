@@ -421,7 +421,7 @@
 #pragma comment(lib, "user32")
 #endif
 
-#ifndef MINGW
+#ifdef _MSC_VER
 /* disable warning C4996: ... POSIX name for this item is deprecated */
 #pragma warning(disable:4996)
 #endif
