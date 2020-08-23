@@ -164,10 +164,7 @@ public int bl_bg_color;
 static int sy_fg_color;     /* Color of system text (before less) */
 static int sy_bg_color;
 public int sgr_mode;        /* Honor ANSI sequences rather than using above */
-#if MSDOS_COMPILER==WIN32C
 public int have_full_ansi;  /* Is full Windows ANSI SGR support available? */
-public int have_ul;     /* Is underline available? */
-#endif
 #else
 
 /*
@@ -1130,6 +1127,7 @@ get_term(VOID_PARAM)
     bl_bg_color = -1;
 
     sgr_mode = 0;
+    have_full_ansi = 0;
 
     /*
      * Get size of the screen.
