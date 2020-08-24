@@ -113,11 +113,11 @@ LIBS := $()
 endif ## `clang` or `gcc`
 
 ifeq (cl,${CC_ID})
-CXX := cl
+## `cl` (MSVC)
+CXX := ${CC}
 LD := link
 %link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3}## $(call %link,EXE,OBJs,LIBs); requires delayed expansion
 STRIP := $()
-## `cl` (MSVC)
 ## ref: <https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category> @@ <https://archive.is/PTPDN>
 ## /nologo :: startup without logo display
 ## /W3 :: set warning level to 3 [1..4, all; increasing level of warning scrutiny]
