@@ -52,6 +52,7 @@ ifeq (,$(filter-out clang gcc,${CC_ID}))
 ## `clang` or `gcc`
 CXX := ${CC:gcc=g}++
 LD := ${CXX}
+%link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3}## $(call %link,EXE,OBJs,LIBs); requires delayed expansion
 STRIP_CC_clang_OSID_nix := strip
 STRIP_CC_clang_OSID_win := llvm-strip
 STRIP_CC_gcc := strip
@@ -114,6 +115,7 @@ endif ## `clang` or `gcc`
 ifeq (cl,${CC_ID})
 CXX := cl
 LD := link
+%link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3}## $(call %link,EXE,OBJs,LIBs); requires delayed expansion
 STRIP := $()
 ## `cl` (MSVC)
 ## ref: <https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category> @@ <https://archive.is/PTPDN>
@@ -666,7 +668,7 @@ $(call %debug_var,OBJ_files)
 ####
 
 ${AUX_targets}: %${EXEEXT}: %.${O} version.${O} ${makefile_abs_path} | ${OUT_DIR_bin}
-	${LD} ${LDFLAGS} "$<" "version.${O}" ${LIBS} ${LD_o}"$@"
+	$(call %link,"$@","$<" "version.${O}",${LIBS})
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
 	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
@@ -723,7 +725,7 @@ veryclean: realclean
 # ref: [make ~ `eval()`](http://make.mad-scientist.net/the-eval-function) @ <https://archive.is/rpUfG>
 
 ${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_DIR_bin}
-	${LD} ${LDFLAGS} ${LD_o}"$@" $(addprefix ",$(addsuffix ",${OBJ_files})) ${LIBS}
+	$(call %link,"$@",$(addprefix ",$(addsuffix ",${OBJ_files})),${LIBS})
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
 	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
