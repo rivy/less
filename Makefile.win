@@ -138,9 +138,10 @@ STRIP := $()
 ## /Z7 :: generate complete debug information within each object file (no *.PDB file)
 ## * `link`
 ## ref: <https://docs.microsoft.com/en-us/cpp/build/reference/linker-options> @@ <https://archive.is/wip/61bbL>
-## /subsystem:console :: generate "Win32 character-mode" console application
 ## /incremental:no :: disable incremental linking (avoids size increase, useless for cold builds, with minimal time cost)
 ## /machine:I386 :: specify the target machine platform
+## /subsystem:console,4.00 :: generate "Win32 character-mode" console application; 4.00 => minimum supported system is Win9x/NT; supported only by MSVC 9 (`cl` version "15xx") or less
+## /subsystem:console,5.01 :: generate "Win32 character-mode" console application; 5.01 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later
 CFLAGS := /nologo /W3 /WX /EHsc /I "." /D "WIN32" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS"
 CFLAGS_COMPILE_ONLY := -c
 # CFLAGS_DEBUG_true = /D "DEBUG" /D "_DEBUG" /Od /Zi /Fd"${OUT_obj}/"
@@ -153,8 +154,11 @@ CFLAGS_DEBUG_false_STATIC_true := /MT ## release + static
 CFLAGS_VERBOSE_true := $()
 CPPFLAGS := $()
 CXXFLAGS := $()
-LDFLAGS := /nologo /subsystem:console /incremental:no
+LDFLAGS := /nologo /incremental:no
 LDFLAGS_ARCH_32 := /machine:I386
+# CL version specific flags
+LDFLAGS_CL1600+_false := /subsystem:console,4.00
+LDFLAGS_CL1600+_true := /subsystem:console,5.01
 # VC6-specific flags
 ## /ignore:4254 :: suppress "merging sections with different attributes" warning (LNK4254)
 LDFLAGS_VC6_true := /ignore:4254
@@ -523,7 +527,8 @@ CC_version_m := $(strip $(word 2,${CC_version_parts}))
 CC_version_r := $(strip $(word 3,${CC_version_parts}))
 CC_version_Mm := $(strip ${CC_version_M}.${CC_version_m})
 
-is_VC6 := $(and $(call %eq,cl,${CC}),$(call %eq,12,${CC_version_M}),${true})
+is_CL1600+ := $(call %as_truthy,$(and $(call %eq,cl,${CC}),$(call %not,$(filter ${CC_version_M},0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)),${true}))
+is_VC6 := $(call %as_truthy,$(and $(call %eq,cl,${CC}),$(call %eq,12,${CC_version_M}),${true}))
 
 $(call %debug_var,CC_version)
 $(call %debug_var,CC_version_parts)
@@ -531,6 +536,7 @@ $(call %debug_var,CC_version_M)
 $(call %debug_var,CC_version_m)
 $(call %debug_var,CC_version_r)
 $(call %debug_var,CC_version_Mm)
+$(call %debug_var,is_CL1600+)
 $(call %debug_var,is_VC6)
 
 ####
@@ -570,6 +576,7 @@ CXXFLAGS += ${CXXFLAGS_${CC_ID}}
 LDFLAGS += ${LDFLAGS_ARCH_${ARCH_ID}}
 LDFLAGS += ${LDFLAGS_TARGET}
 LDFLAGS += ${LDFLAGS_STATIC_${STATIC}}
+LDFLAGS += ${LDFLAGS_CL1600+_${is_CL1600+}}
 LDFLAGS += ${LDFLAGS_VC6_${is_VC6}}
 LDFLAGS += ${LDFLAGS_${CC_ID}}
 LDFLAGS += ${LDFLAGS_${CC_ID}_${OSID}}
