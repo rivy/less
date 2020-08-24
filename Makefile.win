@@ -144,7 +144,7 @@ STRIP := $()
 ## /subsystem:console,5.01 :: generate "Win32 character-mode" console application; 5.01 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later
 CFLAGS := /nologo /W3 /WX /EHsc /I "." /D "WIN32" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS"
 CFLAGS_COMPILE_ONLY := -c
-# CFLAGS_DEBUG_true = /D "DEBUG" /D "_DEBUG" /Od /Zi /Fd"${OUT_obj}/"
+# CFLAGS_DEBUG_true = /D "DEBUG" /D "_DEBUG" /Od /Zi /Fd"${OUT_DIR_obj}/"
 CFLAGS_DEBUG_true := /D "DEBUG" /D "_DEBUG" /Od /Z7
 CFLAGS_DEBUG_false := /D "NDEBUG" /Ox /O2
 CFLAGS_DEBUG_true_STATIC_false := /MDd ## debug + dynamic
@@ -628,9 +628,9 @@ CONFIG    := $(if $(call %is_truthy,${DEBUG}),debug,release)
 
 SRC_DIR := .
 OUT_DIR := .
-OUT_bin := .
-OUT_obj := .
-out_dirs := $(strip $(call %uniq,${OUT_DIR} ${OUT_bin} ${OUT_obj}))
+OUT_DIR_bin := .
+OUT_DIR_obj := .
+out_dirs := $(strip $(call %uniq,${OUT_DIR} ${OUT_DIR_bin} ${OUT_DIR_obj}))
 out_dirs_for_rules := $(strip $(subst ${HASH},${BACKSLASH}${HASH},${out_dirs}))
 
 $(call %debug_var,out_dirs)
@@ -638,9 +638,9 @@ $(call %debug_var,out_dirs_for_rules)
 
 SRC_files := $(wildcard ${SRC_DIR}/*.c ${SRC_DIR}/*.cpp ${SRC_DIR}/*.cxx)
 OBJ_files := $(SRC_files)
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.c=${OUT_obj}/%.${O})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.cpp=${OUT_obj}/%.${O})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.cxx=${OUT_obj}/%.${O})
+OBJ_files := $(OBJ_files:${SRC_DIR}/%.c=${OUT_DIR_obj}/%.${O})
+OBJ_files := $(OBJ_files:${SRC_DIR}/%.cpp=${OUT_DIR_obj}/%.${O})
+OBJ_files := $(OBJ_files:${SRC_DIR}/%.cxx=${OUT_DIR_obj}/%.${O})
 
 $(call %debug_var,SRC_DIR)
 $(call %debug_var,SRC_files)
@@ -648,32 +648,32 @@ $(call %debug_var,OBJ_files)
 
 ####
 
-PROJECT_TARGET := ${OUT_bin}/${NAME}${EXEEXT}
+PROJECT_TARGET := ${OUT_DIR_bin}/${NAME}${EXEEXT}
 ${PROJECT_TARGET}: # *default* target (see recipe/rule below)
 
 ####
 
 AUX_names := lessecho lesskey
-AUX_targets := $(addprefix ${OUT_bin}/,$(addsuffix ${EXEEXT},${AUX_names}))
+AUX_targets := $(addprefix ${OUT_DIR_bin}/,$(addsuffix ${EXEEXT},${AUX_names}))
 
 $(call %debug_var,AUX_names)
 $(call %debug_var,AUX_targets)
 
 OBJ_files := $(filter-out $(addprefix ${SRC_DIR}/,$(addsuffix .c,${AUX_names} scrsize)),${SRC_files})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.c=${OUT_obj}/%.${O})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.cpp=${OUT_obj}/%.${O})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.cxx=${OUT_obj}/%.${O})
+OBJ_files := $(OBJ_files:${SRC_DIR}/%.c=${OUT_DIR_obj}/%.${O})
+OBJ_files := $(OBJ_files:${SRC_DIR}/%.cpp=${OUT_DIR_obj}/%.${O})
+OBJ_files := $(OBJ_files:${SRC_DIR}/%.cxx=${OUT_DIR_obj}/%.${O})
 
 $(call %debug_var,OBJ_files)
 
 ####
 
-${AUX_targets}: %${EXEEXT}: %.${O} version.${O} ${makefile_abs_path} | ${OUT_bin}
+${AUX_targets}: %${EXEEXT}: %.${O} version.${O} ${makefile_abs_path} | ${OUT_DIR_bin}
 	${LD} ${LDFLAGS} "$<" "version.${O}" ${LIBS} ${LD_o}"$@"
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
 	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
-${OBJ_files}: ${OBJ_deps} | ${OUT_obj}
+${OBJ_files}: ${OBJ_deps} | ${OUT_DIR_obj}
 
 defines.h: defines.${DEFINETYPE}
 	@${CP} defines.${DEFINETYPE} defines.h >${devnull}
@@ -725,18 +725,18 @@ veryclean: realclean
 # ref: [`make` default rules]<https://www.gnu.org/software/make/manual/html_node/Catalogue-of-Rules.html> @@ <https://archive.is/KDNbA>
 # ref: [make ~ `eval()`](http://make.mad-scientist.net/the-eval-function) @ <https://archive.is/rpUfG>
 
-${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_bin}
+${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_DIR_bin}
 	${LD} ${LDFLAGS} ${LD_o}"$@" $(addprefix ",$(addsuffix ",${OBJ_files})) ${LIBS}
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} "$@",)
 	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
-${OUT_obj}/%.${O}: ${SRC_DIR}/%.c ${makefile_abs_path} | ${OUT_obj}
+${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.c ${makefile_abs_path} | ${OUT_DIR_obj}
 	${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CC_o}"$@" "$<"
 
-${OUT_obj}/%.${O}: ${SRC_DIR}/%.cpp ${makefile_abs_path} | ${OUT_obj}
+${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.cpp ${makefile_abs_path} | ${OUT_DIR_obj}
 	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CC_o}"$@" ${CFLAGS} "$<"
 
-${OUT_obj}/%.${O}: ${SRC_DIR}/%.cxx ${makefile_abs_path} | ${OUT_obj}
+${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.cxx ${makefile_abs_path} | ${OUT_DIR_obj}
 	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CC_o}"$@" ${CFLAGS} "$<"
 #or ${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CC_o}"$@" "$<"
 
