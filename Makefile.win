@@ -1,6 +1,6 @@
 # Makefile for `less`
 # Cross-platform (bash/sh + CMD/PowerShell)
-# `cl`, `clang`, and `gcc` (defaults to `CC=clang`)
+# `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
 # Copyright (C) 2020 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
@@ -18,7 +18,7 @@ NAME := less ## empty/null => autoset to name of containing folder
 # spell-checker:ignore (targets) realclean vclean veryclean
 # spell-checker:ignore (make) CURDIR MAKEFLAGS SHELLSTATUS TERMERR TERMOUT abspath addprefix addsuffix endef eval findstring firstword gmake ifeq ifneq lastword notdir patsubst prepend undefine wordlist
 #
-# spell-checker:ignore (CC) DDEBUG DNDEBUG NDEBUG Ofast Werror Wextra Xclang Xlinker dumpmachine flto flto-visibility-public-std fpie nodefaultlib nologo nothrow
+# spell-checker:ignore (CC) DDEBUG DNDEBUG NDEBUG Ofast Werror Wextra Xclang Xlinker bcc dumpmachine embcc flto flto-visibility-public-std fpie nodefaultlib nologo nothrow psdk
 # spell-checker:ignore (abbrev/acronyms) LLVM MSVC MinGW POSIX VCvars
 # spell-checker:ignore (jargon) autoset deps delims executables maint multilib
 # spell-checker:ignore (libraries) libcmt libgcc libstdc lmsvcrt lstdc stdext
@@ -26,7 +26,7 @@ NAME := less ## empty/null => autoset to name of containing folder
 # spell-checker:ignore (shell/nix) mkdir printf rmdir uname
 # spell-checker:ignore (shell/win) COMSPEC SystemDrive SystemRoot findstr findstring mkdir windir
 # spell-checker:ignore (utils) goawk ilink
-# spell-checker:ignore (vars) CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE EXEEXT LDFLAGS LIBPATH MAKEDIR OBJ_deps OSID PAREN devnull falsey fileset globset globsets punct truthy
+# spell-checker:ignore (vars) CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE EXEEXT LDFLAGS LIBPATH LIBs MAKEDIR OBJ_deps OBJs OSID PAREN devnull falsey fileset globset globsets punct truthy
 
 ####
 
@@ -173,6 +173,62 @@ O_${CC_ID} := obj
 
 LIBS := user32.lib
 endif ## `cl` (MSVC)
+
+ifeq (bcc32,${CC_ID})
+## `bcc32` (Borland C++ 5.5.1 free command line tools)
+CXX := ${CC}
+LD := ilink32
+%link = ${LD} ${LDFLAGS} $(subst /,\,${2}), $(subst /,\,${1}),,$(subst /,\,${3})## $(call %link,EXE,OBJs,LIBs); requires delayed expansion
+STRIP := $()
+
+# * find CC base directory (for include and library directories plus initialization code, as needed); note: CMD/PowerShell is assumed as `bcc32` is DOS/Windows-only
+CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..))
+LIB_DIRS := "${CC_BASEDIR}\lib"
+LD_INIT_OBJ := "${CC_BASEDIR}\lib\c0x32.obj"
+
+CFLAGS := -q -O2 -TWC -P-c -v- -d -f- -ff- -vi -w-pro -I. -I"${CC_BASEDIR}\include"
+CFLAGS_COMPILE_ONLY := -c
+CPPFLAGS := $()
+CXXFLAGS := $()
+LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}
+
+CC_${CC_ID}_e := -e
+CC_${CC_ID}_o := -o
+LD_${CC_ID}_o := $()
+
+O_${CC_ID} := obj
+
+LIBS := import32.lib cw32.lib
+endif ## `bcc32` (Borland)
+
+ifeq (embcc32,${CC_ID})
+## `embcc32` (Embarcadero Borland C++ free command line tools)
+CXX := ${CC}
+LD := ilink32
+%link = ${LD} ${LDFLAGS} $(subst /,\,${2}), $(subst /,\,${1}),,$(subst /,\,${3})## $(call %link,EXE,OBJs,LIBs); requires delayed expansion
+STRIP := $()
+
+# * find CC base directory (for include and library directories plus initialization code, as needed); note: CMD/PowerShell is assumed as `bcc32` is DOS/Windows-only
+CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..))
+LIB_DIRS := "${CC_BASEDIR}\lib\win32c\release";"${CC_BASEDIR}\lib\win32c\release\psdk"
+LD_INIT_OBJ := "${CC_BASEDIR}\lib\c0x32.obj"
+
+CFLAGS := -q -O2 -TWC -P-c -v- -d -f- -vi -I.
+CFLAGS_COMPILE_ONLY := -c
+CFLAGS_check := --version
+CFLAGS_v := --version
+CPPFLAGS := $()
+CXXFLAGS := $()
+LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}
+
+CC_${CC_ID}_e := -e
+CC_${CC_ID}_o := -o
+LD_${CC_ID}_o := $()
+
+O_${CC_ID} := obj
+
+LIBS := import32.lib cw32.lib
+endif ## `embcc32` (Borland)
 
 DEFINETYPE := wn
 OBJ_deps := defines.h less.h funcs.h cmd.h
