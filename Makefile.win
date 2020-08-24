@@ -659,10 +659,7 @@ AUX_targets := $(addprefix ${OUT_DIR_bin}/,$(addsuffix ${EXEEXT},${AUX_names}))
 $(call %debug_var,AUX_names)
 $(call %debug_var,AUX_targets)
 
-OBJ_files := $(filter-out $(addprefix ${SRC_DIR}/,$(addsuffix .c,${AUX_names} scrsize)),${SRC_files})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.c=${OUT_DIR_obj}/%.${O})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.cpp=${OUT_DIR_obj}/%.${O})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.cxx=${OUT_DIR_obj}/%.${O})
+OBJ_files := $(filter-out $(addprefix ${OUT_DIR_obj}/,$(addsuffix .${O},${AUX_names} scrsize)),${OBJ_files})
 
 $(call %debug_var,OBJ_files)
 
