@@ -815,7 +815,7 @@ run: ${PROJECT_TARGET} ## Build/execute project executable
 
 .PHONY: clean
 clean: ## Remove build artifacts (including intermediate files)
-	@$(call !shell_noop,$(call %rm_file_globsets_verbose,*.${O}))
+	@$(call !shell_noop,$(call %rm_file_globsets_verbose,*.${O} *.il? *.tds))
 	@$(call !shell_noop,$(call %rm_files_verbose,defines.h))
 	@$(call !shell_noop,$(call %rm_files_verbose,${PROJECT_TARGET}))
 	@$(call !shell_noop,$(call %rm_files_verbose,${AUX_targets}))
