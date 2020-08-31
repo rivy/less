@@ -9,7 +9,7 @@
 
 # `make -f Makefile.win`
 
-NAME := less ## empty/null => autoset to name of containing folder
+NAME := less ## $()/empty/null => autoset to name of containing folder
 
 ####
 
@@ -30,6 +30,24 @@ NAME := less ## empty/null => autoset to name of containing folder
 
 ####
 
+LIBS := user32## list of any additional required libraries (space separated)
+
+DEFINETYPE := wn
+OBJ_deps := defines.h less.h funcs.h cmd.h
+
+####
+
+# `make ...` command line flags/options
+ARCH := $()## default ARCH for compilation ([$(),...]); $()/empty/null => use CC default ARCH
+CC_DEFINES := false## provide compiler info (as `CC_...` defines) to compiling targets ('truthy'-type)
+COLOR := $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)## enable colorized output ('truthy'-type)
+DEBUG := false## enable compiler debug flags/options ('truthy'-type)
+STATIC := true## compile to statically linked executable ('truthy'-type)
+VERBOSE := false## verbose `make` output ('truthy'-type)
+MAKEFLAGS_debug := $(if $(findstring d,${MAKEFLAGS}),true,false)## Makefile debug output ('truthy'-type; default == false) ## NOTE: use `-d` or `MAKEFLAGS_debug=1`, `--debug[=FLAGS]` does not set MAKEFLAGS correctly (see <https://savannah.gnu.org/bugs/?func=detailitem&item_id=58341>)
+
+####
+
 OSID := $(or $(and $(filter .exe,$(patsubst %.exe,.exe,$(subst $() $(),_,${SHELL}))),$(filter win,${OS:Windows_NT=win})),nix)## OSID == [nix,win]
 # for Windows OS, set SHELL to `%ComSpec%` or `cmd` (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
 # * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
@@ -42,11 +60,15 @@ endif
 
 #### Start of system configuration section. ####
 
-# * default to `clang` (fallback to `gcc`; via a portable shell test)
-CC := $(and $(filter-out default,$(origin CC)),${CC})## use any non-make defined value as default ## note: used to avoid a recursive definition of ${CC} within the the shell ${CC} presence check when determining default ${CC}
-CC := $(or ${CC},$(subst -FOUND,,$(filter clang-FOUND,$(shell clang --version 2>&1 && echo clang-FOUND || echo))),gcc)
+CC_default := clang## default ${CC} ([$()/empty, ...])
+
+CC := $(and $(filter-out default,$(origin CC)),${CC})## if defined, use any non-makefile defined value as default ## note: used to avoid a recursive definition of ${CC} within the the shell ${CC} presence check when determining default ${CC}
+CC := $(or ${CC},$(if $(filter clang,${CC_default}),$(subst -FOUND,,$(filter clang-FOUND,$(shell clang --version 2>&1 && echo clang-FOUND || echo))),gcc))## * for CC_default of `clang` (if `clang` missing, fallback to `gcc`; via a portable shell test)
+CC := $(or ${CC},${CC_default},gcc)
 
 CC_ID := $(lastword $(subst -,$() $(),${CC}))
+
+#### * Compiler configuration
 
 ifeq (,$(filter-out clang gcc,${CC_ID}))
 ## `clang` or `gcc`
@@ -101,7 +123,7 @@ LDFLAGS_STATIC_true := -static
 LDFLAGS_clang_nix := -lstdc++
 LDFLAGS_gcc := -lstdc++
 
-LIBS := $()
+LIBS := $(foreach lib,${LIBS},-l${lib})
 
 # ifeq ($(CC),clang)
 # LDFLAGS_dynamic := -Wl,-nodefaultlib:libcmt -lmsvcrt # only works for MSVC targets
@@ -136,6 +158,8 @@ STRIP := $()
 ## /MT :: static linking
 ## /MTd :: static debug linking
 ## /Fd:... :: program database file name
+## /TC :: compile all SOURCE files as C
+## /TP :: compile all SOURCE files as C++
 ## /Zi :: generate complete debug information (as a *.PDB file)
 ## /Z7 :: generate complete debug information within each object file (no *.PDB file)
 ## * `link`
@@ -155,7 +179,7 @@ CFLAGS_DEBUG_true_STATIC_true := /MTd ## debug + static
 CFLAGS_DEBUG_false_STATIC_true := /MT ## release + static
 CFLAGS_VERBOSE_true := $()
 CPPFLAGS := $()
-CXXFLAGS := $()
+CXXFLAGS := /TP
 LDFLAGS := /nologo /incremental:no
 LDFLAGS_ARCH_32 := /machine:I386
 # CL version specific flags
@@ -171,7 +195,7 @@ LD_${CC_ID}_o := /out:
 
 O_${CC_ID} := obj
 
-LIBS := user32.lib
+LIBS := $(foreach lib,${LIBS},${lib}.lib)
 endif ## `cl` (MSVC)
 
 ifeq (bcc32,${CC_ID})
@@ -186,10 +210,33 @@ CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL)
 LIB_DIRS := "${CC_BASEDIR}\lib"
 LD_INIT_OBJ := "${CC_BASEDIR}\lib\c0x32.obj"
 
-CFLAGS := -q -O2 -TWC -P-c -v- -d -f- -ff- -vi -w-pro -I. -I"${CC_BASEDIR}\include"
+# ref: BCCTool help file
+# -q :: "quiet" * suppress compiler identification banner
+# -O2 :: generate fastest possible code (optimize for speed)
+# -TWC :: specify assembler option(s) ("WC")
+# -P-c :: compile SOURCE.cpp as C++, all other extensions as C, and sets the default extension to .c
+# -d :: merge duplicate strings
+# -f- :: no floating point (avoids linking floating point libraries when not using floating point; linker errors will occur if floating point operations are used)
+# -ff- :: use strict ANSI floating point rules (disables "fast floating point" optimizations)
+# -v- :: turn off source level debugging and inline expansion on
+# -vi :: turn on inline function expansion
+# -w-pro :: disable warning "Call to function 'function' with no prototype"
+#*was* CFLAGS := -q -O2 -TWC -P-c -d -f- -ff- -v- -vi -w-pro -I. -I"${CC_BASEDIR}\include"
+CFLAGS := -q -O2 -P-c -d -f- -ff- -v- -vi -w-pro -I. -I"${CC_BASEDIR}\include"
 CFLAGS_COMPILE_ONLY := -c
 CPPFLAGS := $()
-CXXFLAGS := $()
+# -P :: compile all SOURCE files as C++ (regardless of extension)
+CXXFLAGS := -P
+# ref: <http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devwin32/ilink32_xml.html> @@ <https://archive.is/Xe4VK>
+# -q :: suppress command line banner
+# -Tpe :: targets 32-bit windows EXE
+# -v- :: disable debugging information
+# -ap :: builds 32-bit console application
+# -c :: treats case as significant in public and external symbols
+# -x :: suppress creation of a MAP file
+# -V4.0 :: specifies expected Windows version (4.0 == Windows 9x/NT+)
+# -GF:AGGRESSIVE :: aggressively trims the working set of an application when the application is idle
+# -L... :: specifies library search path
 LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}
 
 CC_${CC_ID}_e := -e
@@ -213,12 +260,34 @@ CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL)
 LIB_DIRS := "${CC_BASEDIR}\lib\win32c\release";"${CC_BASEDIR}\lib\win32c\release\psdk"
 LD_INIT_OBJ := "${CC_BASEDIR}\lib\c0x32.obj"
 
-CFLAGS := -q -O2 -TWC -P-c -v- -d -f- -vi -I.
+# ref: <http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devwin32/bcc32_xml.html> @@ <https://archive.is/q23nS>
+# -q :: "quiet" * suppress compiler identification banner
+# -O2 :: generate fastest possible code (optimize for speed)
+# -TWC :: specify assembler option(s) ("WC")
+# -P-c :: compile SOURCE.cpp as C++, all other extensions as C, and sets the default extension to .c
+# -d :: merge duplicate strings
+# -f- :: no floating point (avoids linking floating point libraries when not using floating point; linker errors will occur if floating point operations are used)
+# -ff- :: use strict ANSI floating point rules (disables "fast floating point" optimizations)
+# -v- :: turn off source level debugging and inline expansion on
+# -vi :: turn on inline function expansion
+# -w-pro :: disable warning "Call to function 'function' with no prototype"
+#*was* CFLAGS := -q -O2 -TWC -P-c -v- -d -f- -vi -I.
+CFLAGS := -q -O2 -P-c -d -f- -v- -vi -I.
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_check := --version
 CFLAGS_v := --version
 CPPFLAGS := $()
-CXXFLAGS := $()
+CXXFLAGS := -P
+# ref: <http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devwin32/ilink32_xml.html> @@ <https://archive.is/Xe4VK>
+# -q :: suppress command line banner
+# -Tpe :: targets 32-bit windows EXE
+# -v- :: disable debugging information
+# -ap :: builds 32-bit console application
+# -c :: treats case as significant in public and external symbols
+# -x :: suppress creation of a MAP file
+# -V4.0 :: specifies expected Windows version (4.0 == Windows 9x/NT+)
+# -GF:AGGRESSIVE :: aggressively trims the working set of an application when the application is idle
+# -L... :: specifies library search path
 LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}
 
 CC_${CC_ID}_e := -e
@@ -229,17 +298,6 @@ O_${CC_ID} := obj
 
 LIBS := import32.lib cw32.lib
 endif ## `embcc32` (Borland)
-
-DEFINETYPE := wn
-OBJ_deps := defines.h less.h funcs.h cmd.h
-
-# `make` command line flags/options
-CC_DEFINES := false## provide compiler info (as `CC_...` defines) to compiling targets ('truthy'-type)
-COLOR := $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)## enable colorized output ('truthy'-type)
-DEBUG := false## enable compiler debug flags/options ('truthy'-type; default == false)
-STATIC := true## compile to statically linked executable ('truthy'-type; default == true)
-VERBOSE := false## verbose `make` output ('truthy'-type; default == false)
-MAKEFLAGS_debug := $(if $(findstring d,${MAKEFLAGS}),true,false)## Makefile debug output ('truthy'-type; default == false) ## NOTE: use `-d` or `MAKEFLAGS_debug=1`, `--debug[=FLAGS]` does not set MAKEFLAGS correctly (see <https://savannah.gnu.org/bugs/?func=detailitem&item_id=58341>)
 
 #### End of system configuration section. ####
 
@@ -520,7 +578,6 @@ endif
 
 ####
 
-ARCH_default := i686
 ARCH_x86 := i386 i586 i686 x86
 ARCH_x86_64 := amd64 x64 x86_64 x86_amd64
 ARCH_allowed := $(sort 32 x32 ${ARCH_x86} 64 ${ARCH_x86_64})
@@ -534,7 +591,7 @@ else ## nix
 CC_machine_raw := $(shell ${CC} ${CFLAGS_machine} 2>&1 | ${GREP} -n ".*" | ${GREP} "^1:" )
 endif
 CC_machine_raw := $(subst ${ESC}1:,$(),${ESC}${CC_machine_raw})
-CC_ARCH := $(or $(filter $(subst -, ,${CC_machine_raw}),${ARCH_x86} ${ARCH_x86_64}),${ARCH_default})
+CC_ARCH := $(or $(filter $(subst -, ,${CC_machine_raw}),${ARCH_x86} ${ARCH_x86_64}),i686)## fallback to "i686" for ${CC_ARCH} if not found from ${CC_machine_raw}
 CC_machine := $(or $(and $(filter cl bcc32,${CC_ID}),${CC_ARCH}),${CC_machine_raw})
 CC_ARCH_ID := $(if $(filter ${CC_ARCH},32 x32 ${ARCH_x86}),32,64)
 override ARCH := $(or ${ARCH},${CC_ARCH})
@@ -786,14 +843,14 @@ ${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_DIR_bin}
 	@${ECHO} $(call %shell_quote,$(call %success_text,made '$@'.))
 
 ${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.c ${makefile_abs_path} | ${OUT_DIR_obj}
-	${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CC_o}"$@" "$<"
+	${CC} ${CC_o}"$@" ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} "$<"
 
 ${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.cpp ${makefile_abs_path} | ${OUT_DIR_obj}
-	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CC_o}"$@" ${CFLAGS} "$<"
+	${CXX} ${CC_o}"$@" ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} "$<"
 
 ${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.cxx ${makefile_abs_path} | ${OUT_DIR_obj}
-	${CXX} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CXXFLAGS} ${CC_o}"$@" ${CFLAGS} "$<"
-#or ${CC} ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CC_o}"$@" "$<"
+	${CXX} ${CC_o}"$@" ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} "$<"
+# or ${CC} ${CC_o}"$@" ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} "$<"
 
 ####
 
