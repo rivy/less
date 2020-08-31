@@ -33,7 +33,7 @@ NAME := less ## $()/empty/null => autoset to name of containing folder
 LIBS := user32## list of any additional required libraries (space separated)
 
 DEFINETYPE := wn
-OBJ_deps := defines.h less.h funcs.h cmd.h
+OBJ_deps = ${SRC_DIR}/defines.h ${SRC_DIR}/less.h ${SRC_DIR}/funcs.h ${SRC_DIR}/cmd.h
 
 ####
 
@@ -793,8 +793,8 @@ ${AUX_targets}: %${EXEEXT}: %.${O} version.${O} ${makefile_abs_path} | ${OUT_DIR
 
 ${OBJ_files}: ${OBJ_deps} | ${OUT_DIR_obj}
 
-defines.h: defines.${DEFINETYPE}
-	@${CP} defines.${DEFINETYPE} defines.h >${devnull}
+${SRC_DIR}/defines.h: ${SRC_DIR}/defines.${DEFINETYPE}
+	@${CP} "$<" "$@" >${devnull}
 	@${ECHO} $(call %shell_quote,$(call %info_text,created '$@' from '$<'.))
 
 ####
