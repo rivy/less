@@ -41,9 +41,7 @@ extern int ul_fg_color, ul_bg_color;
 extern int so_fg_color, so_bg_color;
 extern int bl_fg_color, bl_bg_color;
 extern int sgr_mode;
-#if MSDOS_COMPILER==WIN32C
 extern int have_full_ansi;
-#endif
 #endif
 
 /*
@@ -410,7 +408,7 @@ flush(VOID_PARAM)
                                 bgi = COMMON_LVB_UNDERSCORE >> 4;
                             else
 #endif
-                            bgi = 8;
+                                bgi = 8;
                             at |= 4;
                             break;
                         case 5: /* slow blink on */
@@ -565,7 +563,7 @@ flush(VOID_PARAM)
                     }
                     if (!is_ansi_end(*p) || p == p_next)
                         break;
-                    /*                    /*
+                    /*
                      * In SGR mode, the ANSI sequence is
                      * always honored; otherwise if an attr
                      * is used by itself ("\e[1m" versus

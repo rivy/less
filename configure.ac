@@ -192,63 +192,63 @@ AC_HEADER_TIME
 
 # Autoheader templates for symbols defined later by AC_DEFINE.
 AH_TEMPLATE([HAVE_GNU_REGEX],
-  [GNU regex library])
+    [GNU regex library])
 AH_TEMPLATE([HAVE_POSIX_REGCOMP],
-  [POSIX regcomp() and regex.h])
+    [POSIX regcomp() and regex.h])
 AH_TEMPLATE([HAVE_PCRE],
     [PCRE (Perl-compatible regular expression) library])
 AH_TEMPLATE([HAVE_PCRE2],
     [PCRE2 (Perl-compatible regular expression) library])
 AH_TEMPLATE([HAVE_RE_COMP],
-  [BSD re_comp()])
+    [BSD re_comp()])
 AH_TEMPLATE([HAVE_REGCMP],
-  [System V regcmp()])
+    [System V regcmp()])
 AH_TEMPLATE([HAVE_V8_REGCOMP],
-  [Henry Spencer V8 regcomp() and regexp.h])
+    [Henry Spencer V8 regcomp() and regexp.h])
 AH_TEMPLATE([NO_REGEX],
-  [pattern matching is supported, but without metacharacters.])
+    [pattern matching is supported, but without metacharacters.])
 AH_TEMPLATE([HAVE_REGEXEC2],
-  [])
+    [])
 AH_TEMPLATE([HAVE_VOID],
-  [Define HAVE_VOID if your compiler supports the "void" type.])
+    [Define HAVE_VOID if your compiler supports the "void" type.])
 AH_TEMPLATE([HAVE_FLOAT],
-  [Define HAVE_FLOAT if your compiler supports the "double" type.])
+    [Define HAVE_FLOAT if your compiler supports the "double" type.])
 AH_TEMPLATE([HAVE_CONST],
-  [Define HAVE_CONST if your compiler supports the "const" modifier.])
+    [Define HAVE_CONST if your compiler supports the "const" modifier.])
 AH_TEMPLATE([HAVE_STAT_INO],
-  [Define HAVE_STAT_INO if your struct stat has st_ino and st_dev.])
+    [Define HAVE_STAT_INO if your struct stat has st_ino and st_dev.])
 AH_TEMPLATE([HAVE_TIME_T],
-  [Define HAVE_TIME_T if your system supports the "time_t" type.])
+    [Define HAVE_TIME_T if your system supports the "time_t" type.])
 AH_TEMPLATE([HAVE_STRERROR],
-  [Define HAVE_STRERROR if you have the strerror() function.])
+    [Define HAVE_STRERROR if you have the strerror() function.])
 AH_TEMPLATE([HAVE_FILENO],
-  [Define HAVE_FILENO if you have the fileno() macro.])
+    [Define HAVE_FILENO if you have the fileno() macro.])
 AH_TEMPLATE([HAVE_ERRNO],
-  [Define HAVE_ERRNO if you have the errno variable.])
+    [Define HAVE_ERRNO if you have the errno variable.])
 AH_TEMPLATE([MUST_DEFINE_ERRNO],
-  [Define MUST_DEFINE_ERRNO if you have errno but it is not define in errno.h.])
+    [Define MUST_DEFINE_ERRNO if you have errno but it is not define in errno.h.])
 AH_TEMPLATE([HAVE_SYS_ERRLIST],
-  [Define HAVE_SYS_ERRLIST if you have the sys_errlist[] variable.])
+    [Define HAVE_SYS_ERRLIST if you have the sys_errlist[] variable.])
 AH_TEMPLATE([HAVE_OSPEED],
-  [Define HAVE_OSPEED if your termcap library has the ospeed variable.])
+    [Define HAVE_OSPEED if your termcap library has the ospeed variable.])
 AH_TEMPLATE([MUST_DEFINE_OSPEED],
-  [Define MUST_DEFINE_OSPEED if you have ospeed but it is not defined in termcap.h.])
+    [Define MUST_DEFINE_OSPEED if you have ospeed but it is not defined in termcap.h.])
 AH_TEMPLATE([HAVE_LOCALE],
-  [Define HAVE_LOCALE if you have locale.h and setlocale.])
+    [Define HAVE_LOCALE if you have locale.h and setlocale.])
 AH_TEMPLATE([HAVE_TERMIOS_FUNCS],
-  [Define HAVE_TERMIOS_FUNCS if you have tcgetattr/tcsetattr.])
+    [Define HAVE_TERMIOS_FUNCS if you have tcgetattr/tcsetattr.])
 AH_TEMPLATE([HAVE_UPPER_LOWER],
-  [Define HAVE_UPPER_LOWER if you have isupper, islower, toupper, tolower.])
+    [Define HAVE_UPPER_LOWER if you have isupper, islower, toupper, tolower.])
 AH_TEMPLATE([HAVE_WCTYPE],
-  [Define HAVE_WCTYPE if you have iswupper, iswlower, towupper, towlower.])
+    [Define HAVE_WCTYPE if you have iswupper, iswlower, towupper, towlower.])
 AH_TEMPLATE([HAVE_SIGSET_T],
-  [Define HAVE_SIGSET_T you have the sigset_t type.])
+    [Define HAVE_SIGSET_T you have the sigset_t type.])
 AH_TEMPLATE([HAVE_SIGEMPTYSET],
-  [Define HAVE_SIGEMPTYSET if you have the sigemptyset macro.])
+    [Define HAVE_SIGEMPTYSET if you have the sigemptyset macro.])
 AH_TEMPLATE([EDIT_PGM],
-  [Define EDIT_PGM to your editor.])
+    [Define EDIT_PGM to your editor.])
 AH_TEMPLATE([SECURE_COMPILE],
-  [Define SECURE_COMPILE=1 to build a secure version of less.])
+    [Define SECURE_COMPILE=1 to build a secure version of less.])
 
 # Checks for identifiers.
 AC_TYPE_OFF_T
@@ -535,24 +535,24 @@ AH_TOP([
  * be safe to run by unprivileged users.
  * SECURE_COMPILE is set by the --with-secure configure option.
  */
-#define SECURE    SECURE_COMPILE
+#define SECURE      SECURE_COMPILE
 
 /*
  * SHELL_ESCAPE is 1 if you wish to allow shell escapes.
  * (This is possible only if your system supplies the system() function.)
  */
-#define SHELL_ESCAPE  (!SECURE)
+#define SHELL_ESCAPE    (!SECURE)
 
 /*
  * EXAMINE is 1 if you wish to allow examining files by name from within less.
  */
-#define EXAMINE   (!SECURE)
+#define EXAMINE     (!SECURE)
 
 /*
  * TAB_COMPLETE_FILENAME is 1 if you wish to allow the TAB key
  * to complete filenames at prompts.
  */
-#define TAB_COMPLETE_FILENAME (!SECURE)
+#define TAB_COMPLETE_FILENAME   (!SECURE)
 
 /*
  * CMD_HISTORY is 1 if you wish to allow keys to cycle through
@@ -564,43 +564,43 @@ AH_TOP([
  * HILITE_SEARCH is 1 if you wish to have search targets to be
  * displayed in standout mode.
  */
-#define HILITE_SEARCH 1
+#define HILITE_SEARCH   1
 
 /*
  * EDITOR is 1 if you wish to allow editor invocation (the "v" command).
  * (This is possible only if your system supplies the system() function.)
  * EDIT_PGM is the name of the (default) editor to be invoked.
  */
-#define EDITOR    (!SECURE)
+#define EDITOR      (!SECURE)
 
 /*
  * TAGS is 1 if you wish to support tag files.
  */
-#define TAGS    (!SECURE)
+#define TAGS        (!SECURE)
 
 /*
  * USERFILE is 1 if you wish to allow a .less file to specify
  * user-defined key bindings.
  */
-#define USERFILE  (!SECURE)
+#define USERFILE    (!SECURE)
 
 /*
  * GLOB is 1 if you wish to have shell metacharacters expanded in filenames.
  * This will generally work if your system provides the "popen" function
  * and the "echo" shell command.
  */
-#define GLOB    (!SECURE)
+#define GLOB        (!SECURE)
 
 /*
  * PIPEC is 1 if you wish to have the "|" command
  * which allows the user to pipe data into a shell command.
  */
-#define PIPEC   (!SECURE)
+#define PIPEC       (!SECURE)
 
 /*
  * LOGFILE is 1 if you wish to allow the -o option (to create log files).
  */
-#define LOGFILE   (!SECURE)
+#define LOGFILE     (!SECURE)
 
 /*
  * GNU_OPTIONS is 1 if you wish to support the GNU-style command
@@ -624,10 +624,10 @@ AH_TOP([
  * LESSHISTFILE is the filename of the history file
  * (in the HOME directory).
  */
-#define LESSKEYFILE   ".less"
-#define LESSKEYFILE_SYS   SYSDIR "/sysless"
-#define DEF_LESSKEYINFILE ".lesskey"
-#define LESSHISTFILE    ".lesshst"
+#define LESSKEYFILE     ".less"
+#define LESSKEYFILE_SYS     SYSDIR "/sysless"
+#define DEF_LESSKEYINFILE   ".lesskey"
+#define LESSHISTFILE        ".lesshst"
 
 
 /* Settings always true on Unix.  */
@@ -640,7 +640,7 @@ AH_TOP([
 /*
  * Pathname separator character.
  */
-#define PATHNAME_SEP  "/"
+#define PATHNAME_SEP    "/"
 
 /*
  * The value returned from tgetent on success.
@@ -656,7 +656,7 @@ AH_TOP([
 /*
  * HAVE_SYS_TYPES_H is 1 if your system has <sys/types.h>.
  */
-#define HAVE_SYS_TYPES_H  1
+#define HAVE_SYS_TYPES_H    1
 
 /*
  * Define if you have the <sgstat.h> header file.
@@ -672,7 +672,7 @@ AH_TOP([
 /*
  * HAVE_TIME is 1 if your system has the time() call.
  */
-#define HAVE_TIME 1
+#define HAVE_TIME   1
 
 /*
  * HAVE_SHELL is 1 if your system supports a SHELL command interpreter.
@@ -688,7 +688,7 @@ AH_TOP([
 /*
  * HAVE_DUP is 1 if your system has the dup() call.
  */
-#define HAVE_DUP  1
+#define HAVE_DUP    1
 
 /* Define to 1 if you have the memcpy() function. */
 #define HAVE_MEMCPY 1
@@ -705,22 +705,22 @@ AH_TOP([
 #if 0 /* old sizes for small memory machines */
 #define CMDBUF_SIZE 512 /* Buffer for multichar commands */
 #define UNGOT_SIZE  100 /* Max chars to unget() */
-#define LINEBUF_SIZE  1024  /* Max size of line in input file */
-#define OUTBUF_SIZE 1024  /* Output buffer */
+#define LINEBUF_SIZE    1024    /* Max size of line in input file */
+#define OUTBUF_SIZE 1024    /* Output buffer */
 #define PROMPT_SIZE 200 /* Max size of prompt string */
-#define TERMBUF_SIZE  2048  /* Termcap buffer for tgetent */
-#define TERMSBUF_SIZE 1024  /* Buffer to hold termcap strings */
-#define TAGLINE_SIZE  512 /* Max size of line in tags file */
+#define TERMBUF_SIZE    2048    /* Termcap buffer for tgetent */
+#define TERMSBUF_SIZE   1024    /* Buffer to hold termcap strings */
+#define TAGLINE_SIZE    512 /* Max size of line in tags file */
 #define TABSTOP_MAX 32  /* Max number of custom tab stops */
 #else /* more reasonable sizes for modern machines */
-#define CMDBUF_SIZE 2048  /* Buffer for multichar commands */
+#define CMDBUF_SIZE 2048    /* Buffer for multichar commands */
 #define UNGOT_SIZE  200 /* Max chars to unget() */
-#define LINEBUF_SIZE  1024  /* Initial max size of line in input file */
-#define OUTBUF_SIZE 1024  /* Output buffer */
-#define PROMPT_SIZE 2048  /* Max size of prompt string */
-#define TERMBUF_SIZE  2048  /* Termcap buffer for tgetent */
-#define TERMSBUF_SIZE 1024  /* Buffer to hold termcap strings */
-#define TAGLINE_SIZE  1024  /* Max size of line in tags file */
+#define LINEBUF_SIZE    1024    /* Initial max size of line in input file */
+#define OUTBUF_SIZE 1024    /* Output buffer */
+#define PROMPT_SIZE 2048    /* Max size of prompt string */
+#define TERMBUF_SIZE    2048    /* Termcap buffer for tgetent */
+#define TERMSBUF_SIZE   1024    /* Buffer to hold termcap strings */
+#define TAGLINE_SIZE    1024    /* Max size of line in tags file */
 #define TABSTOP_MAX 128 /* Max number of custom tab stops */
 #endif
 

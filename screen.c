@@ -57,6 +57,12 @@ extern int fd0;
 
 #if HAVE_TERMCAP_H
 #include <termcap.h>
+#else
+int tgetent (char *buffer, char *termtype);
+int tgetflag (char *name);
+int tgetnum (char *name);
+char *tgetstr (char *name, char **area);
+int tputs (char *string, int nlines, int (*outfun) ());
 #endif
 #ifdef _OSK
 #include <signal.h>
@@ -158,10 +164,7 @@ public int bl_bg_color;
 static int sy_fg_color;     /* Color of system text (before less) */
 static int sy_bg_color;
 public int sgr_mode;        /* Honor ANSI sequences rather than using above */
-#if MSDOS_COMPILER==WIN32C
 public int have_full_ansi;  /* Is full Windows ANSI SGR support available? */
-public int have_ul;     /* Is underline available? */
-#endif
 #else
 
 /*
@@ -255,6 +258,11 @@ extern int hilite_search;
 #endif
 #if MSDOS_COMPILER==WIN32C
 extern HANDLE tty;
+extern DWORD console_mode;
+#ifndef ENABLE_EXTENDED_FLAGS
+#define ENABLE_EXTENDED_FLAGS 0x80
+#define ENABLE_QUICK_EDIT_MODE 0x40
+#endif
 #else
 extern int tty;
 #endif
@@ -1119,6 +1127,7 @@ get_term(VOID_PARAM)
     bl_bg_color = -1;
 
     sgr_mode = 0;
+    have_full_ansi = 0;
 
     /*
      * Get size of the screen.
@@ -1577,7 +1586,9 @@ init_mouse(VOID_PARAM)
     tputs(sc_s_mousecap, sc_height, putchr);
 #else
 #if MSDOS_COMPILER==WIN32C
-    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
+    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT
+                | ENABLE_EXTENDED_FLAGS /* disable quick edit */);
+
 #endif
 #endif
 }
@@ -1595,7 +1606,8 @@ deinit_mouse(VOID_PARAM)
     tputs(sc_e_mousecap, sc_height, putchr);
 #else
 #if MSDOS_COMPILER==WIN32C
-    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT);
+    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_EXTENDED_FLAGS
+                | (console_mode & ENABLE_QUICK_EDIT_MODE));
 #endif
 #endif
 }
@@ -1631,8 +1643,13 @@ init(VOID_PARAM)
         line_left();
 #else
 #if MSDOS_COMPILER==WIN32C
-    if (!no_init)
-        win32_init_term();
+    if (!(quit_if_one_screen && one_screen))
+    {
+        if (!no_init)
+            win32_init_term();
+        init_mouse();
+
+    }
 #endif
     initcolor();
     flush();
@@ -1661,8 +1678,12 @@ deinit(VOID_PARAM)
     /* Restore system colors. */
     SETCOLORS(sy_fg_color, sy_bg_color);
 #if MSDOS_COMPILER==WIN32C
-    if (!no_init)
-        win32_deinit_term();
+    if (!(quit_if_one_screen && one_screen))
+    {
+        deinit_mouse();
+        if (!no_init)
+            win32_deinit_term();
+    }
 #else
     /* Need clreol to make SETCOLORS take effect. */
     clreol();

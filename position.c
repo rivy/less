@@ -243,7 +243,7 @@ sindex_from_sline(sline)
     if (sline < 0)
         sline += sc_height;
     /*
-     * Can't be less than 1 or greater than sc_height-1.
+     * Can't be less than 1 or greater than sc_height.
      */
     if (sline <= 0)
         sline = 1;

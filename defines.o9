@@ -15,7 +15,6 @@
  * Settings always true for OS-9 systems.
  */
 
-/***/
 /* User preferences.  */
 
 /*
@@ -117,7 +116,7 @@
 #define DEF_LESSKEYINFILE   ".lesskey"
 #define LESSHISTFILE        ".lesshst"
 
-/***/
+
 /* Settings always true for OS-9.  */
 
 /* This is not needed; it is defined by the compiler. */

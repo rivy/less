@@ -15,7 +15,6 @@
  * Settings always true for MS-DOS systems.
  */
 
-/***/
 /* User preferences.  */
 
 /*
@@ -120,17 +119,14 @@
  * LESSHISTFILE is the filename of the history file
  * (in the HOME directory).
  */
-#define LESSKEYFILE     "_less"
+#define LESSKEYFILE         "_less"
 #define LESSKEYFILE_SYS     "c:\\_sysless"
 #define DEF_LESSKEYINFILE   "_lesskey"
 #define LESSHISTFILE        "_lesshst"
 
-/***/
+
 /* Settings always true for MS-DOS systems.  */
 
-/*
- * Define MSDOS_COMPILER if compiling for MS-DOS.
- */
 #ifdef __DJGPP__
 #define MSDOS_COMPILER      DJGPPC
 #else
@@ -191,7 +187,7 @@
 /*
  * Sizes of various buffers.
  */
-#if 0 /* old sizes for small memory machines
+#if 0 /* old sizes for small memory machines */
 #define CMDBUF_SIZE 512 /* Buffer for multichar commands */
 #define UNGOT_SIZE  100 /* Max chars to unget() */
 #define LINEBUF_SIZE    1024    /* Max size of line in input file */
@@ -274,9 +270,9 @@
 #define HAVE_SYS_ERRLIST 1
 
 /* Define HAVE_OSPEED if your termcap library has the ospeed variable */
+#define HAVE_OSPEED 0
 /* Define MUST_DEFINE_OSPEED if you have ospeed but it is not defined
  * in termcap.h. */
-#define HAVE_OSPEED 0
 #define MUST_DEFINE_OSPEED 0
 
 /* Define HAVE_LOCALE if you have locale.h and setlocale. */

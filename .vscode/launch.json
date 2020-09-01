@@ -13,11 +13,9 @@
             "externalConsole": false,
             "logging": { "engineLogging": true },
             "MIMode": "gdb",
-            // "miDebuggerPath": "${workspaceFolder}/dbin/gdb-chcp1257.BAT",
             "miDebuggerPath": "gdb.exe",
             "setupCommands": [ { "text": "-enable-pretty-printing", "description": "Enable GDB pretty printing", "ignoreFailures": true } ],
-            // "preLaunchTask": "${defaultBuildTask}", // PENDING: see <https://github.com/microsoft/vscode/pull/80478> , <https://github.com/Microsoft/vscode/issues/32239>
-            "preLaunchTask": "Build (gcc; debug)"
+            "preLaunchTask": "${defaultBuildTask}",
         }
     ]
 }

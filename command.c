@@ -855,10 +855,8 @@ getccu(VOID_PARAM)
     LWCHAR c;
     if (ungot == NULL)
     {
-        /*
-          Normal case: no ungotten chars.
-         * Get char from the user.
-         */
+        /* Normal case: no ungotten chars.
+         * Get char from the user. */
         c = getchr();
     } else
     {
@@ -885,7 +883,7 @@ getcc_repl(orig, repl, gr_getc, gr_ungetc)
     char const* repl;
     LWCHAR (*gr_getc)(VOID_PARAM);
     void (*gr_ungetc)(LWCHAR);
-        {
+{
     LWCHAR c;
     LWCHAR keys[16];
     size_t ki = 0;
@@ -894,13 +892,13 @@ getcc_repl(orig, repl, gr_getc, gr_ungetc)
     if (orig == NULL || orig[0] == '\0')
         return c;
     for (;;)
-            {
+    {
         keys[ki] = c;
         if (c != (LWCHAR)orig[ki] || ki >= sizeof(keys)-1)
         {
             /* This is not orig we have been receiving.
              * If we have stashed chars in keys[],
-             * unget them and return the first one */
+             * unget them and return the first one. */
             while (ki > 0)
                 (*gr_ungetc)(keys[ki--]);
             return keys[0];
@@ -913,12 +911,12 @@ getcc_repl(orig, repl, gr_getc, gr_ungetc)
             while (ki > 0)
                 (*gr_ungetc)(repl[ki--]);
             return repl[0];
-            }
+        }
         /* We've received a partial orig sequence (ki chars of it).
          * Get next char and see if it continues to match orig. */
         c = (*gr_getc)();
-        }
     }
+}
 
 /*
  * Get command character.
@@ -1631,9 +1629,9 @@ commands(VOID_PARAM)
 #if EXAMINE
             if (!secure)
             {
-            start_mca(A_EXAMINE, "Examine: ", ml_examine, 0);
-            c = getcc();
-            goto again;
+                start_mca(A_EXAMINE, "Examine: ", ml_examine, 0);
+                c = getcc();
+                goto again;
             }
 #endif
             error("Command not available", NULL_PARG);
@@ -1646,29 +1644,29 @@ commands(VOID_PARAM)
 #if EDITOR
             if (!secure)
             {
-            if (ch_getflags() & CH_HELPFILE)
-                break;
-            if (strcmp(get_filename(curr_ifile), "-") == 0)
-            {
-                error("Cannot edit standard input", NULL_PARG);
-                break;
-            }
+                if (ch_getflags() & CH_HELPFILE)
+                    break;
+                if (strcmp(get_filename(curr_ifile), "-") == 0)
+                {
+                    error("Cannot edit standard input", NULL_PARG);
+                    break;
+                }
                 if (get_altfilename(curr_ifile) != NULL)
-            {
-                error("WARNING: This file was viewed via LESSOPEN",
-                    NULL_PARG);
-            }
-            start_mca(A_SHELL, "!", ml_shell, 0);
-            /*
-             * Expand the editor prototype string
-             * and pass it to the system to execute.
-             * (Make sure the screen is displayed so the
-             * expansion of "+%lm" works.)
-             */
-            make_display();
-            cmd_exec();
-            lsystem(pr_expand(editproto, 0), (char*)NULL);
-            break;
+                {
+                    error("WARNING: This file was viewed via LESSOPEN",
+                        NULL_PARG);
+                }
+                start_mca(A_SHELL, "!", ml_shell, 0);
+                /*
+                 * Expand the editor prototype string
+                 * and pass it to the system to execute.
+                 * (Make sure the screen is displayed so the
+                 * expansion of "+%lm" works.)
+                 */
+                make_display();
+                cmd_exec();
+                lsystem(pr_expand(editproto, 0), (char*)NULL);
+                break;
             }
 #endif
             error("Command not available", NULL_PARG);
@@ -1839,9 +1837,9 @@ commands(VOID_PARAM)
 #if SHELL_ESCAPE
             if (!secure)
             {
-            start_mca(A_SHELL, "!", ml_shell, 0);
-            c = getcc();
-            goto again;
+                start_mca(A_SHELL, "!", ml_shell, 0);
+                c = getcc();
+                goto again;
             }
 #endif
             error("Command not available", NULL_PARG);
@@ -1893,18 +1891,18 @@ commands(VOID_PARAM)
 #if PIPEC
             if (!secure)
             {
-            start_mca(A_PIPE, "|mark: ", (void*)NULL, 0);
-            c = getcc();
+                start_mca(A_PIPE, "|mark: ", (void*)NULL, 0);
+                c = getcc();
                 if (is_erase_char(c))
-                break;
+                    break;
                 if (is_newline_char(c))
-                c = '.';
-            if (badmark(c))
-                break;
-            pipec = c;
-            start_mca(A_PIPE, "!", ml_shell, 0);
-            c = getcc();
-            goto again;
+                    c = '.';
+                if (badmark(c))
+                    break;
+                pipec = c;
+                start_mca(A_PIPE, "!", ml_shell, 0);
+                c = getcc();
+                goto again;
             }
 #endif
             error("Command not available", NULL_PARG);

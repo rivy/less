@@ -800,10 +800,10 @@ v484  9/20/16   Update to Unicode 9.0.0 database.
 v485  10/21/16  Fix "nothing to search" bug when top/bottom line is empty;
                 Display line numbers in bold. (thanks to Jason Hood);
                 Fix incorrect display when entering double-width chars in
-        search string.
+                search string.
 v486  10/22/16  New commands ESC-{ and ESC-} to shift to start/end of
                 displayed lines; new option -Da in Windows version to
-        enable SGR mode (thanks to Jason Hood).
+                enable SGR mode (thanks to Jason Hood).
 v487  10/23/16  configure --help formatting.
 -----------------------------------------------------------------
 v488  2/23/17   Fix memory leaks in search (thanks to John Brooks).
@@ -887,6 +887,12 @@ v554  1/19/20   Remove erroneous free().
 v555  3/15/20   Display error msg immediately when toggle -o without stdin.
 v556  3/15/20   Update copyright.
 v557  3/21/20   Fix memory corruption with libtermcap.
+v558  4/17/20   Don't init terminal if -F and file fits on one screen (WIN32).
+v559  4/19/20   Handle deinit correctly on WIN32.
+v560  5/3/20    Fix regression when command results in no movement;
+                fix some less.nro issues (thanks to Bjarni I. Gislason).
+v561  5/11/20   Fix erroneous EOF calculation when F command is interrupted.
+v562  5/19/20   Update Unicode tables; minor doc formatting.
 */
 
-char version[] = "557";
+char version[] = "562";
