@@ -1,5 +1,5 @@
-   This file describes how to build and install less using 
-the "configure" script.  This only works on Unix systems.  
+   This file describes how to build and install less using
+the "configure" script.  This only works on Unix systems.
 To install on other systems, read the README file.
 
 
@@ -183,4 +183,3 @@ operates.
      script, and exit.
 
 `configure' also accepts some other, not widely useful, options.
-

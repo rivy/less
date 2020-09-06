@@ -6,7 +6,7 @@
 CC = cl
 
 # Normal flags
-CFLAGS = /nologo /MD /W3 /EHsc /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /c 
+CFLAGS = /nologo /MD /W3 /EHsc /O2 /I "." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /c
 LDFLAGS = /nologo /subsystem:console /incremental:no
 
 # Debugging flags
@@ -46,7 +46,7 @@ defines.h: defines.wn
 $(OBJ): less.h defines.h funcs.h cmd.h
 
 clean:
-	-del *.obj 
+	-del *.obj
 	-del less.exe
 	-del lesskey.exe
 

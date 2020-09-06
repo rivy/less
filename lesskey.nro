@@ -65,7 +65,7 @@ If the command section is the first section in the file,
 this line may be omitted.
 The command section consists of lines of the form:
 .sp
-	\fIstring\fP <whitespace> \fIaction\fP [extra-string] <newline>
+    \fIstring\fP <whitespace> \fIaction\fP [extra-string] <newline>
 .sp
 Whitespace is any sequence of one or more spaces and/or tabs.
 The \fIstring\fP is the command key(s) which invoke the action.
@@ -133,123 +133,123 @@ default command keys used by less:
 .TS
 l l.
 #command
-\er	forw-line
-\en	forw-line
-e	forw-line
-j	forw-line
-\ekd	forw-line
-^E	forw-line
-^N	forw-line
-k	back-line
-y	back-line
-^Y	back-line
-^K	back-line
-^P	back-line
-J	forw-line-force
-K	back-line-force
-Y	back-line-force
-d	forw-scroll
-^D	forw-scroll
-u	back-scroll
-^U	back-scroll
-\e40	forw-screen
-f	forw-screen
-^F	forw-screen
-^V	forw-screen
-\ekD	forw-screen
-b	back-screen
-^B	back-screen
-\eev	back-screen
-\ekU	back-screen
-z	forw-window
-w	back-window
-\ee\e40	forw-screen-force
-F	forw-forever
-\eeF	forw-until-hilite
-R	repaint-flush
-r	repaint
-^R	repaint
-^L	repaint
-\eeu	undo-hilite
-g	goto-line
-\ekh	goto-line
-<	goto-line
-\ee<	goto-line
-p	percent
-%	percent
-\ee[	left-scroll
-\ee]	right-scroll
-\ee(	left-scroll
-\ee)	right-scroll
-\ekl	left-scroll
-\ekr	right-scroll
-\ee{	no-scroll
-\ee}	end-scroll
-{	forw-bracket {}
-}	back-bracket {}
-(	forw-bracket ()
-)	back-bracket ()
-[	forw-bracket []
-]	back-bracket []
-\ee^F	forw-bracket
-\ee^B	back-bracket
-G	goto-end
-\ee>	goto-end
->	goto-end
-\eke	goto-end
-\eeG	goto-end-buffered
-\&=	status
-^G	status
-:f	status
-/	forw-search
-?	back-search
-\ee/	forw-search *
-\ee?	back-search *
-n	repeat-search
-\een	repeat-search-all
-N	reverse-search
-\eeN	reverse-search-all
-&	filter
-m	set-mark
-M	set-mark-bottom
-\eem	clear-mark
-'	goto-mark
-^X^X	goto-mark
-E	examine
-:e	examine
-^X^V	examine
-:n	next-file
-:p	prev-file
-t	next-tag
-T	prev-tag
-:x	index-file
-:d	remove-file
--	toggle-option
-:t	toggle-option t
-s	toggle-option o
-\&_	display-option
-|	pipe
-v	visual
-!	shell
-+	firstcmd
-H	help
-h	help
-V	version
-0	digit
-1	digit
-2	digit
-3	digit
-4	digit
-5	digit
-6	digit
-7	digit
-8	digit
-9	digit
-q	quit
-Q	quit
-:q	quit
-:Q	quit
-ZZ	quit
+\er forw-line
+\en forw-line
+e   forw-line
+j   forw-line
+\ekd    forw-line
+^E  forw-line
+^N  forw-line
+k   back-line
+y   back-line
+^Y  back-line
+^K  back-line
+^P  back-line
+J   forw-line-force
+K   back-line-force
+Y   back-line-force
+d   forw-scroll
+^D  forw-scroll
+u   back-scroll
+^U  back-scroll
+\e40    forw-screen
+f   forw-screen
+^F  forw-screen
+^V  forw-screen
+\ekD    forw-screen
+b   back-screen
+^B  back-screen
+\eev    back-screen
+\ekU    back-screen
+z   forw-window
+w   back-window
+\ee\e40 forw-screen-force
+F   forw-forever
+\eeF    forw-until-hilite
+R   repaint-flush
+r   repaint
+^R  repaint
+^L  repaint
+\eeu    undo-hilite
+g   goto-line
+\ekh    goto-line
+<   goto-line
+\ee<    goto-line
+p   percent
+%   percent
+\ee[    left-scroll
+\ee]    right-scroll
+\ee(    left-scroll
+\ee)    right-scroll
+\ekl    left-scroll
+\ekr    right-scroll
+\ee{    no-scroll
+\ee}    end-scroll
+{   forw-bracket {}
+}   back-bracket {}
+(   forw-bracket ()
+)   back-bracket ()
+[   forw-bracket []
+]   back-bracket []
+\ee^F   forw-bracket
+\ee^B   back-bracket
+G   goto-end
+\ee>    goto-end
+>   goto-end
+\eke    goto-end
+\eeG    goto-end-buffered
+\&= status
+^G  status
+:f  status
+/   forw-search
+?   back-search
+\ee/    forw-search *
+\ee?    back-search *
+n   repeat-search
+\een    repeat-search-all
+N   reverse-search
+\eeN    reverse-search-all
+&   filter
+m   set-mark
+M   set-mark-bottom
+\eem    clear-mark
+'   goto-mark
+^X^X    goto-mark
+E   examine
+:e  examine
+^X^V    examine
+:n  next-file
+:p  prev-file
+t   next-tag
+T   prev-tag
+:x  index-file
+:d  remove-file
+-   toggle-option
+:t  toggle-option t
+s   toggle-option o
+\&_ display-option
+|   pipe
+v   visual
+!   shell
++   firstcmd
+H   help
+h   help
+V   version
+0   digit
+1   digit
+2   digit
+3   digit
+4   digit
+5   digit
+6   digit
+7   digit
+8   digit
+9   digit
+q   quit
+Q   quit
+:q  quit
+:Q  quit
+ZZ  quit
 .TE
 .RE
 .sp
@@ -298,34 +298,34 @@ default line-editing keys used by less:
 .TS
 l l.
 #line-edit
-\et	forw-complete
-\e17	back-complete
-\ee\et	back-complete
-^L	expand
-^V	literal
-^A	literal
-\eel	right
-\ekr	right
-\eeh	left
-\ekl	left
-\eeb	word-left
-\ee\ekl	word-left
-\eew	word-right
-\ee\ekr	word-right
-\eei	insert
-\eex	delete
-\ekx	delete
-\eeX	word-delete
-\eekx	word-delete
-\ee\eb	word-backspace
-\ee0	home
-\ekh	home
-\ee$	end
-\eke	end
-\eek	up
-\eku	up
-\eej	down
-^G	abort
+\et forw-complete
+\e17    back-complete
+\ee\et  back-complete
+^L  expand
+^V  literal
+^A  literal
+\eel    right
+\ekr    right
+\eeh    left
+\ekl    left
+\eeb    word-left
+\ee\ekl word-left
+\eew    word-right
+\ee\ekr word-right
+\eei    insert
+\eex    delete
+\ekx    delete
+\eeX    word-delete
+\eekx   word-delete
+\ee\eb  word-backspace
+\ee0    home
+\ekh    home
+\ee$    end
+\eke    end
+\eek    up
+\eku    up
+\eej    down
+^G  abort
 .TE
 .RE
 .sp
@@ -355,9 +355,9 @@ The following input file sets the \-i option whenever
 is run, and specifies the character set to be "latin1":
 .sp
 .nf
-	#env
-	LESS = \-i
-	LESSCHARSET = latin1
+    #env
+    LESS = \-i
+    LESSCHARSET = latin1
 .fi
 .sp
 .

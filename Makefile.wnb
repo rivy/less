@@ -3,7 +3,7 @@
 # Bolarnd C++ 5.5.1 free command line tools
 
 #### Start of system configuration section. ####
-# 
+#
 # Borland's make knows its own location in the
 # filesystem.
 #
@@ -18,10 +18,10 @@ LIBS = ${LIBDIR}\import32.lib ${LIBDIR}\cw32.lib
 
 #### End of system configuration section. ####
 
-# 
+#
 # This rule allows us to supply the necessary -D options
 # in addition to whatever the user asks for.
-# 
+#
 .c.obj:
 	${CC} -c -I. ${CPPFLAGS} ${CFLAGS} $<
 
@@ -35,10 +35,10 @@ OBJ = \
 
 all: less lesskey lessecho
 
-# 
-# This is really horrible, but the command line is too long for 
+#
+# This is really horrible, but the command line is too long for
 # MS-DOS if we try to link ${OBJ}.
-# 
+#
 less: ${OBJ}
 	${LD} ${LDFLAGS} ${LIBDIR}\c0x32.obj $**, $@,,${LIBS}
 
@@ -55,9 +55,9 @@ defines.h: defines.wn
 ${OBJ}: less.h defines.h funcs.h cmd.h
 
 clean:
-	-del *.obj 
-	-del *.il? 
-	-del *.tds 
+	-del *.obj
+	-del *.il?
+	-del *.tds
 	-del defines.h
 
 spotless: clean
