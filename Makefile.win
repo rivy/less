@@ -288,16 +288,17 @@ SPACE := $() $()
 [digit] := 1 2 3 4 5 6 7 8 9 0
 [punct] := ~ ` ! @ ${HASH} ${DOLLAR} % ^ & * ${PAREN_OPEN} ${PAREN_CLOSE} _ - + = { } [ ] | ${BACKSLASH} : ; " ' < > ${COMMA} ? ${SLASH} ${DOT}
 
-%not = $(if ${1},${false},$(or ${1},${true}))
+%falsey := $(firstword ${falsey})
+%truthy := $(firstword ${truthy})
+
+%not = $(if ${1},${false},${true})
 %eq = $(or $(and $(findstring ${1},${2}),$(findstring ${2},${1})),$(if ${1}${2},${false},${true}))# note: `call %eq,$(),$()` => ${true}
-%neq = $(if $(call %eq,${1},${2}),${false},$(or ${1},${2},${true}))# note: ${1} != ${2} => ${false}; ${1} == ${2} => first non-empty value (or ${true})
+%neq = $(if $(call %eq,${1},${2}),${false},$(or ${1},${2}))# note: ${1} != ${2} => ${false}; ${1} == ${2} => first non-empty value
 
-%falsey = $(firstword ${falsey})
-%truthy = $(firstword ${truthy})
+%is_truthy = $(if $(filter-out ${falsey},$(call %lc,${1})),${true},${false})# note: returns `make`-type boolean value (eg, true => non-empty and false => $()/empty/null)
+%is_falsey = $(call %not,$(call %is_truthy,${1}))# note: returns `make`-type boolean value (eg, true => non-empty and false => $()/empty/null)
 
-%as_truthy = $(if $(call %is_truthy,${1}),$(call %truthy),$(call %falsey))
-%is_truthy = $(if $(filter-out ${falsey},$(call %lc,${1})),${true},${false})
-%is_falsey = $(call %not,$(call %is_truthy,${1}))
+%as_truthy = $(if $(call %is_truthy,${1}),$(call %truthy),$(call %falsey))# note: returns 'truthy'-type text value (eg, true => 'true' and false => 'false')
 
 %range = $(if $(word ${1},${2}),$(wordlist 1,${1},${2}),$(call %range,${1},${2} $(words _ ${2})))
 %repeat = $(if $(word ${2},${1}),$(wordlist 1,${2},${1}),$(call %repeat,${1} ${1},${2}))
@@ -309,7 +310,11 @@ SPACE := $() $()
 %prepend = ${1} ${2}
 %length = $(words ${1})
 
+%_position_ = $(if $(findstring ${1},${2}),$(call %_position_,${1},$(wordlist 2,$(words ${2}),${2}),_ ${3}),${3})
+%position = $(words $(call %_position_,${1},${2}))
+
 %filter_map = $(strip $(foreach elem,${2},$(call ${1},${elem})))
+%map = $(foreach elem,${2},$(call ${1},${elem}))
 %uniq = $(if ${1},$(firstword ${1}) $(call %uniq,$(filter-out $(firstword ${1}),${1})))
 
 %tr = $(strip $(if ${1},$(call %tr,$(wordlist 2,$(words ${1}),${1}),$(wordlist 2,$(words ${2}),${2}),$(subst $(firstword ${1}),$(firstword ${2}),${3})),${3}))
@@ -335,12 +340,18 @@ endif
 %as_win_path = $(subst /,\,${1})
 
 ifeq (${OSID},win)
-%shell_quote = $(call %tr,^ | < > %,^^ ^| ^< ^> ^%,${1})
+%shell_escape = $(call %tr,^ | < > %,^^ ^| ^< ^> ^%,${1})
 else
-%shell_quote = '$(call %tr,','"'"',${1})'
+%shell_escape = '$(call %tr,','"'"',${1})'
 endif
 
-@mkdir_rule = ${1} : ${2} ; ${MKDIR} "$$@"
+ifeq (${OSID},win)
+%shell_quote = "$(call %shell_escape,${1})"
+else
+%shell_quote = $(call %shell_escape,${1})
+endif
+
+@mkdir_rule = ${1} : ${2} ; ${MKDIR} $(call %shell_quote,$$@)
 
 !shell_noop = ${ECHO} >${devnull}
 
