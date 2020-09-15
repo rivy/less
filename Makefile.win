@@ -708,7 +708,9 @@ $(call %debug_var,ARCH_ID)
 $(call %debug_var,CC_ARCH_ID)
 
 ifeq (${false},$(and ${ARCH_available},$(or $(call %eq,${ARCH_ID},${CC_ARCH_ID}),$(call %neq,cl,${CC}))))
-$(call %error,$(if ${TARGET},Architecture/Target "${ARCH}/${TARGET}",Architecture "${ARCH}") is unavailable/unimplemented for this version of `${CC}` (v${CC_version}/${CC_machine}))
+error_text := Unable to build $(if ${TARGET},architecture/target "${ARCH}/${TARGET}",architecture "${ARCH}") for this version of `${CC}` (v${CC_version}/${CC_machine})
+error_text := $(if $(filter cl,$(shell cl 2>&1 >${devnull} && echo cl || echo)),${error_text}; NOTE: early versions of `cl` may interfere with `clang` builds/compiles,${error_text})
+$(call %error,${error_text})
 endif
 
 ####
