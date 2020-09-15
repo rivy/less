@@ -318,6 +318,7 @@ int_max := 2147483647## largest signed 32-bit integer; used as arbitrary max exp
 NULL := $()
 BACKSLASH := $()\$()
 COMMA := ,
+DOLLAR := $$
 DOT := .
 ESC := $()$()## literal ANSI escape character (required for ANSI color display output; also used for some string matching)
 HASH := \#
