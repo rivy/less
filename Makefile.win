@@ -117,12 +117,12 @@ CXXFLAGS_clang := -Xclang -flto-visibility-public-std
 LDFLAGS := $()
 LDFLAGS_ARCH_32 := -m32
 LDFLAGS_ARCH_64 := -m64
-LDFLAGS_DEBUG_false := -Xlinker --strip-all
+LDFLAGS_DEBUG_false := $(if $(filter nix,${OSID}),-Xlinker --strip-all,)
 # LDFLAGS_STATIC_false := -pie
 # LDFLAGS_STATIC_false := -shared
 # LDFLAGS_STATIC_true := -static -static-libgcc -static-libstdc++
 LDFLAGS_STATIC_true := -static
-LDFLAGS_clang_nix := -lstdc++
+LDFLAGS_clang := $(if $(filter nix,${OSID}),-lstdc++,)
 LDFLAGS_gcc := -lstdc++
 
 LIBS := $(foreach lib,${LIBS},-l${lib})
@@ -654,11 +654,11 @@ CXXFLAGS += ${CXXFLAGS_${CC_ID}}
 
 LDFLAGS += ${LDFLAGS_ARCH_${ARCH_ID}}
 LDFLAGS += ${LDFLAGS_TARGET}
+LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}}
 LDFLAGS += ${LDFLAGS_STATIC_${STATIC}}
 LDFLAGS += ${LDFLAGS_CL1600+_${is_CL1600+}}
 LDFLAGS += ${LDFLAGS_VC6_${is_VC6}}
 LDFLAGS += ${LDFLAGS_${CC_ID}}
-LDFLAGS += ${LDFLAGS_${CC_ID}_${OSID}}
 
 CFLAGS := $(strip ${CFLAGS})
 CPPFLAGS := $(strip ${CPPFLAGS})
