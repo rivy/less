@@ -327,7 +327,7 @@ SPACE := $() $()
 %repeat = $(if $(word ${2},${1}),$(wordlist 1,${2},${1}),$(call %repeat,${1} ${1},${2}))
 
 %head = $(firstword ${1})
-%tail = $(words 2,${int_max},${1})
+%tail = $(wordlist 2,${int_max},${1})
 %chop = $(wordlist 2,$(words ${1}),_ ${1})
 %append = ${2} ${1}
 %prepend = ${1} ${2}
