@@ -202,21 +202,23 @@ LIBS := $(foreach lib,${LIBS},${lib}.lib)
 endif ## `cl` (MSVC)
 OUT_obj_filesets := ${OUT_obj_filesets} $() *.obj## `cl` intermediate files
 
-ifeq (bcc32,${CC_ID})
-## `bcc32` (Borland C++ 5.5.1 free command line tools)
+ifeq (,$(filter-out bcc32 embcc32,${CC_ID}))
+## `bcc32` (Borland C++ 5.5.1 free command line tools) or `embcc` (Embarcadero Borland C++ free command line tools)
 CXX := ${CC}
 LD := ilink32
-%link = ${LD} ${LDFLAGS} $(subst /,\,${2}), $(subst /,\,${1}),,$(subst /,\,${3})## $(call %link,EXE,OBJs,LIBs); requires delayed expansion
+%link = ${LD} -I$(call %shell_quote,$(call %as_win_path,${OUT_DIR_obj})) ${LDFLAGS} $(call %as_win_path,${2}), $(call %as_win_path,${1}),,$(call %as_win_path,${3})## $(call %link,EXE,OBJs,LIBs); function => requires delayed expansion
 STRIP := $()
 
 # * find CC base directory (for include and library directories plus initialization code, as needed); note: CMD/PowerShell is assumed as `bcc32` is DOS/Windows-only
 CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..))
-LIB_DIRS := "${CC_BASEDIR}\lib"
-LD_INIT_OBJ := "${CC_BASEDIR}\lib\c0x32.obj"
+LD_INIT_OBJ = $(call %shell_quote,${CC_BASEDIR}\lib\c0x32.obj)## requires delayed expansion (b/c uses later %shell_quote function)
+LIB_DIRS = $(if $(filter bcc32,${CC_ID}),$(call %shell_quote,${CC_BASEDIR}\lib),$(call %shell_quote,${CC_BASEDIR}\lib\win32c\release);$(call %shell_quote,${CC_BASEDIR}\lib\win32c\release\psdk))## requires delayed expansion (b/c uses later %shell_quote function)
 
 # ref: BCCTool help file
+# ref: <http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devwin32/bcc32_xml.html> @@ <https://archive.is/q23nS>
 # -q :: "quiet" * suppress compiler identification banner
 # -O2 :: generate fastest possible code (optimize for speed)
+# -Od :: disable all optimization
 # -TWC :: specify assembler option(s) ("WC")
 # -P-c :: compile SOURCE.cpp as C++, all other extensions as C, and sets the default extension to .c
 # -d :: merge duplicate strings
@@ -225,23 +227,28 @@ LD_INIT_OBJ := "${CC_BASEDIR}\lib\c0x32.obj"
 # -v- :: turn off source level debugging and inline expansion on
 # -vi :: turn on inline function expansion
 # -w-pro :: disable warning "Call to function 'function' with no prototype"
-#*was* CFLAGS := -q -O2 -TWC -P-c -d -f- -ff- -v- -vi -w-pro -I. -I"${CC_BASEDIR}\include"
-CFLAGS := -q -O2 -P-c -d -f- -ff- -v- -vi -w-pro -I. -I"${CC_BASEDIR}\include"
+CFLAGS = -q -P-c -d -f- $(if $(filter bcc32,${CC_ID}),-ff- -w-pro,) -I$(call %shell_quote,${BASEPATH}.) -I$(call %shell_quote,${CC_BASEDIR}\include)## requires delayed expansion (b/c uses later %shell_quote function)
 CFLAGS_COMPILE_ONLY := -c
+CFLAGS_DEBUG_false := -D"NDEBUG" -O2 -v- -vi
+CFLAGS_DEBUG_true := -D"DEBUG" -D"_DEBUG" -Od
+CFLAGS_check := $(if $(filter embcc32,${CC_ID}),--version,)
+CFLAGS_v := $(if $(filter embcc32,${CC_ID}),--version,)
 CPPFLAGS := $()
 # -P :: compile all SOURCE files as C++ (regardless of extension)
 CXXFLAGS := -P
 # ref: <http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devwin32/ilink32_xml.html> @@ <https://archive.is/Xe4VK>
 # -q :: suppress command line banner
-# -Tpe :: targets 32-bit windows EXE
-# -v- :: disable debugging information
 # -ap :: builds 32-bit console application
 # -c :: treats case as significant in public and external symbols
-# -x :: suppress creation of a MAP file
-# -V4.0 :: specifies expected Windows version (4.0 == Windows 9x/NT+)
-# -GF:AGGRESSIVE :: aggressively trims the working set of an application when the application is idle
 # -L... :: specifies library search path
-LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}
+# -GF:AGGRESSIVE :: aggressively trims the working set of an application when the application is idle
+# -Gn :: disable incremental linking (suppresses creation of linker state files)
+# -Tpe :: targets 32-bit windows EXE
+# -V4.0 :: specifies minimum expected Windows version (4.0 == Windows 9x/NT+)
+# -v- :: disable debugging information
+# -x :: suppress creation of a MAP file
+LDFLAGS = -q -Tpe -ap -c -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}## requires delayed expansion (b/c indirectly uses %shell_quote for ${LIB_DIRS} and ${LS_INIT_OBJ})
+LDFLAGS_DEBUG_false := -Gn -v- -x
 
 CC_${CC_ID}_e := -e
 CC_${CC_ID}_o := -o
@@ -250,60 +257,8 @@ LD_${CC_ID}_o := $()
 O_${CC_ID} := obj
 
 LIBS := import32.lib cw32.lib
-endif ## `bcc32` (Borland)
-OUT_obj_filesets := ${OUT_obj_filesets} $() *.obj *.ilc *.ild *.ilf *.ils *.tds## `bcc32` intermediate files
-
-ifeq (embcc32,${CC_ID})
-## `embcc32` (Embarcadero Borland C++ free command line tools)
-CXX := ${CC}
-LD := ilink32
-%link = ${LD} ${LDFLAGS} $(subst /,\,${2}), $(subst /,\,${1}),,$(subst /,\,${3})## $(call %link,EXE,OBJs,LIBs); requires delayed expansion
-STRIP := $()
-
-# * find CC base directory (for include and library directories plus initialization code, as needed); note: CMD/PowerShell is assumed as `bcc32` is DOS/Windows-only
-CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..))
-LIB_DIRS := "${CC_BASEDIR}\lib\win32c\release";"${CC_BASEDIR}\lib\win32c\release\psdk"
-LD_INIT_OBJ := "${CC_BASEDIR}\lib\c0x32.obj"
-
-# ref: <http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devwin32/bcc32_xml.html> @@ <https://archive.is/q23nS>
-# -q :: "quiet" * suppress compiler identification banner
-# -O2 :: generate fastest possible code (optimize for speed)
-# -TWC :: specify assembler option(s) ("WC")
-# -P-c :: compile SOURCE.cpp as C++, all other extensions as C, and sets the default extension to .c
-# -d :: merge duplicate strings
-# -f- :: no floating point (avoids linking floating point libraries when not using floating point; linker errors will occur if floating point operations are used)
-# -ff- :: use strict ANSI floating point rules (disables "fast floating point" optimizations)
-# -v- :: turn off source level debugging and inline expansion on
-# -vi :: turn on inline function expansion
-# -w-pro :: disable warning "Call to function 'function' with no prototype"
-#*was* CFLAGS := -q -O2 -TWC -P-c -v- -d -f- -vi -I.
-CFLAGS := -q -O2 -P-c -d -f- -v- -vi -I.
-CFLAGS_COMPILE_ONLY := -c
-CFLAGS_check := --version
-CFLAGS_v := --version
-CPPFLAGS := $()
-CXXFLAGS := -P
-# ref: <http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devwin32/ilink32_xml.html> @@ <https://archive.is/Xe4VK>
-# -q :: suppress command line banner
-# -Tpe :: targets 32-bit windows EXE
-# -v- :: disable debugging information
-# -ap :: builds 32-bit console application
-# -c :: treats case as significant in public and external symbols
-# -x :: suppress creation of a MAP file
-# -V4.0 :: specifies expected Windows version (4.0 == Windows 9x/NT+)
-# -GF:AGGRESSIVE :: aggressively trims the working set of an application when the application is idle
-# -L... :: specifies library search path
-LDFLAGS := -q -Tpe -v- -ap -c -x -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}
-
-CC_${CC_ID}_e := -e
-CC_${CC_ID}_o := -o
-LD_${CC_ID}_o := $()
-
-O_${CC_ID} := obj
-
-LIBS := import32.lib cw32.lib
-endif ## `embcc32` (Borland)
-OUT_obj_filesets := ${OUT_obj_filesets} $() *.obj *.ilc *.ild *.ilf *.ils *.tds## `embcc32` intermediate files
+endif ## `bcc32` or `embcc32`
+OUT_obj_filesets := ${OUT_obj_filesets} $() *.obj *.ilc *.ild *.ilf *.ils *.tds## `bcc32`/`embcc32` intermediate files
 
 #### End of system configuration section. ####
 
@@ -601,7 +556,7 @@ CC_machine_raw := $(shell ${CC} ${CFLAGS_machine} 2>&1 | ${GREP} -n ".*" | ${GRE
 endif
 CC_machine_raw := $(subst ${ESC}1:,$(),${ESC}${CC_machine_raw})
 CC_ARCH := $(or $(filter $(subst -, ,${CC_machine_raw}),${ARCH_x86} ${ARCH_x86_64}),i686)## fallback to "i686" for ${CC_ARCH} if not found from ${CC_machine_raw}
-CC_machine := $(or $(and $(filter cl bcc32,${CC_ID}),${CC_ARCH}),${CC_machine_raw})
+CC_machine := $(or $(and $(filter cl bcc32 embcc32,${CC_ID}),${CC_ARCH}),${CC_machine_raw})
 CC_ARCH_ID := $(if $(filter ${CC_ARCH},32 x32 ${ARCH_x86}),32,64)
 override ARCH := $(or ${ARCH},${CC_ARCH})
 ARCH_ID := $(if $(filter ${ARCH},32 x32 ${ARCH_x86}),32,64)
