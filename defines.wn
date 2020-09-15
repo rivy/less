@@ -428,12 +428,6 @@
 #define popen _popen
 #endif
 
-#if (defined __clang__) && (!defined __GNUC__)
-/* fix: find a better way to add *user32.lib* (ie, *user32.dll*) for use of `MessageBeep()` in *screen.c* */
-/* see <https://stackoverflow.com/questions/9198787/how-do-i-compile-a-window-api-program-using-cl/9199083#9199083> @@ <https://archive.is/goUzN> */
-#pragma comment(lib, "user32")
-#endif
-
 #ifdef _MSC_VER
 /* disable warning C4996: ... POSIX name for this item is deprecated */
 #pragma warning(disable:4996)
