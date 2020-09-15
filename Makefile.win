@@ -63,7 +63,7 @@ endif
 CC_default := clang## default ${CC} ([$()/empty, ...])
 
 CC := $(and $(filter-out default,$(origin CC)),${CC})## if defined, use any non-makefile defined value as default ## note: used to avoid a recursive definition of ${CC} within the the shell ${CC} presence check when determining default ${CC}
-CC := $(or ${CC},$(if $(filter clang,${CC_default}),$(subst -FOUND,,$(filter clang-FOUND,$(shell clang --version 2>&1 && echo clang-FOUND || echo))),gcc))## * for CC_default of `clang` (if `clang` missing, fallback to `gcc`; via a portable shell test)
+CC := $(or ${CC},$(if $(filter clang,${CC_default}),$(filter clang,$(shell clang --version 2>&1 >$(if $(filter win,${OSID}),NUL,/dev/null) && echo clang || echo)),gcc))## * for CC_default of `clang` (if `clang` missing, fallback to `gcc`; via a portable shell test)
 CC := $(or ${CC},${CC_default},gcc)
 
 CC_ID := $(lastword $(subst -,$() $(),${CC}))
