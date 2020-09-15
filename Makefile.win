@@ -721,7 +721,7 @@ OUT_DIR := .
 OUT_DIR_bin := .
 OUT_DIR_obj := .
 out_dirs := $(strip $(call %uniq,${OUT_DIR} ${OUT_DIR_bin} ${OUT_DIR_obj}))
-out_dirs_for_rules := $(strip $(subst ${HASH},${BACKSLASH}${HASH},${out_dirs}))
+out_dirs_for_rules := $(strip $(call %tr,${DOLLAR} ${HASH},${DOLLAR}${DOLLAR} ${BACKSLASH}${HASH},${out_dirs}))
 
 $(call %debug_var,out_dirs)
 $(call %debug_var,out_dirs_for_rules)
