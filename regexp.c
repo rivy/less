@@ -1109,12 +1109,12 @@ regexp *r;
     s = r->program + 1;
     while (op != END) { /* While that wasn't END last time... */
         op = OP(s);
-        printf("%2d%s", s-r->program, regprop(s));  /* Where, what. */
+        printf("%2ld%s", (long int)(s-r->program), regprop(s));  /* Where, what. */
         next = regnext(s);
         if (next == NULL)       /* Next ptr. */
             printf("(0)");
         else
-            printf("(%d)", (s-r->program)+(next-s));
+            printf("(%ld)", (long int)((s-r->program)+(next-s)));
         s += 3;
         if (op == ANYOF || op == ANYBUT || op == EXACTLY) {
             /* Literal string, where present. */
@@ -1144,7 +1144,7 @@ static char *
 regprop(op)
 char *op;
 {
-    register char *p;
+    register char *p = 0;
     static char buf[50];
 
     (void) strcpy(buf, ":");

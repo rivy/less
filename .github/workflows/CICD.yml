@@ -9,11 +9,12 @@ name: CICD
 # spell-checker:ignore (shell/tools) chmod choco clippy cmake ctest dmake dpkg esac fakeroot gmake grcov halium lcov libssl libtsan mkdir popd printf pushd rustc rustfmt rustup shopt valgrind xargs xcode
 # spell-checker:ignore (misc) alnum gnueabihf issuecomment libc libncurses maint multilib ncurses nullglob onexitbegin onexitend uutils
 
-# spell-checker:ignore () lessecho lesskey
+# spell-checker:ignore () executables lessecho lesskey
 
 env:
   PROJECT_NAME: less
   PROJECT_DESC: "`less` is more"
+  PROJECT_EXES: "less lessecho lesskey" ## 'make ... all' binary executables
 
 on: [push, pull_request]
 
@@ -188,11 +189,11 @@ jobs:
             ;;
           esac
           make CC="${CC}" CXX="${CXX}" LD="${LD}" ARCH='${{ steps.vars.outputs.ARCH_ID }}' STATIC='${{ matrix.job.static }}' all
-          for exe in '${{ env.PROJECT_NAME }}' lessecho lesskey ; do
+          for exe in ${PROJECT_EXES} ; do
             cp "${exe}${{ steps.vars.outputs.EXE_suffix }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/bin/'
           done
-          # `strip` binary (if needed)
-          if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' ; fi
+          # `strip` any/all binaries (if needed)
+          if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/bin'/* ; fi
       # - name: Test
       #   uses: actions-rs/cargo@v1
       #   with:

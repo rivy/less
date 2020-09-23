@@ -116,7 +116,7 @@
  * LESSHISTFILE is the filename of the history file
  * (in the HOME directory).
  */
-#define LESSKEYFILE     "_less"
+#define LESSKEYFILE         "_less"
 #define LESSKEYFILE_SYS     "c:\\_sysless"
 #define DEF_LESSKEYINFILE   "_lesskey"
 #define LESSHISTFILE        "_lesshst"
@@ -128,7 +128,7 @@
 
 /*
  * Minimum Windows version.
- * - see <https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt>
+ * - see <https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt> @@ <https://archive.is/0tI6Q>
  * - @@ <https://github.com/MicrosoftDocs/cpp-docs/blob/master/docs/porting/modifying-winver-and-win32-winnt.md> @@ <https://archive.is/n8fu1>
  */
 #define WINVER          0x0400     // WinNT 4.0
@@ -266,7 +266,7 @@
 #define HAVE_FILENO 1
 
 /* Define HAVE_ERRNO if you have the errno variable */
-/* Define MUST_DEFINE_ERRNO if you have errno but it is not define
+/* Define MUST_DEFINE_ERRNO if you have errno but it is not defined
  * in errno.h */
 #define HAVE_ERRNO 1
 #ifdef MINGW
@@ -345,11 +345,11 @@
 /* Define if you have the <stdio.h> header file.  */
 #define HAVE_STDIO_H 1
 
-/* Define if you have the <string.h> header file.  */
-#define HAVE_STRING_H 1
-
 /* Define if you have the <stdlib> header file. */
 #define HAVE_STDLIB_H 1
+
+/* Define if you have the <string.h> header file.  */
+#define HAVE_STRING_H 1
 
 /* Define if you have the <sys/ioctl.h> header file.  */
 #define HAVE_SYS_IOCTL_H 0
@@ -401,27 +401,34 @@
 #endif
 #endif
 
-#ifdef __clang__
+#if (defined __clang__) || ((defined __BORLANDC__) && (__BORLANDC__ >= 0x600))
 #define close   _close
 #define creat   _creat
-#define dup     _dup
 #define fileno  _fileno
+#define open    _open
+#define popen   _popen
+#define read    _read
+#define write   _write
+#ifndef __BORLANDC__
+#define dup     _dup
 #define isatty  _isatty
 #define lseek   _lseek
-#define open    _open
 #define putenv  _putenv
-#define read    _read
 #define setmode _setmode
-#define write   _write
+#else
+#define dup     dup
+#define isatty  isatty
+#define lseek   lseek
+#define putenv  putenv
+#define setmode setmode
+#endif
 #endif
 
-#if (defined __clang__) && (!defined __GNUC__)
-/* fix: find a better way to add *user32.lib* (ie, *user32.dll*) for use of `MessageBeep()` in *screen.c* */
-/* see <https://stackoverflow.com/questions/9198787/how-do-i-compile-a-window-api-program-using-cl/9199083#9199083> @@ <https://archive.is/goUzN> */
-#pragma comment(lib, "user32")
+#if (defined __BORLANDC__) && (__BORLANDC__ < 0x0600)
+#define popen _popen
 #endif
 
-#ifndef MINGW
+#ifdef _MSC_VER
 /* disable warning C4996: ... POSIX name for this item is deprecated */
 #pragma warning(disable:4996)
 #endif
