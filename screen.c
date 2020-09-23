@@ -1097,7 +1097,6 @@ get_term(VOID_PARAM)
      * before any file operations have been done on fd0.
      */
     SET_BINARY(0);
-
     GetConsoleScreenBufferInfo(con_out, &scr);
     curr_attr = scr.wAttributes;
     sy_bg_color = (curr_attr & BG_COLORS) >> 4; /* normalize */
