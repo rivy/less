@@ -4,6 +4,9 @@
 *.o
 *.obj
 
+# ignore generated depfiles
+*.d
+
 # ignore generated headers
 defines.h
 
