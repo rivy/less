@@ -141,7 +141,7 @@ jobs:
               sudo apt-get -y install lib32ncurses5-dev libncurses5-dev gcc-multilib clang
             ;;
             windows-*)
-              case '${{ matrix.job.compiler }}' in clang) echo "::add-path::C:/Program Files/LLVM/bin" ;; esac;
+              case '${{ matrix.job.compiler }}' in clang) echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH ;; esac;
             ;;
           esac
           case '${{ matrix.job.compiler }}' in
@@ -152,9 +152,9 @@ jobs:
             clang) CC=clang ; CXX=clang++ ; LD=${CXX} ;;
             gcc) CC=gcc ; CXX=g++ ; LD=${CXX} ;;
           esac
-          echo "::set-env name=CC::${CC}"
-          echo "::set-env name=CXX::${CXX}"
-          echo "::set-env name=LD::${LD}"
+          echo "CC=${CC}" >> $GITHUB_ENV
+          echo "CXX=${CXX}" >> $GITHUB_ENV
+          echo "LD=${LD}" >> $GITHUB_ENV
       - name: Info
         shell: bash
         run: |
