@@ -811,7 +811,7 @@ $(call %debug_var,PROJECT_TARGET)
 
 ####
 
-__default__: ${PROJECT_TARGET} # *default* target
+${PROJECT_TARGET}: # *default* target (see recipe/rule below)
 
 ####
 
@@ -831,8 +831,6 @@ ${AUX_targets}: %${EXEEXT}: %.${O} ${OUT_DIR_obj}/version.${O} ${makefile_abs_pa
 	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${OUT_DIR_obj}/version.${O}),$(call %map,%shell_quote,${LIBS}))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
-
-${OBJ_files}: ${OBJ_deps} | ${OUT_DIR_obj}
 
 ${SRC_DIR}/defines.h: ${SRC_DIR}/defines.${DEFINETYPE}
 	@${CP} $(call %map,%shell_quote,$(call %map,%as_win_path,$< $@)) >${devnull}
