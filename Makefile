@@ -12,4 +12,4 @@ $(eval $(ARGS):_undefined_;@:)
 
 _default: .DEFAULT
 .DEFAULT:
-	$(if $(filter win,${OSID}),${MAKE} -f Makefile.win ${ARGS}, ./configure && ${MAKE} ${ARGS})
+	$(if $(filter win,${OSID}),${MAKE} -f Makefile.win -- ${ARGS}, ./configure && ${MAKE} -- ${ARGS})
