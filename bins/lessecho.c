@@ -25,7 +25,7 @@
  *  The default is that only arguments containing spaces are quoted.
  */
 
-#include "less.h"
+#include "../lib/less.h"
 
 static char *version = "$Revision: 1.15 $";
 

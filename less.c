@@ -12,7 +12,7 @@
  * Entry point, initialization, miscellaneous routines.
  */
 
-#include "less.h"
+#include "lib/less.h"
 #if MSDOS_COMPILER==WIN32C
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

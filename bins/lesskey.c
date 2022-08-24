@@ -80,9 +80,10 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-#include "less.h"
+#include "../lib/less.h"
+
 #include "lesskey.h"
-#include "cmd.h"
+#include "../lib/cmd.h"
 
 struct cmdname
 {
