@@ -419,7 +419,7 @@ SPACE := $() $()
 %as_nix_path = $(subst \,/,${1})
 %as_win_path = $(subst /,\,${1})
 
-%dirs_in = $(patsubst ./%,%,$(dir $(wildcard ${1:=/*/.})))
+%dirs_in = $(dir $(wildcard ${1:=/*/.}))
 %filename = $(notdir ${1})
 %filename_base = $(basename $(notdir ${1}))
 %filename_ext = $(suffix ${1})
