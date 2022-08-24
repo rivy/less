@@ -1173,8 +1173,8 @@ ${OUT_DIR_obj}/%.${REZ}: ${SRC_DIR}/%.rc ${DEPS_common} | ${out_dirs}
 
 ####
 
-${BIN_OUT_DIR_bin}/%${EXEEXT}: ${BIN_OUT_DIR_obj}/%.${O} ${BIN_OBJ_sup_files} ${BIN_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${BIN_OUT_DIR_bin}
-	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${BIN_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${BIN_REZ_files})),$(call %map,%shell_quote,${LIBS}))
+${BIN_OUT_DIR_bin}/%${EXEEXT}: ${BIN_OUT_DIR_obj}/%.${O} ${BIN_OBJ_sup_files} ${BIN_REZ_files} ${OBJ_files} ${OBJ_sup_files} ${DEPS_common} | ${BIN_OUT_DIR_bin}
+	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${BIN_OBJ_sup_files} ${OBJ_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${BIN_REZ_files})),$(call %map,%shell_quote,${LIBS}))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
 
@@ -1194,8 +1194,8 @@ ${BIN_OUT_DIR_obj}/%.${REZ}: ${BIN_DIR}/%.rc ${DEPS_common} | ${out_dirs}
 
 ####
 
-${EG_OUT_DIR_bin}/%${EXEEXT}: ${EG_OUT_DIR_obj}/%.${O} ${EG_OBJ_sup_files} ${EG_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${EG_OUT_DIR_bin}
-	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${EG_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${EG_REZ_files})),$(call %map,%shell_quote,${LIBS}))
+${EG_OUT_DIR_bin}/%${EXEEXT}: ${EG_OUT_DIR_obj}/%.${O} ${EG_OBJ_sup_files} ${EG_REZ_files} ${OBJ_files} ${OBJ_sup_files} ${DEPS_common} | ${EG_OUT_DIR_bin}
+	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${EG_OBJ_sup_files} ${OBJ_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${EG_REZ_files})),$(call %map,%shell_quote,${LIBS}))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
 
@@ -1215,8 +1215,8 @@ ${EG_OUT_DIR_obj}/%.${REZ}: ${EG_DIR}/%.rc ${DEPS_common} | ${out_dirs}
 
 ####
 
-${TEST_OUT_DIR_bin}/%${EXEEXT}: ${TEST_OUT_DIR_obj}/%.${O} ${TEST_OBJ_sup_files} ${TEST_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${TEST_OUT_DIR_bin}
-	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${TEST_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${TEST_REZ_files})),$(call %map,%shell_quote,${LIBS}))
+${TEST_OUT_DIR_bin}/%${EXEEXT}: ${TEST_OUT_DIR_obj}/%.${O} ${TEST_OBJ_sup_files} ${TEST_REZ_files} ${OBJ_files} ${OBJ_sup_files} ${DEPS_common} | ${TEST_OUT_DIR_bin}
+	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${TEST_OBJ_sup_files} ${OBJ_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${TEST_REZ_files})),$(call %map,%shell_quote,${LIBS}))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
 
