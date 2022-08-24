@@ -38,6 +38,10 @@ NAME := $()## $()/empty/null => autoset to name of containing folder
 
 ####
 
+makefile_path := $(lastword ${MAKEFILE_LIST})
+
+####
+
 # most commonly variant configuration variables
 SRC_PATH := $()## path to source relative to makefile (defaults to first of ['src','source']); used to create ${SRC_DIR} which is then used as the source base directory path
 DEPS = $()## manually-configured common/shared dependencies; note: use delayed expansion (`=`, not `:=`) if referencing a later defined variable (eg, `{SRC_DIR}/defines.h`)
@@ -45,7 +49,7 @@ LIBS := shell32 shlwapi $()## list of any additional required libraries (space-s
 RES := $()## list of any additional required resources (space-separated)
 BUILD_PATH := $()## path to build storage relative to makefile (defaults to '#build'); used to create ${BUILD_DIR} which is then used as the base path for build outputs
 
--include $(lastword ${MAKEFILE_LIST}).config## include sibling configuration file, if exists (easier project config with a stable base Makefile)
+-include ${makefile_path}.config## include sibling configuration file, if exists (easier project config with a stable base Makefile)
 
 ####
 
@@ -84,7 +88,7 @@ ifneq (${MAKE_VERSION_fail},)
 $(call %error,`make` v4.0+ required (currently using v${MAKE_VERSION}))
 endif
 
-makefile_path := $(lastword ${MAKEFILE_LIST})
+# makefile_path := $(lastword ${MAKEFILE_LIST})
 makefile_abs_path := $(abspath ${makefile_path})
 makefile_dir := $(abspath $(dir ${makefile_abs_path}))
 current_dir := ${CURDIR}
@@ -656,20 +660,6 @@ STRIP := $(or ${STRIP_CC_${CC}},${STRIP})
 # * and... ${STRIP} available? (missing in some distributions)
 STRIP := $(shell "${STRIP}" ${STRIP_check_flags} >${devnull} 2>&1 && echo ${STRIP})
 $(call %debug_var,STRIP)
-
-####
-
-makefile_path := $(lastword ${MAKEFILE_LIST})
-makefile_abs_path := $(abspath ${makefile_path})
-makefile_dir := $(abspath $(dir ${makefile_abs_path}))
-current_dir := ${CURDIR}
-make_invoke_alias ?= $(if $(call %eq,Makefile,${makefile_path}),make,make -f "${makefile_path}")
-
-$(call %debug_var,makefile_path)
-$(call %debug_var,makefile_abs_path)
-$(call %debug_var,makefile_dir)
-$(call %debug_var,current_dir)
-$(call %debug_var,current_dir)
 
 ####
 
