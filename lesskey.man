@@ -101,7 +101,8 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
 
 [1mEXAMPLE[0m
        The following input file describes the set of default command keys used
-       by [4mless[24m:
+       by  [4mless[24m.   Documentation on each command can be found in the man page,
+       under the key sequence which invokes the command.
 
 
             #command
@@ -128,8 +129,8 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
             f          forw-screen
             ^F         forw-screen
             ^V         forw-screen
-            \kD        forw-screen
 
+            \kD        forw-screen
             b          back-screen
             ^B         back-screen
             \ev        back-screen
@@ -194,14 +195,16 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
             ^X^V       examine
             :n         next-file
             :p         prev-file
-            t          next-tag
 
+            t          next-tag
             T          prev-tag
             :x         index-file
             :d         remove-file
             -          toggle-option
             :t         toggle-option t
             s          toggle-option o
+                       ## Use a long option name by starting the extra string with ONE dash; eg:
+                       ##   s toggle-option -log-file
             _          display-option
             |          pipe
             v          visual
@@ -228,20 +231,20 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
 
 
 [1mPRECEDENCE[0m
-       Commands  specified  by  [4mlesskey[24m  take precedence over the default com-
-       mands.  A default command key may be disabled by including  it  in  the
-       input  file with the action "invalid".  Alternatively, a key may be de-
+       Commands specified by [4mlesskey[24m take precedence  over  the  default  com-
+       mands.   A  default  command key may be disabled by including it in the
+       input file with the action "invalid".  Alternatively, a key may be  de-
        fined to do nothing by using the action "noaction".  "noaction" is sim-
-       ilar  to  "invalid",  but [4mless[24m will give an error beep for an "invalid"
-       command, but not for a "noaction" command.  In  addition,  ALL  default
+       ilar to "invalid", but [4mless[24m will give an error beep  for  an  "invalid"
+       command,  but  not  for a "noaction" command.  In addition, ALL default
        commands may be disabled by adding this control line to the input file:
 
        #stop
 
-       This  will  cause  all  default commands to be ignored.  The #stop line
+       This will cause all default commands to be  ignored.   The  #stop  line
        should be the last line in that section of the file.
 
-       Be aware that #stop can be dangerous.  Since all default  commands  are
+       Be  aware  that #stop can be dangerous.  Since all default commands are
        disabled, you must provide sufficient commands before the #stop line to
        enable all necessary actions.  For example, failure to provide a "quit"
        command can lead to frustration.
@@ -251,15 +254,14 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
 
        #line-edit
 
-       This  section specifies new key bindings for the line editing commands,
-       in a manner similar to the way key bindings for ordinary  commands  are
-       specified  in  the #command section.  The line-editing section consists
+       This section specifies new key bindings for the line editing  commands,
+       in  a  manner similar to the way key bindings for ordinary commands are
+       specified in the #command section.  The line-editing  section  consists
        of a list of keys and actions, one per line as in the example below.
 
 [1mEXAMPLE[0m
        The following input file describes the set of default line-editing keys
        used by [4mless[24m:
-
 
 
             #line-edit
@@ -298,30 +300,30 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
 
        #env
 
-       Following  this  line  is  a  list of environment variable assignments.
-       Each line consists of an environment variable name, an equals sign  (=)
-       and  the value to be assigned to the environment variable.  White space
-       before and after the equals sign is  ignored.   Variables  assigned  in
-       this  way  are visible only to [4mless[24m.  If a variable is specified in the
+       Following this line is a  list  of  environment  variable  assignments.
+       Each  line consists of an environment variable name, an equals sign (=)
+       and the value to be assigned to the environment variable.  White  space
+       before  and  after  the  equals sign is ignored.  Variables assigned in
+       this way are visible only to [4mless[24m.  If a variable is specified  in  the
        system environment and also in a lesskey file, the value in the lesskey
        file takes precedence.
 
        If the variable name is followed by += rather than =, the string is ap-
-       pended to the variable's existing value.  This currently works only  if
+       pended  to the variable's existing value.  This currently works only if
        any += lines immediately follow the same variable's original definition
-       (with an = line), without any intervening definitions  of  other  vari-
-       ables.   It  can append only to a variable defined earlier in the file;
+       (with  an  =  line), without any intervening definitions of other vari-
+       ables.  It can append only to a variable defined earlier in  the  file;
        it cannot append to a variable in the system environment.
 
 [1mCONDITIONAL CONFIGURATION[0m
-       If a line begins with #version followed by a relational operator and  a
-       version  number, the remainder of the line is parsed if and only if the
+       If  a line begins with #version followed by a relational operator and a
+       version number, the remainder of the line is parsed if and only if  the
        running version of [4mless[24m (or [4mlesskey[24m) matches the operator.  This can be
        helpful if a lesskey file is used by different versions of [4mless[24m.
 
-       For  example,  suppose  that  a  new command named 'sideways-search' is
-       added in [4mless[24m version 777.  Then the following line  would  assign  the
-       command  to  the  Q key, but only in versions of [4mless[24m which support it.
+       For example, suppose that a  new  command  named  'sideways-search'  is
+       added  in  [4mless[24m  version 777.  Then the following line would assign the
+       command to the Q key, but only in versions of [4mless[24m  which  support  it.
        The line would be ignored by versions earlier than 777.
 
                  #version >= 777  Q sideways-search
@@ -335,7 +337,7 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
              =    Equal to
              !=   Not equal to
 
-       The #version feature is not supported in [4mless[24m and [4mlesskey[24m  before  ver-
+       The  #version  feature is not supported in [4mless[24m and [4mlesskey[24m before ver-
        sion 594.  In those older versions, all #version lines are ignored.
 
 [1mEXAMPLE[0m
@@ -350,26 +352,26 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
        [1mless[22m(1)
 
 [1mWARNINGS[0m
-       On MS-DOS and OS/2 systems, certain keys send a sequence of  characters
-       which  start  with  a  NUL character (0).  This NUL character should be
+       On  MS-DOS and OS/2 systems, certain keys send a sequence of characters
+       which start with a NUL character (0).  This  NUL  character  should  be
        represented as \340 in a lesskey file.
 
 [1mCOPYRIGHT[0m
-       Copyright (C) 1984-2021  Mark Nudelman
+       Copyright (C) 1984-2022  Mark Nudelman
 
-       less is part of the GNU project and is free software.  You  can  redis-
-       tribute  it and/or modify it under the terms of either (1) the GNU Gen-
-       eral Public License as published by the Free  Software  Foundation;  or
+       less  is  part of the GNU project and is free software.  You can redis-
+       tribute it and/or modify it under the terms of either (1) the GNU  Gen-
+       eral  Public  License  as published by the Free Software Foundation; or
        (2) the Less License.  See the file README in the less distribution for
        more details regarding redistribution.  You should have received a copy
-       of  the  GNU General Public License along with the source for less; see
-       the file COPYING.  If not, write to the Free  Software  Foundation,  59
-       Temple  Place, Suite 330, Boston, MA  02111-1307, USA.  You should also
+       of the GNU General Public License along with the source for  less;  see
+       the  file  COPYING.   If not, write to the Free Software Foundation, 59
+       Temple Place, Suite 330, Boston, MA  02111-1307, USA.  You should  also
        have received a copy of the Less License; see the file LICENSE.
 
        less is distributed in the hope that it will be useful, but WITHOUT ANY
-       WARRANTY;  without even the implied warranty of MERCHANTABILITY or FIT-
-       NESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License  for
+       WARRANTY; without even the implied warranty of MERCHANTABILITY or  FIT-
+       NESS  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
        more details.
 
 [1mAUTHOR[0m
@@ -378,4 +380,4 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
 
 
 
-                           Version 603: 14 Mar 2022                 LESSKEY(1)
+                           Version 608: 22 Jul 2022                 LESSKEY(1)
