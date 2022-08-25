@@ -4696,6 +4696,7 @@ fi
 
 
 
+
 # Checks for identifiers.
 ac_fn_c_check_type "$LINENO" "off_t" "ac_cv_type_off_t" "$ac_includes_default"
 if test "x$ac_cv_type_off_t" = xyes; then :
@@ -4791,6 +4792,28 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }; $as_echo "#define HAVE_STAT_INO 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for procfs" >&5
+$as_echo_n "checking for procfs... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/statfs.h>
+int
+main ()
+{
+struct statfs s; s.f_type = PROC_SUPER_MAGIC; (void) fstatfs(0,&s);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; $as_echo "#define HAVE_PROCFS 1" >>confdefs.h
 
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -5346,15 +5369,15 @@ else
 
 #include <sys/types.h>
 #include <regex.h>
-main() { regex_t r; regmatch_t rm; char *text = "xabcy";
-if (regcomp(&r, "abc", 0)) exit(1);
-if (regexec(&r, text, 1, &rm, 0)) exit(1);
+int main() { regex_t r; regmatch_t rm; char *text = "xabcy";
+if (regcomp(&r, "abc", 0)) return (1);
+if (regexec(&r, text, 1, &rm, 0)) return (1);
 #ifndef __WATCOMC__
-if (rm.rm_so != 1) exit(1); /* check for correct offset */
+if (rm.rm_so != 1) return (1); /* check for correct offset */
 #else
-if (rm.rm_sp != text + 1) exit(1); /* check for correct offset */
+if (rm.rm_sp != text + 1) return (1); /* check for correct offset */
 #endif
-exit(0); }
+return (0); }
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
   have_posix_regex=yes

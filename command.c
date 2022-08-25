@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2021  Mark Nudelman
+ * Copyright (C) 1984-2022  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -48,6 +48,9 @@ extern IFILE curr_ifile;
 extern void *ml_search;
 extern void *ml_examine;
 extern int wheel_lines;
+extern int header_lines;
+extern int def_search_type;
+extern int updown_match;
 #if SHELL_ESCAPE || PIPEC
 extern void *ml_shell;
 #endif
@@ -152,7 +155,7 @@ in_mca(VOID_PARAM)
  * Set up the display to start a new search command.
  */
 	static void
-mca_search(VOID_PARAM)
+mca_search1(VOID_PARAM)
 {
 #if HILITE_SEARCH
 	if (search_type & SRCH_FILTER)
@@ -187,6 +190,12 @@ mca_search(VOID_PARAM)
 	else
 		cmd_putstr("?");
 	forw_prompt = 0;
+}
+
+	static void
+mca_search(VOID_PARAM)
+{
+	mca_search1();
 	set_mlist(ml_search, 0);
 }
 
@@ -340,6 +349,7 @@ is_newline_char(c)
 mca_opt_first_char(c)
 	int c;
 {
+	int no_prompt = (optflag & OPT_NO_PROMPT);
 	int flag = (optflag & ~OPT_NO_PROMPT);
 	if (flag == OPT_NO_TOGGLE)
 	{
@@ -357,14 +367,14 @@ mca_opt_first_char(c)
 		{
 		case '+':
 			/* "-+" = UNSET. */
-			optflag = (flag == OPT_UNSET) ?
-				OPT_TOGGLE : OPT_UNSET;
+			optflag = no_prompt | ((flag == OPT_UNSET) ?
+				OPT_TOGGLE : OPT_UNSET);
 			mca_opt_toggle();
 			return (MCA_MORE);
 		case '!':
 			/* "-!" = SET */
-			optflag = (flag == OPT_SET) ?
-				OPT_TOGGLE : OPT_SET;
+			optflag = no_prompt | ((flag == OPT_SET) ?
+				OPT_TOGGLE : OPT_SET);
 			mca_opt_toggle();
 			return (MCA_MORE);
 		case CONTROL('P'):
@@ -463,7 +473,7 @@ mca_opt_char(c)
 	if (optgetname)
 	{
 		/* We're getting a long option name.  */
-		if (!is_newline_char(c))
+		if (!is_newline_char(c) && c != '=')
 			return (mca_opt_nonfirst_char(c));
 		if (curropt == NULL)
 		{
@@ -505,6 +515,19 @@ mca_opt_char(c)
 	 */
 	start_mca(A_OPT_TOGGLE, opt_prompt(curropt), (void*)NULL, 0);
 	return (MCA_MORE);
+}
+
+/*
+ * Normalize search type.
+ */
+	public int
+norm_search_type(st)
+	int st;
+{
+	/* WRAP and PAST_EOF are mutually exclusive. */
+	if ((st & (SRCH_PAST_EOF|SRCH_WRAP)) == (SRCH_PAST_EOF|SRCH_WRAP))
+		st ^= SRCH_PAST_EOF;
+	return st;
 }
 
 /*
@@ -557,8 +580,7 @@ mca_search_char(c)
 
 	if (flag != 0)
 	{
-		/* Toggle flag, but keep PAST_EOF and WRAP mutually exclusive. */
-		search_type ^= flag | (search_type & (SRCH_PAST_EOF|SRCH_WRAP));
+		search_type = norm_search_type(search_type ^ flag);
 		mca_search();
 		return (MCA_MORE);
 	}
@@ -680,6 +702,12 @@ mca_char(c)
 			/* Incremental search: do a search after every input char. */
 			int st = (search_type & (SRCH_FORW|SRCH_BACK|SRCH_NO_MATCH|SRCH_NO_REGEX|SRCH_NO_MOVE|SRCH_WRAP));
 			char *pattern = get_cmdbuf();
+			/*
+			 * Must save updown_match because mca_search
+			 * reinits it. That breaks history scrolling.
+			 * {{ This is ugly. mca_search probably shouldn't call set_mlist. }}
+			 */
+			int save_updown_match = updown_match;
 			cmd_exec();
 			if (*pattern == '\0')
 			{
@@ -692,7 +720,8 @@ mca_char(c)
 					undo_search(1);
 			}
 			/* Redraw the search prompt and search string. */
-			mca_search();
+			mca_search1();
+			updown_match = save_updown_match;
 			cmd_repaint(NULL);
 		}
 		break;
@@ -800,7 +829,7 @@ prompt(VOID_PARAM)
 	if (!(ch_getflags() & CH_HELPFILE))
 	{
 		WCHAR w[MAX_PATH+16];
-		p = pr_expand("Less?f - %f.", 0);
+		p = pr_expand("Less?f - %f.");
 		MultiByteToWideChar(CP_ACP, 0, p, -1, w, sizeof(w)/sizeof(*w));
 		SetConsoleTitleW(w);
 	}
@@ -843,9 +872,8 @@ prompt(VOID_PARAM)
 		                    0, w, -1, a, sizeof(a), NULL, NULL);
 		p = a;
 #endif
-		at_enter(AT_STANDOUT|AT_COLOR_PROMPT);
-		putstr(p);
-		at_exit();
+		load_line(p);
+		put_line();
 	}
 	clear_eol();
 }
@@ -922,8 +950,8 @@ getccu(VOID_PARAM)
  */
 	static LWCHAR
 getcc_repl(orig, repl, gr_getc, gr_ungetc)
-	char const* orig;
-	char const* repl;
+	char constant* orig;
+	char constant* repl;
 	LWCHAR (*gr_getc)(VOID_PARAM);
 	void (*gr_ungetc)(LWCHAR);
 {
@@ -1603,7 +1631,7 @@ commands(VOID_PARAM)
 			 * Search forward for a pattern.
 			 * Get the first char of the pattern.
 			 */
-			search_type = SRCH_FORW;
+			search_type = SRCH_FORW | def_search_type;
 			if (number <= 0)
 				number = 1;
 			mca_search();
@@ -1615,7 +1643,7 @@ commands(VOID_PARAM)
 			 * Search backward for a pattern.
 			 * Get the first char of the pattern.
 			 */
-			search_type = SRCH_BACK;
+			search_type = SRCH_BACK | def_search_type;
 			if (number <= 0)
 				number = 1;
 			mca_search();
@@ -1735,7 +1763,7 @@ commands(VOID_PARAM)
 				 */
 				make_display();
 				cmd_exec();
-				lsystem(pr_expand(editproto, 0), (char*)NULL);
+				lsystem(pr_expand(editproto), (char*)NULL);
 				break;
 			}
 #endif

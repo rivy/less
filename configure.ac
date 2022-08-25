@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 1984-2011  Mark Nudelman
+# Copyright (C) 1984-2022  Mark Nudelman
 #
 # You may distribute under the terms of either the GNU General Public
 # License or the Less License, as specified in the README file.
@@ -217,6 +217,8 @@ AH_TEMPLATE([HAVE_CONST],
 	[Define HAVE_CONST if your compiler supports the "const" modifier.])
 AH_TEMPLATE([HAVE_STAT_INO],
 	[Define HAVE_STAT_INO if your struct stat has st_ino and st_dev.])
+AH_TEMPLATE([HAVE_PROCFS],
+	[Define HAVE_PROCFS if have have fstatfs with f_type and PROC_SUPER_MAGIC.])
 AH_TEMPLATE([HAVE_TIME_T],
 	[Define HAVE_TIME_T if your system supports the "time_t" type.])
 AH_TEMPLATE([HAVE_STRERROR],
@@ -266,6 +268,10 @@ AC_TRY_COMPILE([#include <sys/types.h>
 #include <sys/stat.h>],
   [struct stat s; dev_t dev = s.st_dev; ino_t ino = s.st_ino;],
   [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_STAT_INO)], [AC_MSG_RESULT(no)])
+AC_MSG_CHECKING(for procfs)
+AC_TRY_COMPILE([#include <sys/statfs.h>],
+  [struct statfs s; s.f_type = PROC_SUPER_MAGIC; (void) fstatfs(0,&s); ],
+  [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PROCFS)], [AC_MSG_RESULT(no)])
 
 # Checks for ANSI function prototypes.
 AC_MSG_CHECKING(for ANSI function prototypes)
@@ -422,15 +428,15 @@ AC_MSG_CHECKING(for POSIX regcomp)
 AC_TRY_RUN([
 #include <sys/types.h>
 #include <regex.h>
-main() { regex_t r; regmatch_t rm; char *text = "xabcy";
-if (regcomp(&r, "abc", 0)) exit(1);
-if (regexec(&r, text, 1, &rm, 0)) exit(1);
+int main() { regex_t r; regmatch_t rm; char *text = "xabcy";
+if (regcomp(&r, "abc", 0)) return (1);
+if (regexec(&r, text, 1, &rm, 0)) return (1);
 #ifndef __WATCOMC__
-if (rm.rm_so != 1) exit(1); /* check for correct offset */
+if (rm.rm_so != 1) return (1); /* check for correct offset */
 #else
-if (rm.rm_sp != text + 1) exit(1); /* check for correct offset */
+if (rm.rm_sp != text + 1) return (1); /* check for correct offset */
 #endif
-exit(0); }],
+return (0); }],
   have_posix_regex=yes, have_posix_regex=no, have_posix_regex=unknown)
 if test $have_posix_regex = yes; then
   AC_MSG_RESULT(yes)
