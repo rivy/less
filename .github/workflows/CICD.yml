@@ -13,8 +13,8 @@ name: CICD
 
 env:
   PROJECT_NAME: less
-  PROJECT_DESC: "`less` is more"
-  PROJECT_EXES: "less lessecho lesskey" ## 'make ... all' binary executables
+  PROJECT_DESC: '`less` is more'
+  PROJECT_EXES: 'less lessecho lesskey' ## 'make ... all' binary executables
 
 on: [push, pull_request]
 
@@ -185,10 +185,10 @@ jobs:
               ./configure CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
             ;;
             windows-*)
-              cp Makefile.win Makefile
+              MAKE_overrides="OUT_DIR_bin=." ## force binaries to '.' (which is the default for *nix), instead of OOS
             ;;
           esac
-          make CC="${CC}" CXX="${CXX}" LD="${LD}" ARCH='${{ steps.vars.outputs.ARCH_ID }}' STATIC='${{ matrix.job.static }}' all
+          make all CC="${CC}" CXX="${CXX}" LD="${LD}" ARCH='${{ steps.vars.outputs.ARCH_ID }}' STATIC='${{ matrix.job.static }}' ${MAKE_overrides}
           for exe in ${PROJECT_EXES} ; do
             cp "${exe}${{ steps.vars.outputs.EXE_suffix }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_stem }}/bin/'
           done
