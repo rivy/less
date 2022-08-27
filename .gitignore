@@ -1,24 +1,46 @@
-# NOTE: GLOBSTAR syntax [see `git help gitignore`]
+# v2022-08-26+less-mods [rivy]
 
-# ignore generated object files
-*.o
-*.obj
+# NOTE: Git GLOBSTAR syntax [see `git help gitignore`]
+# * ref: [.gitignore] http://git-scm.com/docs/gitignore @@ http://archive.is/Rk6rO
+# * ref: [Generate gitignore's](https://gitignore.io) ; eg, <https://gitignore.io/api/node>
 
-# ignore generated depfiles
-*.d
+# ignore intermediate/undistributed build artifacts
+build
+[._@#$]build
+target
 
-# ignore generated headers
-defines.h
+# ignore coverage data
+coverage
+[._@#$]coverage
+.nyc_output
 
-# ignore generated executables
+# ignore JS import/package-related files
+node_modules
+package-lock.json
+yarn.lock
+
+# ignore localized VSCode logs/settings
+.vscode/c_cpp_properties.json
+.vscode/makefile.extension.output
+# * ignore VSCode precompiled headers for IntelliSense
+.vscode/ipch/
+
+## local additions ##
+
+# `less` ~ most older Makefiles still generate artifacts *within* the source code folder
+
+# ignore generated artifacts
+# * executables
 less
 less.exe
 lessecho
 lessecho.exe
 lesskey
 lesskey.exe
-
-# ignore localized VSCode settings
-.vscode/c_cpp_properties.json
-# ignore VSCode precompiled headers for IntelliSense
-.vscode/ipch/
+# * depfiles
+*.d
+# * headers
+defines.h
+# * object files
+*.o
+*.obj
