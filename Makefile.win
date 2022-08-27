@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.08.26)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.08.27)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -25,7 +25,7 @@
 # spell-checker:ignore (make) BASEPATH CURDIR MAKECMDGOALS MAKEFLAGS SHELLSTATUS TERMERR TERMOUT abspath addprefix addsuffix endef eval findstring firstword gmake ifeq ifneq lastword notdir patsubst prepend undefine wordlist
 #
 # spell-checker:ignore (CC) DDEBUG DNDEBUG NDEBUG Ofast Werror Wextra Xclang Xlinker bcc dumpmachine embcc flto flto-visibility-public-std fpie msdosdjgpp nodefaultlib nologo nothrow psdk
-# spell-checker:ignore (abbrev/acronyms) LCID LCIDs LLVM MSVC MinGW POSIX VCvars
+# spell-checker:ignore (abbrev/acronyms) LCID LCIDs LLVM MSVC MinGW MSDOS POSIX VCvars
 # spell-checker:ignore (jargon) autoset deps depfile depfiles delims executables maint multilib
 # spell-checker:ignore (libraries) advapi crtl libcmt libgcc libstdc lmsvcrt lstdc stdext wsock
 # spell-checker:ignore (names) benhoyt rivy Borland Deno Watcom
@@ -202,6 +202,8 @@ LIBS := $(foreach lib,${LIBS},-l${lib})
 # # CFLAGS_dynamic := -fpie
 # # LDFLAGS_dynamic := -fpie
 # endif
+
+RUNNER_i586-pc-msdosdjgpp-gcc := MSDOS-run
 endif ## `clang` or `gcc`
 OUT_obj_filesets := ${OUT_obj_filesets} $() *.o *.d## `clang`/`gcc` intermediate files
 
@@ -843,6 +845,10 @@ $(call %debug_var,RCFLAGS)
 
 ####
 
+RUNNER := ${RUNNER_${CC}}
+
+####
+
 # note: work within ${BASEPATH} (build directories may not yet be created)
 # note: set LIB as `make` doesn't export the LIB change into `$(shell ...)` invocations
 test_file_stem := $(subst ${SPACE},_,${BASEPATH}__MAKE__${CC}_${ARCH}_${TARGET}_test__)
@@ -883,12 +889,14 @@ has_run_first := $(findstring run,$(firstword ${MAKECMDGOALS}))
 run_position := $(call %position,run,${MAKECMDGOALS})
 
 make_run_ARGS := $(if ${has_run_target},$(call %tail,$(wordlist ${run_position},$(call %length,${make_ARGS}),${make_ARGS})),)
+override ARGS := ${ARGS} ${make_run_ARGS}
 
 $(call %debug_var,has_run_first)
 $(call %debug_var,has_run_target)
 $(call %debug_var,run_position)
 $(call %debug_var,make_ARGS)
 $(call %debug_var,make_run_ARGS)
+$(call %debug_var,ARGS)
 
 ####
 
@@ -1063,8 +1071,8 @@ all_phony_targets := $()
 
 .PHONY: run
 all_phony_targets := ${all_phony_targets} run
-run: ${.DEFAULT_GOAL} ## Build/execute project executable (for ARGS, use `... run -- [ARGS]`)
-	@$(call %shell_quote,$^) ${make_run_ARGS}
+run: ${.DEFAULT_GOAL} ## Build/execute project executable (for ARGS, use `-- [ARGS]` or `ARGS="..."`)
+	@$(strip ${RUNNER} $(call %shell_quote,$^)) ${ARGS}
 
 ####
 ifeq (${false},${has_run_first})## define standard phony targets only when 'run' is not the first target (all text following 'run' is assumed to be arguments for the run; minimizes recipe duplication/overwrite warnings)
@@ -1160,7 +1168,7 @@ endif
 
 %*[makefile.run]*: %
 	@${ECHO} $(call %shell_escape,$(call %info_text,running '$<'))
-	@$(call %shell_quote,$<) ${make_run_ARGS}
+	@${ECHO} $(strip ${RUNNER_${CC}} $(call %shell_quote,$<)) ${ARGS}
 
 ####
 
@@ -1273,5 +1281,6 @@ ifeq (${true},$(call %truthy,${has_run_target}))
 ifneq (${NULL},$(if ${has_run_first},${NULL},$(filter ${all_phony_targets},${make_run_ARGS})))
 $(call %warning,`run` arguments duplicate (and overwrite) standard targets; try using run with arguments as a solo target (`${make_invoke_alias} run ARGS`))
 endif
+# $(info make_run_ARGS=:${make_run_ARGS}:)
 $(eval ${make_run_ARGS}:;@:)
 endif
