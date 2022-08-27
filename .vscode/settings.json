@@ -1,1 +1,1 @@
-{ "project": { "name": "project", "build_dir": "#build" } }
+{ "project": { "name": "project", "build_dir": "#build", "make_options": "" } }

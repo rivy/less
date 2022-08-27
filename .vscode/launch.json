@@ -4,10 +4,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Build/debug (32-bit)",
+			"name": "Debug (32-bit)",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug.(vscode)-x32/${config:project.name}.exe",
+			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug.(vscode)-x32/bin/${config:project.name}.exe",
 			"args": [], // * note: use this configuration array to add run-time arguments to the debugged process
 			// "args": ["/?"], // * note: use this configuration array to add run-time arguments to the debugged process
 			// "args": ["${fileWorkspaceFolder}/../causes-fault-single-line.txt"],
@@ -31,10 +31,10 @@
 			"preLaunchTask": "Build (gcc/32-bit/DEBUG)"
 		},
 		{
-			"name": "Build/debug (64-bit)",
+			"name": "Debug (64-bit)",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug.(vscode)-x64/${config:project.name}.exe",
+			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug.(vscode)-x64/bin/${config:project.name}.exe",
 			"args": [], // * note: use this configuration array to add run-time arguments to the debugged process
 			"stopAtEntry": false,
 			"cwd": "${fileWorkspaceFolder}",
