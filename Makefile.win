@@ -1,49 +1,62 @@
-# Makefile for `less` (C/C++; OOS-build support; gmake-form/style; v2021.09.22)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.08.27)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
+# * supports multi-binary projects; adapts to project structure
 # GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
-# Copyright (C) 2020-2021 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
+# Copyright (C) 2020-2022 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
 # NOTE: * requires `make` version 4.0+ (minimum needed for correct path functions); for windows, install using `scoop install make`
 # NOTE: `make` doesn't handle spaces within file names without gyrations (see <https://stackoverflow.com/questions/9838384/can-gnu-make-handle-filenames-with-spaces>@@<https://archive.is/PYKKq>)
 # NOTE: `make -d` will display full debug output (`make` and makefile messages) during the build/make process
 # NOTE: `make MAKEFLAGS_debug=1` will display just the makefile debug messages during the build/make process
+# NOTE: use `make ... run -- <OPTIONS>` to pass options to the run TARGET; otherwise, `make` will interpret the options as targeted for itself
 
-# `make -f Makefile.win [ARCH=32|64] [CC=..] [CC_DEFINES=<truthy>] [COLOR=<truthy>] [DEBUG=<truthy>] [STATIC=<truthy>] [TARGET=..] [VERBOSE=<truthy>] [MAKEFLAGS_debug=<truthy>] [MAKE_TARGET...]`
+# ToDO: investigate portably adding resources to executables; ref: [Embed Resources into Executables](https://caiorss.github.io/C-Cpp-Notes/resources-executable.html) @@ <https://archive.is/pjDzW>
+# FixME: [2021-09-26; rivy] clang `llvm-rc` is broken (not preprocessing; see <https://bugzilla.mozilla.org/show_bug.cgi?id=1537703#c1> @@ <https://archive.is/fK3Vi>)
+# *=> for `clang` builds requiring resources, `clang` will utilize `windres`, if found on PATH, otherwise gracefully degrades by skipping the resource entirely and linking an empty object file
 
-NAME := less ## $()/empty/null => autoset to name of containing folder
+# `make [ARCH=32|64] [CC=..] [CC_DEFINES=<truthy>] [COLOR=<truthy>] [DEBUG=<truthy>] [STATIC=<truthy>] [TARGET=..] [VERBOSE=<truthy>] [MAKEFLAGS_debug=<truthy>] [MAKE_TARGET...]`
 
 ####
 
-# spell-checker:ignore () brac cmdbuf forwback funcs ifile lessecho lesskey linenum lsystem optfunc opttbl scrsize ttyin
+# spell-checker:ignore (project)
 
 # spell-checker:ignore (targets) realclean vclean veryclean
 # spell-checker:ignore (make) BASEPATH CURDIR MAKECMDGOALS MAKEFLAGS SHELLSTATUS TERMERR TERMOUT abspath addprefix addsuffix endef eval findstring firstword gmake ifeq ifneq lastword notdir patsubst prepend undefine wordlist
 #
-# spell-checker:ignore (CC) DDEBUG DNDEBUG NDEBUG Ofast Werror Wextra Xclang Xlinker bcc dumpmachine embcc flto flto-visibility-public-std fpie nodefaultlib nologo nothrow psdk
-# spell-checker:ignore (abbrev/acronyms) LLVM MSVC MinGW POSIX VCvars
+# spell-checker:ignore (CC) DDEBUG DNDEBUG NDEBUG Ofast Werror Wextra Xclang Xlinker bcc dumpmachine embcc flto flto-visibility-public-std fpie msdosdjgpp nodefaultlib nologo nothrow psdk
+# spell-checker:ignore (abbrev/acronyms) LCID LCIDs LLVM MSVC MinGW MSDOS POSIX VCvars
 # spell-checker:ignore (jargon) autoset deps depfile depfiles delims executables maint multilib
-# spell-checker:ignore (libraries) advapi libcmt libgcc libstdc lmsvcrt lstdc stdext wsock
-# spell-checker:ignore (names) benhoyt rivy Borland Watcom
+# spell-checker:ignore (libraries) advapi crtl libcmt libgcc libstdc lmsvcrt lstdc stdext wsock
+# spell-checker:ignore (names) benhoyt rivy Borland Deno Watcom
 # spell-checker:ignore (shell/nix) mkdir printf rmdir uname
 # spell-checker:ignore (shell/win) COMSPEC SystemDrive SystemRoot findstr findstring mkdir windir
-# spell-checker:ignore (utils) goawk ilink
-# spell-checker:ignore (vars) CFLAGS CPPFLAGS CXXFLAGS DEFINETYPE EXEEXT LDFLAGS LIBPATH LIBs MAKEDIR OBJ_deps OBJs OSID PAREN devnull falsey fileset filesets globset globsets punct truthy
+# spell-checker:ignore (utils) goawk ilink windres
+# spell-checker:ignore (vars) CFLAGS CLICOLOR CPPFLAGS CXXFLAGS DEFINETYPE EXEEXT LDFLAGS LIBPATH LIBs MAKEDIR OBJ_deps OBJs OSID PAREN RCFLAGS REZ REZs devnull falsey fileset filesets globset globsets punct truthy
 
 ####
 
-DEPS = ${SRC_DIR}/defines.h ${SRC_DIR}/less.h ${SRC_DIR}/funcs.h ${SRC_DIR}/cmd.h## manually-configured common/shared dependencies; note: use delayed expansion (`=`, not `:=`) if referencing a later defined variable (eg, `{SRC_DIR}/defines.h`)
-LIBS := user32 ## list of any additional required libraries (space-separated)
-SRC_PATH := .## path to source relative to makefile (defaults to 'src')
+NAME := $()## $()/empty/null => autoset to name of containing folder
 
-DEFINETYPE := wn
+SRC_PATH := $()## path to source relative to makefile (defaults to first of ['src','source']); used to create ${SRC_DIR} which is then used as the source base directory path
+BUILD_PATH := $()## path to build storage relative to makefile (defaults to '#build'); used to create ${BUILD_DIR} which is then used as the base path for build outputs
+
+DEPS = $()## list of any additional required (common/shared) dependencies (space-separated); note: use delayed expansion (`=`, not `:=`) if referencing a later defined variable (eg, `{SRC_DIR}/defines.h`)
+LIBS := $()## list of any additional required (common/shared) libraries (space-separated); alternatively, *if not using `gcc`*, `#pragma comment(lib, "LIBRARY_NAME")` within code; ref: [`gcc` pragma library?](https://stackoverflow.com/questions/1685206)@@<https://archive.ph/wip/md6Af>
+RES := $()## list of any additional required (common/shared) resources (space-separated)
+
+####
+
+makefile_path := $(lastword ${MAKEFILE_LIST})## note: must precede any makefile imports (ie, `include ...`)
+-include ${makefile_path}.config## include sibling configuration file, if exists (easier project config with a stable base Makefile)
 
 ####
 
 # `make ...` command line flags/options
 ARCH := $()## default ARCH for compilation ([$(),...]); $()/empty/null => use CC default ARCH
 CC_DEFINES := false## provide compiler info (as `CC_...` defines) to compiling targets ('truthy'-type)
-COLOR := $(if $(or ${MAKE_TERMOUT},${MAKE_TERMERR}),true,false)## enable colorized output ('truthy'-type)
+# * COLOR ~ defaults to "auto" mode ("on/true" if STDOUT is tty, "off/false" if STDOUT is redirected); respects CLICOLOR/CLICOLOR_FORCE and NO_COLOR (but overridden by `COLOR=..` on command line); refs: <https://bixense.com/clicolors> , <https://no-color.org>
+COLOR := $(or $(if ${CLICOLOR_FORCE},$(if $(filter 0,${CLICOLOR_FORCE}),$(),true),$()),$(if ${MAKE_TERMOUT},$(if $(or $(filter 0,${CLICOLOR}),${NO_COLOR}),$(),true),$()))## enable colorized output ('truthy'-type)
 DEBUG := false## enable compiler debug flags/options ('truthy'-type)
 STATIC := true## compile to statically linked executable ('truthy'-type)
 VERBOSE := false## verbose `make` output ('truthy'-type)
@@ -74,14 +87,16 @@ ifneq (${MAKE_VERSION_fail},)
 $(call %error,`make` v4.0+ required (currently using v${MAKE_VERSION}))
 endif
 
-makefile_path := $(lastword ${MAKEFILE_LIST})
 makefile_abs_path := $(abspath ${makefile_path})
 makefile_dir := $(abspath $(dir ${makefile_abs_path}))
 current_dir := ${CURDIR}
+makefile_set := $(wildcard ${makefile_path} ${makefile_path}.config ${makefile_path}.target)
+makefile_set_abs := $(abspath ${makefile_set})
 
 # use ${BASEPATH} as an anchor to allow otherwise relative path specification of files
 ifneq (${makefile_dir},${current_dir})
 BASEPATH := ${makefile_dir:${current_dir}/%=%}/
+# BASEPATH := $(patsubst ./%,%,${makefile_dir:${current_dir}/%=%}/)
 endif
 
 #### Start of system configuration section. ####
@@ -100,7 +115,13 @@ ifeq (,$(filter-out clang gcc,${CC_ID}))
 ## `clang` or `gcc`
 CXX := ${CC:gcc=g}++
 LD := ${CXX}
-%link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3}## $(call %link,EXE,OBJs,LIBs); function => requires delayed expansion
+# FixME: [2021-09-26; rivy] clang `llvm-rc` is broken (not preprocessing) => use `windres`, if available
+RC_CC_clang := $(subst -FOUND,,$(filter windres-FOUND,$(shell windres --version 2>&1 && echo windres-FOUND || echo)))
+RC_CC_gcc := windres
+RC := ${RC_CC_${CC_ID}}
+%link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3} ${4}## $(call %link,EXE,OBJs,REZs,LIBs); function => requires delayed expansion
+# NOTE: currently resource embedding via linking is only supported on Windows platforms
+%rc = $(if $(and $(call %eq,${OSID},win),${RC}),${RC} ${RCFLAGS} ${RC_o}${1} ${2},${CC} ${CFLAGS_COMPILE_ONLY} ${CFLAGS_ARCH_${ARCH_ID}} -w -x c - <${devnull} ${CC_o}${1})## $(call %link,REZ,RES); function => requires delayed expansion
 STRIP_CC_clang_OSID_nix := strip
 STRIP_CC_clang_OSID_win := llvm-strip
 STRIP_CC_gcc := strip
@@ -117,7 +138,7 @@ STRIP_CC_gcc := strip
 ## -MMD :: create make-compatible dependency information file (a depfile); ref: <https://clang.llvm.org/docs/ClangCommandLineReference.html> , <https://stackoverflow.com/questions/2394609/makefile-header-dependencies>
 ## -D_CRT_SECURE_NO_WARNINGS :: compiler directive == suppress "unsafe function" compiler warning
 ## note: CFLAGS == C flags; CPPFLAGS == C PreProcessor flags; CXXFLAGS := C++ flags; ref: <https://stackoverflow.com/questions/495598/difference-between-cppflags-and-cxxflags-in-gnu-make>
-CFLAGS = -I$(call %shell_quote,${BASEPATH}.) -pedantic-errors -Werror -Wall -Wno-comment -Wno-deprecated-declarations -MMD -D_CRT_SECURE_NO_WARNINGS## requires delayed expansion (b/c uses later %shell_quote function)
+CFLAGS = -I$(call %shell_quote,${BASEPATH}.) -pedantic-errors -Werror -Wall -MMD -D_CRT_SECURE_NO_WARNINGS## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_ARCH_32 := -m32
 CFLAGS_ARCH_64 := -m64
@@ -151,10 +172,26 @@ LDFLAGS_DEBUG_false := $(if $(filter nix,${OSID}),-Xlinker --strip-all,)
 LDFLAGS_STATIC_true := -static
 LDFLAGS_clang := $(if $(filter nix,${OSID}),-lstdc++,)
 LDFLAGS_gcc := -lstdc++
+## * resource compiler
+## for `clang`, use `llvm-rc -H` for option help
+## for `gcc`, use `windres --help` for option help
+RCFLAGS := $()
+# RCFLAGS_clang := -L 0x409$()## `llvm-rc`
+RCFLAGS_clang := -l 0x409$()## `windres`
+RCFLAGS_gcc := -l 0x409$()
+RCFLAGS_TARGET_clang_ARCH_32 = --target=$(if $(call %eq,${CC},clang),i686-w64-mingw32,${CC})$()# deferred/delayed expansion b/c of use of %eq()
+RCFLAGS_TARGET_clang_ARCH_64 = --target=$(if $(call %eq,${CC},clang),x86_64-w64-mingw32,${CC})$()# deferred/delayed expansion b/c of use of %eq()
+RCFLAGS_TARGET_gcc_ARCH_32 = --target=$(if $(or $(call %eq,${CC},gcc),$(call %eq,${CC},i586-pc-msdosdjgpp-gcc)),i686-w64-mingw32,${CC})$()# deferred/delayed expansion b/c of use of %eq()
+RCFLAGS_TARGET_gcc_ARCH_64 = --target=$(if $(call %eq,${CC},gcc),x86_64-w64-mingw32,${CC})$()# deferred/delayed expansion b/c of use of %eq()
 
 CC_is_MinGW_w64 = $(call %as_truthy,$(findstring -w64-mingw32-,${CC}))# deferred/delayed expansion b/c of use of %as_truthy()
 
 DEP_ext_${CC_ID} := d
+REZ_ext_${CC_ID} := res.o
+
+# RC_clang_o := /fo## `llvm-rc`
+RC_clang_o := -o## `windres`
+RC_gcc_o := -o
 
 LIBS := $(foreach lib,${LIBS},-l${lib})
 
@@ -165,6 +202,8 @@ LIBS := $(foreach lib,${LIBS},-l${lib})
 # # CFLAGS_dynamic := -fpie
 # # LDFLAGS_dynamic := -fpie
 # endif
+
+RUNNER_i586-pc-msdosdjgpp-gcc := MSDOS-run
 endif ## `clang` or `gcc`
 OUT_obj_filesets := ${OUT_obj_filesets} $() *.o *.d## `clang`/`gcc` intermediate files
 
@@ -172,7 +211,9 @@ ifeq (cl,${CC_ID})
 ## `cl` (MSVC)
 CXX := ${CC}
 LD := link
-%link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3}## $(call %link,EXE,OBJs,LIBs); function => requires delayed expansion
+RC := rc
+%link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3} ${4}## $(call %link,EXE,OBJs,REZs,LIBs); function => requires delayed expansion
+%rc = ${RC} ${RCFLAGS} ${RC_o}${1} ${2}$(if $(call %falsey,${is_CL1600+}),>${devnull},)## $(call %link,REZ,RES); function => requires delayed expansion
 STRIP := $()
 ## ref: <https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-by-category> @@ <https://archive.is/PTPDN>
 ## /nologo :: startup without logo display
@@ -201,8 +242,10 @@ STRIP := $()
 ## /incremental:no :: disable incremental linking (avoids size increase, useless for cold builds, with minimal time cost)
 ## /machine:I386 :: specify the target machine platform
 ## /subsystem:console :: generate "Win32 character-mode" console application
+## ref: <https://devblogs.microsoft.com/cppblog/windows-xp-targeting-with-c-in-visual-studio-2012> @@ <https://archive.is/pWbPR>
 ## /subsystem:console,4.00 :: generate "Win32 character-mode" console application; 4.00 => minimum supported system is Win9x/NT; supported only by MSVC 9 (`cl` version "15xx") or less
-## /subsystem:console,5.01 :: generate "Win32 character-mode" console application; 5.01 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later
+## /subsystem:console,5.01 :: generate "Win32 character-mode" console application; 5.01 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 32-bit
+## /subsystem:console,5.02 :: generate "Win32 character-mode" console application; 5.02 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 64-bit
 CFLAGS = /nologo /W3 /WX /EHsc /I $(call %shell_quote,${BASEPATH}.) /D "WIN32" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS"## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 CFLAGS_COMPILE_ONLY := -c
 # CFLAGS_DEBUG_true = /D "DEBUG" /D "_DEBUG" /Od /Zi /Fd"${OUT_DIR_obj}/"
@@ -214,19 +257,29 @@ CFLAGS_DEBUG_true_STATIC_true := /MTd ## debug + static
 CFLAGS_DEBUG_false_STATIC_true := /MT ## release + static
 CFLAGS_VERBOSE_true := $()
 CPPFLAGS := $()
-CXXFLAGS := /TP
+CXXFLAGS := $()
 LDFLAGS := /nologo /incremental:no
 LDFLAGS_ARCH_32 := /machine:I386
 # CL version specific flags
 LDFLAGS_CL1600+_false := /subsystem:console,4.00
-LDFLAGS_CL1600+_true := /subsystem:console,5.01
+LDFLAGS_CL1600+_true_ARCH_32 := /subsystem:console,5.01
+LDFLAGS_CL1600+_true_ARCH_64 := /subsystem:console,5.02
 # VC6-specific flags
 ## /ignore:4254 :: suppress "merging sections with different attributes" warning (LNK4254)
 LDFLAGS_VC6_true := /ignore:4254
+## * resource compiler
+## /nologo :: startup without logo display
+## /l 0x409 :: specify default language using language identifier; "0x409" == "en-US"
+## * ref: [MS LCIDs](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8) @@ <https://archive.is/ReX6o>
+RCFLAGS := /l 0x409 $()
+RCFLAGS_DEBUG_true := /D "DEBUG" /D "_DEBUG"
+RCFLAGS_DEBUG_false := /D "NDEBUG"
+RCFLAGS_VC6_false := /nologo
 
 CC_${CC_ID}_e := /Fe
 CC_${CC_ID}_o := /Fo
 LD_${CC_ID}_o := /out:
+RC_${CC_ID}_o := /fo
 
 O_${CC_ID} := obj
 
@@ -238,7 +291,13 @@ ifeq (,$(filter-out bcc32 embcc32,${CC_ID}))
 ## `bcc32` (Borland C++ 5.5.1 free command line tools) or `embcc` (Embarcadero Borland C++ free command line tools)
 CXX := ${CC}
 LD := ilink32
-%link = ${LD} -I$(call %shell_quote,$(call %as_win_path,${OUT_DIR_obj})) ${LDFLAGS} $(call %as_win_path,${2}), $(call %as_win_path,${1}),,$(call %as_win_path,${3})## $(call %link,EXE,OBJs,LIBs); function => requires delayed expansion
+RC := rc
+RC_CC_bcc32 := brc32
+RC_CC_embcc32 := rc
+RC := ${RC_CC_${CC_ID}}
+# note: `ILINK32 [@<respFile>][<options>] <startup> <myObjs>, [<exe>], [<mapFile>], [<libraries>], [<defFile>], [<resFile>]`
+%link = ${LD} -I$(call %shell_quote,$(call %as_win_path,${OUT_DIR_obj})) ${LDFLAGS} $(call %as_win_path,${2}), $(call %as_win_path,${1}),,$(call %as_win_path,${4}),,$(call %as_win_path,${3})## $(call %link,EXE,OBJs,REZs,LIBs); function => requires delayed expansion
+%rc = ${RC} ${RCFLAGS} ${RC_o}${1} ${2} >${devnull}## $(call %link,REZ,RES); function => requires delayed expansion
 STRIP := $()
 
 # * find CC base directory (for include and library directories plus initialization code, as needed); note: CMD/PowerShell is assumed as `bcc32` is DOS/Windows-only
@@ -259,7 +318,7 @@ LIB_DIRS = $(if $(filter bcc32,${CC_ID}),$(call %shell_quote,${CC_BASEDIR}\lib),
 # -v- :: turn off source level debugging and inline expansion on
 # -vi :: turn on inline function expansion
 # -w-pro :: disable warning "Call to function 'function' with no prototype"
-CFLAGS = -q -P-c -d -f- $(if $(filter bcc32,${CC_ID}),-ff- -w-pro,) -I$(call %shell_quote,${BASEPATH}.) -I$(call %shell_quote,${CC_BASEDIR}\include)## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+CFLAGS = -q -P-c -d -f- $(if $(filter bcc32,${CC_ID}),-ff-,) -I$(call %shell_quote,${BASEPATH}.) -I$(call %shell_quote,${CC_BASEDIR}\include)## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_DEBUG_false := -D"NDEBUG" -O2 -v- -vi
 CFLAGS_DEBUG_true := -D"DEBUG" -D"_DEBUG" -Od
@@ -281,10 +340,18 @@ CXXFLAGS := -P
 # -x :: suppress creation of a MAP file
 LDFLAGS = -q -Tpe -ap -c -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}## requires delayed expansion (b/c indirectly uses %shell_quote for ${LIB_DIRS} and ${LS_INIT_OBJ})
 LDFLAGS_DEBUG_false := -Gn -v- -x
+## * resource compiler; see `rc -?` for options help
+## /nologo :: startup without logo display
+## /l 0x409 :: specify default language using language identifier; "0x409" == "en-US"
+## * ref: [MS LCIDs](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8) @@ <https://archive.is/ReX6o>
+RCFLAGS = /l 0x409 $(if $(filter bcc32,${CC_ID}),-r,) -I$(call %shell_quote,${BASEPATH}.) -I$(call %shell_quote,${CC_BASEDIR}\include)$() $(if $(filter embcc32,${CC_ID}),-I$(call %shell_quote,${CC_BASEDIR}\include\windows\crtl) -I$(call %shell_quote,${CC_BASEDIR}\include\windows\sdk),)
+RCFLAGS_DEBUG_true := /D "DEBUG" /D "_DEBUG"
+RCFLAGS_DEBUG_false := /D "NDEBUG"
 
 CC_${CC_ID}_e := -e
 CC_${CC_ID}_o := -o
 LD_${CC_ID}_o := $()
+RC_${CC_ID}_o := /fo
 
 O_${CC_ID} := obj
 
@@ -294,7 +361,7 @@ OUT_obj_filesets := ${OUT_obj_filesets} $() *.obj *.ilc *.ild *.ilf *.ils *.tds#
 
 #### End of system configuration section. ####
 
-falsey := false 0 f n no off
+falsey := false 0 f n never no none off
 false := $()
 true := true
 truthy := ${true}
@@ -344,15 +411,31 @@ SPACE := $() $()
 %_position_ = $(if $(findstring ${1},${2}),$(call %_position_,${1},$(wordlist 2,$(words ${2}),${2}),_ ${3}),${3})
 %position = $(words $(call %_position_,${1},${2}))
 
-%filter_map = $(strip $(foreach elem,${2},$(call ${1},${elem})))
-%map = $(foreach elem,${2},$(call ${1},${elem}))
+%map = $(foreach elem,${2},$(call ${1},${elem}))# %map(fn,list) == [ fn(list[N]),... ]
+%filter_by = $(strip $(foreach elem,${3},$(and $(filter $(call ${1},${2}),$(call ${1},${elem})),${elem})))# %filter_by(fn,item,list) == [ list[N] iff fn(item)==fn(list[N]), ... ]
 %uniq = $(if ${1},$(firstword ${1}) $(call %uniq,$(filter-out $(firstword ${1}),${1})))
+
+%cross = $(foreach a,${2},$(foreach b,${3},$(call ${1},${a},${b})))# %cross(fn,listA,listB) == [ fn(listA[N],listB[M]), ... {for all combinations of listA and listB }]
+%join = $(subst ${SPACE},${1},$(strip ${2}))# %join(text,list) == join all list elements with text
+%replace = $(foreach elem,${3},$(foreach pat,${1},${elem:${pat}=${2}}))# %replace(pattern(s),replacement,list) == [ ${list[N]:pattern[M]=replacement}, ... ]
 
 %tr = $(strip $(if ${1},$(call %tr,$(wordlist 2,$(words ${1}),${1}),$(wordlist 2,$(words ${2}),${2}),$(subst $(firstword ${1}),$(firstword ${2}),${3})),${3}))
 %lc = $(call %tr,${[upper]},${[lower]},${1})
 %uc = $(call %tr,${[lower]},${[upper]},${1})
 
+%as_nix_path = $(subst \,/,${1})
 %as_win_path = $(subst /,\,${1})
+
+%strip_leading_cwd = $(patsubst ./%,%,${1})# %strip_leading_cwd(list) == normalize paths; strip any leading './'
+
+%dirs_in = $(dir $(wildcard ${1:=/*/.}))
+%filename = $(notdir ${1})
+%filename_base = $(basename $(notdir ${1}))
+%filename_ext = $(suffix ${1})
+%filename_stem = $(firstword $(subst ., ,$(basename $(notdir ${1}))))
+%recursive_wildcard = $(strip $(foreach entry,$(wildcard ${1:=/*}),$(strip $(call %recursive_wildcard,${entry},${2}) $(filter $(subst *,%,${2}),${entry}))))
+
+%filter_by_stem = $(call %filter_by,%filename_stem,${1},${2})
 
 ifeq (${OSID},win)
 %rm_dir = $(shell if EXIST $(call %as_win_path,${1}) ${RMDIR} $(call %as_win_path,${1}) && ${ECHO} ${true})
@@ -363,12 +446,12 @@ else
 %rm_file = $(shell ls -d "${1}" >${devnull} 2>&1 && { ${RM} "${1}" && ${ECHO} ${true}; } || true)
 %rm_file_globset = $(shell for file in ${1}; do ls -d "$${file}" >${devnull} 2>&1 && ${RM} "$${file}"; done && ${ECHO} "${true}"; done)
 endif
-%rm_dirs = $(call %filter_map,%rm_dir,${1})
-%rm_dirs_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_dir,$${1}),$$(call %info,$${1} removed),))%f,${1})
-%rm_files = $(call %filter_map,%rm_file,${1})
-%rm_files_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_file,$${1}),$$(call %info,$${1} removed),))%f,${1})
-%rm_file_globsets = $(call %filter_map,%rm_file_globset,${1})
-%rm_file_globsets_verbose = $(call %filter_map,$(eval %f=$$(if $$(call %rm_file_globset,$${1}),$$(call %info,$${1} removed),))%f,${1})
+%rm_dirs = $(strip $(call %map,%rm_dir,${1}))
+%rm_dirs_verbose = $(strip $(call %map,$(eval %f=$$(if $$(call %rm_dir,$${1}),$$(call %info,$${1} removed),))%f,${1}))
+%rm_files = $(strip $(call %map,%rm_file,${1}))
+%rm_files_verbose = $(strip $(call %map,$(eval %f=$$(if $$(call %rm_file,$${1}),$$(call %info,$${1} removed),))%f,${1}))
+%rm_file_globsets = $(strip $(call %map,%rm_file_globset,${1}))
+%rm_file_globsets_verbose = $(strip $(call %map,$(eval %f=$$(if $$(call %rm_file_globset,$${1}),$$(call %info,$${1} removed),))%f,${1}))
 
 ifeq (${OSID},win)
 %shell_escape = $(call %tr,^ | < > %,^^ ^| ^< ^> ^%,${1})
@@ -382,9 +465,25 @@ else
 %shell_quote = $(call %shell_escape,${1})
 endif
 
+# ref: <https://superuser.com/questions/10426/windows-equivalent-of-the-linux-command-touch/764716> @@ <https://archive.is/ZjFSm>
+ifeq (${OSID},win)
+%touch = $(shell echo touch $(call %as_win_path,${1}) & type NUL >> $(call %as_win_path,${1}) & copy >NUL /B $(call %as_win_path,${1}) +,,)
+else
+%touch = $(shell echo touch "${1}" & touch "${1}")
+endif
+
 @mkdir_rule = ${1} : ${2} ; ${MKDIR} $(call %shell_quote,$$@)
 
 !shell_noop = ${ECHO} >${devnull}
+
+####
+
+override COLOR := $(call %as_truthy,$(or $(filter-out auto,$(call %lc,${COLOR})),${MAKE_TERMOUT}))
+override DEBUG := $(call %as_truthy,${DEBUG})
+override STATIC := $(call %as_truthy,${STATIC})
+override VERBOSE := $(call %as_truthy,${VERBOSE})
+
+override MAKEFLAGS_debug := $(call %as_truthy,$(or $(call %is_truthy,${MAKEFLAGS_debug}),$(call %is_truthy,${MAKEFILE_debug})))
 
 ####
 
@@ -416,15 +515,9 @@ color_error := ${color_red}
 %warning = $(warning $(call %warning_text,${1}))
 
 %debug_var = $(call %debug,${1}="${${1}}")
+%info_var = $(call %info,${1}="${${1}}")
 
 ####
-
-override COLOR := $(call %as_truthy,${COLOR})
-override DEBUG := $(call %as_truthy,${DEBUG})
-override STATIC := $(call %as_truthy,${STATIC})
-override VERBOSE := $(call %as_truthy,${VERBOSE})
-
-override MAKEFLAGS_debug := $(call %as_truthy,$(or $(call %is_truthy,${MAKEFLAGS_debug}),$(call %is_truthy,${MAKEFILE_debug})))
 
 $(call %debug_var,OSID)
 $(call %debug_var,SHELL)
@@ -433,6 +526,7 @@ $(call %debug_var,CC_ID)
 $(call %debug_var,CC)
 $(call %debug_var,CXX)
 $(call %debug_var,LD)
+$(call %debug_var,RC)
 $(call %debug_var,CFLAGS)
 $(call %debug_var,CPPFLAGS)
 $(call %debug_var,CXXFLAGS)
@@ -443,6 +537,7 @@ $(call %debug_var,CC_is_MinGW_w64)
 CC_e := $(or ${CC_${CC_ID}_e},-o${SPACE})
 CC_o := $(or ${CC_${CC_ID}_o},-o${SPACE})
 LD_o := $(or ${LD_${CC_ID}_o},-o${SPACE})
+RC_o := $(or ${RC_${CC_ID}_o},-o${SPACE})
 
 $(call %debug_var,CC_e)
 $(call %debug_var,CC_o)
@@ -455,6 +550,10 @@ $(call %debug_var,D)
 O := $(or ${O_${CC_ID}},o)
 
 $(call %debug_var,O)
+
+REZ := $(or ${REZ_ext_${CC_ID}},res)
+
+$(call %debug_var,REZ)
 
 $(call %debug_var,COLOR)
 $(call %debug_var,DEBUG)
@@ -485,6 +584,11 @@ ifeq (${SPACE},$(findstring ${SPACE},${makefile_abs_path}))
 $(call %error,<SPACE>'s within project directory path are not allowed)## `make` has very limited ability to quote <SPACE> characters
 endif
 
+# # Since we rely on paths relative to the makefile location, abort if make isn't being run from there.
+# ifneq (${makefile_dir},${current_dir})
+# $(call %error,Invalid current directory; this makefile must be invoked from the directory it resides in)
+# endif
+
 ####
 
 $(call %debug_var,MAKE_VERSION)
@@ -499,6 +603,8 @@ $(call %debug_var,makefile_abs_path)
 $(call %debug_var,makefile_dir)
 $(call %debug_var,current_dir)
 $(call %debug_var,make_invoke_alias)
+$(call %debug_var,makefile_set)
+$(call %debug_var,makefile_set_abs)
 $(call %debug_var,BASEPATH)
 
 ####
@@ -522,6 +628,7 @@ FIND       := "${SystemRoot}\System32\find"
 FINDSTR    := "${SystemRoot}\System32\findstr"
 MORE       := "${SystemRoot}\System32\more"
 SORT       := "${SystemRoot}\System32\sort"
+TYPE       := type
 WHICH      := where
 #
 ECHO_newline := echo.
@@ -564,24 +671,28 @@ $(call %debug_var,STRIP)
 
 ####
 
-makefile_path := $(lastword ${MAKEFILE_LIST})
-makefile_abs_path := $(abspath ${makefile_path})
-makefile_dir := $(abspath $(dir ${makefile_abs_path}))
-current_dir := ${CURDIR}
-make_invoke_alias ?= $(if $(call %eq,Makefile,${makefile_path}),make,make -f "${makefile_path}")
-
-$(call %debug_var,makefile_path)
-$(call %debug_var,makefile_abs_path)
-$(call %debug_var,makefile_dir)
-$(call %debug_var,current_dir)
-$(call %debug_var,current_dir)
-
-####
-
+# discover NAME
 NAME := $(strip ${NAME})
 ifeq (${NAME},)
-override NAME := $(notdir ${makefile_dir})
+# * generate a default NAME from Makefile project path
+working_NAME := $(notdir ${makefile_dir})
+## remove any generic repo and/or category tag prefix
+tags_repo := repo.GH repo.GL repo.github repo.gitlab repo
+tags_category := cxx deno djs js-cli js-user js rs rust ts sh
+tags_combined := $(call %cross,$(eval %f=$${1}${DOT}$${2})%f,${tags_repo},${tags_category}) ${tags_repo} ${tags_category}
+tag_patterns := $(call %map,$(eval %f=$${1}${DOT}% $${1})%f,${tags_combined})
+# $(call %debug_var,tags_combined)
+# $(call %debug_var,tag_patterns)
+clipped_NAMEs := $(strip $(filter-out ${working_NAME},$(call %replace,${tag_patterns},%,$(filter-out ${tags_repo},${working_NAME}))))
+# $(call %debug_var,clipped_NAMEs)
+working_NAME := $(firstword $(filter-out ${tags_repo},${clipped_NAMEs} ${working_NAME}))
+ifeq (${working_NAME},)
+working_NAME := $(notdir $(abspath $(dir ${makefile_dir})))
 endif
+override NAME := ${working_NAME}
+endif
+$(call %debug_var,working_NAME)
+$(call %debug_var,NAME)
 
 ####
 
@@ -635,11 +746,11 @@ s := $(call %tr,$(filter-out ${SLASH} ${BACKSLASH} ${DOT} _ - +,${[punct]}),$(),
 # $(call %debug_var,s)
 # filter_map ${DOT}-containing words
 %f = $(and $(findstring ${DOT},${1}),${1})
-s := $(call %filter_map,%f,${s})
-$(call %debug_var,s)
+s := $(strip $(call %map,%f,${s}))
+# $(call %debug_var,s)
 # filter_map all words with leading digits
 %f = $(and $(findstring ${ESC}_,${ESC}$(call %tr,${[digit]} ${ESC},$(call %repeat,_,$(words ${[digit]})),${1})),${1})
-s := $(call %filter_map,%f,${s})
+s := $(strip $(call %map,%f,${s}))
 # $(call %debug_var,s)
 
 # take first word as full version
@@ -668,15 +779,18 @@ OUT_DIR_EXT := $(if $(call %is_truthy,${STATIC}),,.dynamic)
 
 ifeq (,${TARGET})
 OUT_DIR_EXT :=-x${ARCH_ID}
+RCFLAGS_TARGET := ${RCFLAGS_TARGET_${CC_ID}_ARCH_${ARCH_ID}}
 else
 CFLAGS_TARGET := --target=${TARGET}
 LDFLAGS_TARGET := --target=${TARGET}
+RCFLAGS_TARGET := --target=${TARGET}
 OUT_DIR_EXT := ${OUT_DIR_EXT}.${TARGET}
 endif
 
 $(call %debug_var,CFLAGS_TARGET)
 $(call %debug_var,CXXFLAGS_TARGET)
 $(call %debug_var,LDFLAGS_TARGET)
+$(call %debug_var,RCFLAGS_TARGET)
 
 $(call %debug_var,ARCH_ID)
 $(call %debug_var,TARGET)
@@ -706,19 +820,32 @@ LDFLAGS += ${LDFLAGS_TARGET}
 LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}}
 LDFLAGS += ${LDFLAGS_STATIC_${STATIC}}
 LDFLAGS += ${LDFLAGS_CL1600+_${is_CL1600+}}
+LDFLAGS += ${LDFLAGS_CL1600+_${is_CL1600+}_ARCH_${ARCH_ID}}
 LDFLAGS += ${LDFLAGS_VC6_${is_VC6}}
 LDFLAGS += ${LDFLAGS_${CC_ID}}
 LDFLAGS += ${LDFLAGS_${CC_ID}_${OSID}}
+
+RCFLAGS += ${RCFLAGS_TARGET}
+RCFLAGS += ${RCFLAGS_DEBUG_${DEBUG}}
+RCFLAGS += ${RCFLAGS_VC6_${is_VC6}}
+RCFLAGS += ${RCFLAGS_${CC_ID}}
+RCFLAGS += ${RCFLAGS_${CC_ID}_${OSID}}
 
 CFLAGS := $(strip ${CFLAGS})
 CPPFLAGS := $(strip ${CPPFLAGS})
 CXXFLAGS := $(strip ${CXXFLAGS})
 LDFLAGS := $(strip ${LDFLAGS})
+RCFLAGS := $(strip ${RCFLAGS})
 
 $(call %debug_var,CFLAGS)
 $(call %debug_var,CPPFLAGS)
 $(call %debug_var,CXXFLAGS)
 $(call %debug_var,LDFLAGS)
+$(call %debug_var,RCFLAGS)
+
+####
+
+RUNNER := ${RUNNER_${CC}}
 
 ####
 
@@ -739,7 +866,8 @@ test_output := $(shell ${test_lib_setting_win} && ${ECHO} ${HASH}include ^<stdio
 else
 test_output := $(shell LIB='${LIB}' && ${ECHO} '${HASH}include <stdio.h>' > $(call %shell_quote,${test_file_stem}.c) && ${ECHO} 'int main(void){printf("${test_file_stem}");return 0;}' >> $(call %shell_quote,${test_file_stem}.c) && ${CC} $(filter-out ${CFLAGS_VERBOSE_true},${CFLAGS}) $(call %shell_quote,${test_file_stem}.c) ${test_file_cc_string} 2>&1 && ${ECHO} ${test_success_text}; ${RM} -f $(call %shell_quote,${test_file_stem}${EXEEXT}) $(call %shell_quote,${test_file_stem}).*)
 endif
-ARCH_available := $(call %is_truthy,$(findstring ${test_success_text},${test_output}))
+32bitOnly_CCs := bcc32 embcc32
+ARCH_available := $(call %is_truthy,$(and $(findstring ${test_success_text},${test_output}),$(or $(filter-out ${32bitOnly_CCs},${CC_ID}),$(filter-out 64,${ARCH_ID}))))
 $(call %debug_var,.SHELLSTATUS)
 $(call %debug_var,test_output)
 $(call %debug_var,ARCH_available)
@@ -761,155 +889,377 @@ has_run_first := $(findstring run,$(firstword ${MAKECMDGOALS}))
 run_position := $(call %position,run,${MAKECMDGOALS})
 
 make_run_ARGS := $(if ${has_run_target},$(call %tail,$(wordlist ${run_position},$(call %length,${make_ARGS}),${make_ARGS})),)
+override ARGS := ${ARGS} ${make_run_ARGS}
 
 $(call %debug_var,has_run_first)
 $(call %debug_var,has_run_target)
 $(call %debug_var,run_position)
 $(call %debug_var,make_ARGS)
 $(call %debug_var,make_run_ARGS)
+$(call %debug_var,ARGS)
 
 ####
 
-BUILD_DIR := ${BASEPATH}${DOLLAR}build## `${HASH}build` causes issues with OpenWatcom-v2.0 [2020-09-01]; note: 'target' is a common alternative
-SRC_DIR := ${BASEPATH}$(or ${SRC_PATH},src)
+BUILD_DIR := ${BASEPATH}$(or ${BUILD_PATH},${HASH}build)## note: `${HASH}build` causes issues with OpenWatcom-v2.0 [2020-09-01], but `${DOLLAR}build` causes variable expansion issues for VSCode debugging; note: 'target' is a common alternative
+SRC_DIR := $(firstword $(wildcard $(foreach segment,${SRC_PATH} src source,${BASEPATH}${segment})))
 
 CONFIG := $(if $(call %is_truthy,${DEBUG}),debug,release)
 
-SRC_DIR := ${SRC_DIR:/.=}
-OUT_DIR := ${SRC_DIR}
-OUT_DIR_bin := ${OUT_DIR}
-OUT_DIR_obj := ${OUT_DIR}
-out_dirs := $(strip $(call %uniq,${OUT_DIR} ${OUT_DIR_bin} ${OUT_DIR_obj}))
-out_dirs_for_rules := $(strip $(call %tr,${DOLLAR} ${HASH},${DOLLAR}${DOLLAR} ${BACKSLASH}${HASH},${out_dirs}))
-
-$(call %debug_var,out_dirs)
-$(call %debug_var,out_dirs_for_rules)
-
+SRC_DIR := ${SRC_DIR:/=}
 SRC_files := $(wildcard ${SRC_DIR}/*.c ${SRC_DIR}/*.cpp ${SRC_DIR}/*.cxx)
-OBJ_files := $(SRC_files)
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.c=${OUT_DIR_obj}/%.${O})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.cpp=${OUT_DIR_obj}/%.${O})
-OBJ_files := $(OBJ_files:${SRC_DIR}/%.cxx=${OUT_DIR_obj}/%.${O})
 
 $(call %debug_var,SRC_DIR)
 $(call %debug_var,SRC_files)
-$(call %debug_var,OBJ_files)
 
-DEP_files = $(wildcard $(OBJ_files:%.${O}=%.${D}))
-OBJ_deps := $(or ${DEPS},$(if ${DEP_files},$(),$(wildcard ${SRC_DIR}/*.h ${SRC_DIR}/*.hpp ${SRC_DIR}/*.hxx)))  ## common/shared dependencies (fallback to SRC_DIR header files)
-OBJ_deps := $(strip ${OBJ_deps})
+OUT_DIR := ${BUILD_DIR}/${OS_PREFIX}${CONFIG}$(if $(call %is_truthy,${STATIC}),,.dynamic).(${CC}@${CC_version_Mm})${OUT_DIR_EXT}
+OUT_DIR_bin := ${OUT_DIR}/bin
+OUT_DIR_obj := ${OUT_DIR}/obj
+
+$(call %debug_var,OUT_DIR)
+$(call %debug_var,OUT_DIR_bin)
+$(call %debug_var,OUT_DIR_obj)
+
+# binaries (within first of ['${SRC_DIR}/bin','${SRC_DIR}/bins'] directories)
+## * each source file will be compiled to a single target executable within the 'bin' output directory
+
+BIN_DIR := $(firstword $(wildcard $(foreach segment,bin bins,${SRC_DIR}/${segment})))
+BIN_DIR_filename := $(notdir ${BIN_DIR})
+BIN_OUT_DIR_bin := $(and ${BIN_DIR},${OUT_DIR_bin})
+BIN_OUT_DIR_obj := $(and ${BIN_DIR},${OUT_DIR_obj}.${BIN_DIR_filename})
+BIN_SRC_files := $(and ${BIN_DIR},$(wildcard ${BIN_DIR}/*.c ${BIN_DIR}/*.cpp ${BIN_DIR}/*.cxx))
+BIN_SRC_sup_files := $(and ${BIN_DIR},$(call %recursive_wildcard,$(patsubst %/,%,$(call %dirs,${BIN_DIR})),*.c *.cpp *.cxx))
+BIN_deps := $(and ${BIN_DIR},$(call %recursive_wildcard,${BIN_DIR},*.h *.hpp *.hxx))
+BIN_OBJ_files := $(foreach file,$(strip ${BIN_SRC_files}),$(basename $(patsubst ${BIN_DIR}/%,${BIN_OUT_DIR_obj}/%,${file})).${O})
+BIN_OBJ_sup_files := $(foreach file,${BIN_SRC_sup_files},$(basename $(patsubst ${BIN_DIR}/%,${BIN_OUT_DIR_obj}/%,${file})).${O})
+BIN_bin_files := $(foreach file,${BIN_SRC_files},$(basename ${BIN_OUT_DIR_bin}/$(patsubst ${BIN_DIR}/%,%,${file}))${EXEEXT})
+BIN_RES_files := $(call %recursive_wildcard,${BIN_DIR},*.rc)## resource files
+BIN_REZ_files := $(BIN_RES_files:${BIN_DIR}/%.rc=${BIN_OUT_DIR_obj}/%.${REZ})## compiled resource files
+
+$(call %debug_var,BIN_DIR)
+$(call %debug_var,BIN_DIR_filename)
+$(call %debug_var,BIN_SRC_files)
+$(call %debug_var,BIN_SRC_sup_files)
+$(call %debug_var,BIN_OBJ_files)
+$(call %debug_var,BIN_OBJ_sup_files)
+$(call %debug_var,BIN_OUT_DIR_bin)
+$(call %debug_var,BIN_OUT_DIR_obj)
+$(call %debug_var,BIN_bin_files)
+$(call %debug_var,BIN_RES_files)
+$(call %debug_var,BIN_REZ_files)
+
+SRC_sup_files := $(filter-out ${BIN_SRC_files} ${BIN_SRC_sup_files},$(call %recursive_wildcard,$(patsubst %/,%,$(call %dirs_in,${SRC_DIR})),*.c *.cpp *.cxx))## supplemental source files (eg, common or library code)
+
+$(call %debug_var,SRC_sup_files)
+
+RES_files := $(filter-out ${BIN_RES_files},$(call %recursive_wildcard,${SRC_DIR},*.rc))## resource files
+REZ_files := $(RES_files:${SRC_DIR}/%.rc=${OUT_DIR_obj}/%.${REZ})## compiled resource files
+
+$(call %debug_var,RES_files)
+$(call %debug_var,REZ_files)
+
+# OBJ_files := ${SRC_files} ${SRC_sup_files}
+# OBJ_files := $(OBJ_files:${SRC_DIR}/%.c=${OUT_DIR_obj}/%.${O})
+# OBJ_files := $(OBJ_files:${SRC_DIR}/%.cpp=${OUT_DIR_obj}/%.${O})
+# OBJ_files := $(OBJ_files:${SRC_DIR}/%.cxx=${OUT_DIR_obj}/%.${O})
+OBJ_files := $(foreach file,$(strip ${SRC_files}),$(basename $(patsubst ${SRC_DIR}/%,${OUT_DIR_obj}/%,${file})).${O})
+OBJ_sup_files := $(foreach file,${SRC_sup_files},$(basename $(patsubst ${SRC_DIR}/%,${OUT_DIR_obj}/%,${file})).${O})
+
+$(call %debug_var,OBJ_files)
+$(call %debug_var,OBJ_sup_files)
+
+DEP_files := $(wildcard $(OBJ_files:%.${O}=%.${D}))
+# DEPS := $(%strip_leading_cwd,${DEPS})
+OBJ_deps := $(strip $(or ${DEPS},$(if ${DEP_files},$(),$(filter ${BIN_deps},$(call %recursive_wildcard,${SRC_DIR},*.h *.hpp *.hxx)))))## common/shared dependencies (fallback to SRC_DIR header files)
 
 $(call %debug_var,DEP_files)
 $(call %debug_var,DEPS)
 $(call %debug_var,OBJ_deps)
 
+DEPS_common := $(strip ${makefile_set_abs} ${DEPS})
+DEPS_target := $(strip ${REZ_files})
+$(call %debug_var,DEPS)
+$(call %debug_var,DEPS_common)
+$(call %debug_var,DEPS_target)
+
+# examples (within first of ['eg','egs','ex', 'exs', 'example', 'examples'] directories)
+## * each source file will be compiled to a single target executable within the (same-named) examples output directory
+
+EG_DIR := $(firstword $(wildcard $(foreach segment,eg egs ex exs example examples,${BASEPATH}${segment})))
+EG_DIR_filename := $(notdir ${EG_DIR})
+EG_OUT_DIR_bin := $(and ${EG_DIR},${OUT_DIR}/${EG_DIR:${BASEPATH}%=%})
+EG_OUT_DIR_obj := $(and ${EG_DIR},${OUT_DIR_obj}.${EG_DIR_filename})
+EG_SRC_files := $(and ${EG_DIR},$(wildcard ${EG_DIR}/*.c ${EG_DIR}/*.cpp ${EG_DIR}/*.cxx))
+EG_SRC_sup_files := $(and ${EG_DIR},$(call %recursive_wildcard,$(patsubst %/,%,$(call %dirs,${EG_DIR})),*.c *.cpp *.cxx))
+EG_deps := $(and ${EG_DIR},$(call %recursive_wildcard,${EG_DIR},*.h *.hpp *.hxx))
+EG_OBJ_files := $(foreach file,$(strip ${EG_SRC_files}),$(basename $(patsubst ${EG_DIR}/%,${EG_OUT_DIR_obj}/%,${file})).${O})
+EG_OBJ_sup_files := $(foreach file,${EG_SRC_sup_files},$(basename $(patsubst ${EG_DIR}/%,${EG_OUT_DIR_obj}/%,${file})).${O})
+EG_bin_files := $(foreach file,${EG_SRC_files},$(basename ${EG_OUT_DIR_bin}/$(patsubst ${EG_DIR}/%,%,${file}))${EXEEXT})
+EG_RES_files := $(call %recursive_wildcard,${EG_DIR},*.rc)## resource files
+EG_REZ_files := $(EG_RES_files:${EG_DIR}/%.rc=${EG_OUT_DIR_obj}/%.${REZ})## compiled resource files
+
+$(call %debug_var,EG_DIR)
+$(call %debug_var,EG_DIR_filename)
+$(call %debug_var,EG_SRC_files)
+$(call %debug_var,EG_SRC_sup_files)
+$(call %debug_var,EG_OBJ_files)
+$(call %debug_var,EG_OBJ_sup_files)
+$(call %debug_var,EG_OUT_DIR_bin)
+$(call %debug_var,EG_OUT_DIR_obj)
+$(call %debug_var,EG_bin_files)
+$(call %debug_var,EG_RES_files)
+$(call %debug_var,EG_REZ_files)
+
+# tests (within first of ['t','test','tests'] directories)
+## * each source file will be compiled to a single target executable within the (same-named) test output directory
+
+TEST_DIR := $(firstword $(wildcard $(foreach segment,t test tests,${BASEPATH}${segment})))
+TEST_DIR_filename := $(notdir ${TEST_DIR})
+TEST_OUT_DIR_bin := $(and ${TEST_DIR},${OUT_DIR}/${TEST_DIR:${BASEPATH}%=%})
+TEST_OUT_DIR_obj := $(and ${TEST_DIR},${OUT_DIR_obj}.$(notdir ${TEST_DIR}))
+TEST_SRC_files := $(and ${TEST_DIR},$(wildcard ${TEST_DIR}/*.c ${TEST_DIR}/*.cpp ${TEST_DIR}/*.cxx))
+TEST_SRC_sup_files := $(and ${TEST_DIR},$(call %recursive_wildcard,$(patsubst %/,%,$(call %dirs_in,${TEST_DIR})),*.c *.cpp *.cxx))
+TEST_deps := $(and ${TEST_DIR},$(call %recursive_wildcard,${TEST_DIR},*.h *.hpp *.hxx))
+TEST_OBJ_files := $(foreach file,$(strip ${TEST_SRC_files}),$(basename $(patsubst ${TEST_DIR}/%,${TEST_OUT_DIR_obj}/%,${file})).${O})
+TEST_OBJ_sup_files := $(foreach file,${TEST_SRC_sup_files},$(basename $(patsubst ${TEST_DIR}/%,${TEST_OUT_DIR_obj}/%,${file})).${O})
+TEST_OUT_DIR_bin := $(and ${TEST_DIR},${OUT_DIR}/${TEST_DIR})
+TEST_bin_files := $(foreach file,${TEST_SRC_files},$(basename ${TEST_OUT_DIR_bin}/$(patsubst ${TEST_DIR}/%,%,${file}))${EXEEXT})
+TEST_RES_files := $(call %recursive_wildcard,${TEST_DIR},*.rc)## resource files
+TEST_REZ_files := $(TEST_RES_files:${TEST_DIR}/%.rc=${TEST_OUT_DIR_obj}/%.${REZ})## compiled resource files
+
+$(call %debug_var,TEST_DIR)
+$(call %debug_var,TEST_DIR_filename)
+$(call %debug_var,TEST_SRC_files)
+$(call %debug_var,TEST_SRC_sup_files)
+$(call %debug_var,TEST_OBJ_files)
+$(call %debug_var,TEST_OBJ_sup_files)
+$(call %debug_var,TEST_OUT_DIR_bin)
+$(call %debug_var,TEST_OUT_DIR_obj)
+$(call %debug_var,TEST_bin_files)
+$(call %debug_var,TEST_RES_files)
+$(call %debug_var,TEST_REZ_files)
+
+# $(call %debug,${OBJ_files} ${OBJ_sup_files} ${BIN_OBJ_files} ${BIN_OBJ_sup_files} ${EG_OBJ_files} ${EG_OBJ_sup_files} ${TEST_OBJ_files} ${TEST_OBJ_sup_files} ${BIN_REZ_files} ${EG_REZ_files} ${TEST_REZ_files} ${REZ_files})
+# $(call %debug,$(dir ${OBJ_files} ${OBJ_sup_files} ${BIN_OBJ_files} ${BIN_OBJ_sup_files} ${EG_OBJ_files} ${EG_OBJ_sup_files} ${TEST_OBJ_files} ${TEST_OBJ_sup_files} ${BIN_REZ_files} ${EG_REZ_files} ${TEST_REZ_files} ${REZ_files}))
+
+out_dirs := $(strip $(call %uniq,${OUT_DIR} ${OUT_DIR_bin} ${BIN_OUT_DIR_bin} ${EG_OUT_DIR_bin} ${TEST_OUT_DIR_bin} ${OUT_DIR_obj} $(patsubst %/,%,$(dir ${OBJ_files} ${OBJ_sup_files} ${BIN_OBJ_files} ${BIN_OBJ_sup_files} ${EG_OBJ_files} ${EG_OBJ_sup_files} ${TEST_OBJ_files} ${TEST_OBJ_sup_files} ${BIN_REZ_files} ${EG_REZ_files} ${TEST_REZ_files} ${REZ_files}))))
+out_dirs_for_rules := $(strip $(call %tr,${DOLLAR} ${HASH},${DOLLAR}${DOLLAR} ${BACKSLASH}${HASH},${out_dirs}))
+
+$(call %debug_var,out_dirs)
+$(call %debug_var,out_dirs_for_rules)
+
 ####
 
+DEFAULT_TARGET := ${OUT_DIR_bin}/${NAME}${EXEEXT}
 PROJECT_TARGET := ${OUT_DIR_bin}/${NAME}${EXEEXT}
 
+.DEFAULT_GOAL := $(if ${SRC_files},${PROJECT_TARGET},$(firstword ${BIN_bin_files}))# *default* target
+
 $(call %debug_var,PROJECT_TARGET)
+$(call %debug_var,.DEFAULT_GOAL)
 
 ####
 
-__default__: ${PROJECT_TARGET} # *default* target
-
-####
-
-AUX_names := lessecho lesskey
-AUX_targets := $(addprefix ${OUT_DIR_bin}/,$(addsuffix ${EXEEXT},${AUX_names}))
-
-$(call %debug_var,AUX_names)
-$(call %debug_var,AUX_targets)
-
-OBJ_files := $(filter-out $(addprefix ${OUT_DIR_obj}/,$(addsuffix .${O},${AUX_names} scrsize)),${OBJ_files})
-
-$(call %debug_var,OBJ_files)
-
-####
-
-${AUX_targets}: %${EXEEXT}: %.${O} ${OUT_DIR_obj}/version.${O} ${makefile_abs_path} | ${OUT_DIR_bin}
-	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${OUT_DIR_obj}/version.${O}),$(call %map,%shell_quote,${LIBS}))
-	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
-	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
-
-${OBJ_files}: ${OBJ_deps} | ${OUT_DIR_obj}
-
-${SRC_DIR}/defines.h: ${SRC_DIR}/defines.${DEFINETYPE}
-	@${CP} $(call %map,%shell_quote,$(call %map,%as_win_path,$< $@)) >${devnull}
-	@${ECHO} $(call %shell_escape,$(call %info_text,created '$@' from '$<'.))
-
-####
-phony_targets := all build build-aux clean compile help realclean rebuild run vclean veryclean
-
-.PHONY: run
-run: ${PROJECT_TARGET} ## Build/execute project executable (`... run [ARGS]`)
-	@$(call %shell_quote,$^) ${make_run_ARGS}
-
-####
-ifeq (${false},${has_run_first})## define standard phony targets only when 'run' is not the first target (all text following 'run' is assumed to be arguments for the run; minimizes recipe duplication/overwrite warnings)
-
-.PHONY: help
-help: ## Display help
-	@${ECHO} $(call %shell_escape,`${make_invoke_alias}`)
-	@${ECHO} $(call %shell_escape,Usage: `${make_invoke_alias} [ARCH=..] [CC=..] [CC_DEFINES=..] [COLOR=..] [DEBUG=..] [STATIC=..] [TARGET=..] [VERBOSE=..] [MAKE_TARGET...]`)
-	@${ECHO} $(call %shell_escape,Builds '${PROJECT_TARGET}' within "$(current_dir)")
-	@${ECHO_newline}
-	@${ECHO} $(call %shell_escape,MAKE_TARGETs:)
-	@${ECHO_newline}
-ifeq (${OSID},win)
-	@${FINDSTR} "^[a-zA-Z-]*:.*${HASH}${HASH}" "${makefile_path}" | ${SORT} | for /f "tokens=1-2,* delims=:${HASH}" %%g in ('${MORE}') do @(@call set "t=%%g                " & @call echo ${color_success}%%t:~0,15%%${color_reset} ${color_info}%%i${color_reset})
-else
-	@${GREP} -P "(?i)^[[:alpha:]-]+:" "${makefile_path}" | ${SORT} | ${AWK} 'match($$0,"^([[:alpha:]]+):.*?${HASH}${HASH}\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }END{printf "\n"}'
-endif
-
-####
-
-.PHONY: clean
-clean: ## Remove build artifacts (including intermediate files)
-	@$(call !shell_noop,$(call %rm_file_globsets_verbose,$(call %map,%shell_quote,$(call %uniq,$(foreach fileset,${OUT_obj_filesets},${OUT_DIR_obj}/${fileset})))))
-	@$(call !shell_noop,$(call %rm_files_verbose,$(call %shell_quote,${BASEPATH}defines.h)))
-	@$(call !shell_noop,$(call %rm_files_verbose,$(call %shell_quote,${PROJECT_TARGET})))
-	@$(call !shell_noop,$(call %rm_files_verbose,$(call %map,%shell_quote,${AUX_targets})))
-
-####
-
-.PHONY: all build build-aux compile realclean rebuild vclean veryclean
-all: build build-aux ## Build all project targets
-build: ${PROJECT_TARGET} ## Build project (`less`)
-build-aux: ${AUX_targets} ## Build auxillary executables (`lessecho` and `lesskey`)
-compile: ${OBJ_files} ## Build intermediate files
-realclean: clean
-rebuild: clean build ## Clean and rebuild project
-vclean: veryclean
-veryclean: realclean
-
-endif ## ${has_run_first}
-
-####
+# include sibling target(s) file (if/when sibling file exists; provides easy project customization upon a stable base Makefile)
+-include ${makefile_path}.target
 
 # include automated dependencies (if/when the depfiles exist)
 # ref: [Makefile automated header deps](https://stackoverflow.com/questions/2394609/makefile-header-dependencies) @@ <https://archive.is/uUux4>
 -include ${DEP_files}
 
 ####
+all_phony_targets := $()
+
+.PHONY: run
+all_phony_targets := ${all_phony_targets} run
+run: ${.DEFAULT_GOAL} ## Build/execute project executable (for ARGS, use `-- [ARGS]` or `ARGS="..."`)
+	@$(strip ${RUNNER} $(call %shell_quote,$^)) ${ARGS}
+
+####
+ifeq (${false},${has_run_first})## define standard phony targets only when 'run' is not the first target (all text following 'run' is assumed to be arguments for the run; minimizes recipe duplication/overwrite warnings)
+
+ifeq (${OSID},win)
+shell_filter_targets := ${FINDSTR} "."
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${BIN_SRC_files}), | ${FINDSTR} -v "^bins:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${EG_SRC_files}), | ${FINDSTR} -v "^examples:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${TEST_SRC_files}), | ${FINDSTR} -v "^test:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${TEST_SRC_files}), | ${FINDSTR} -v "^tests:"))
+else
+shell_filter_targets := ${GREP} -P "."
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${BIN_SRC_files}), | ${GREP} -Pv "^bins:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${EG_SRC_files}), | ${GREP} -Pv "^examples:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${TEST_SRC_files}), | ${GREP} -Pv "^test:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${TEST_SRC_files}), | ${GREP} -Pv "^tests:"))
+endif
+
+.PHONY: help
+all_phony_targets := ${all_phony_targets} help
+help: ## Display help
+	@${ECHO} $(call %shell_escape,`${make_invoke_alias}`)
+	@${ECHO} $(call %shell_escape,Usage: `${make_invoke_alias} [ARCH=..] [CC=..] [CC_DEFINES=..] [COLOR=..] [DEBUG=..] [STATIC=..] [TARGET=..] [VERBOSE=..] [MAKE_TARGET...]`)
+	@${ECHO} $(call %shell_escape,Builds "${PROJECT_TARGET}" within "$(current_dir)")
+	@${ECHO_newline}
+ifneq (,${EG_SRC_files})
+	@${ECHO} $(call %shell_escape,* 'examples' will be built/stored to "${EG_OUT_DIR_bin}")
+endif
+ifneq (,${TEST_SRC_files})
+	@${ECHO} $(call %shell_escape,* 'tests' will be built/stored to "${TEST_OUT_DIR_bin}")
+endif
+ifneq (,${EG_SRC_files}${TEST_SRC_files})
+	@${ECHO_newline}
+endif
+	@${ECHO} $(call %shell_escape,MAKE_TARGETs:)
+	@${ECHO_newline}
+ifeq (${OSID},win)
+	@${TYPE} $(call %map,%shell_quote,${makefile_set}) 2>${devnull} | ${FINDSTR} "^[a-zA-Z-]*:.*${HASH}${HASH}" | ${shell_filter_targets} | ${SORT} | for /f "tokens=1-2,* delims=:${HASH}" %%g in ('${MORE}') do @(@call set "t=%%g                " & @call echo ${color_success}%%t:~0,15%%${color_reset} ${color_info}%%i${color_reset})
+else
+	@${CAT} $(call %map,%shell_quote,${makefile_set}) | ${GREP} -P "(?i)^[[:alpha:]-]+:" | ${shell_filter_targets} | ${SORT} | ${AWK} 'match($$0,"^([[:alpha:]]+):.*?${HASH}${HASH}\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }END{printf "\n"}'
+endif
+
+####
+
+.PHONY: clean
+all_phony_targets := ${all_phony_targets} clean
+clean: ## Remove build artifacts (for the active configuration, including intermediate artifacts)
+# * note: filter-out to avoid removing main directory
+	@$(call !shell_noop,$(call %rm_dirs_verbose,$(call %map,%shell_quote,$(filter-out ${DOT},${out_dirs}))))
+
+.PHONY: realclean
+all_phony_targets := ${all_phony_targets} realclean
+realclean: ## Remove *all* build artifacts (includes all configurations and the build directory)
+# * note: 'clean' is not needed as a dependency b/c `${BUILD_DIR}` contains *all* build and intermediate artifacts
+	@$(call !shell_noop,$(call %rm_dirs_verbose,$(call %shell_quote,$(filter-out ${DOT},${BUILD_DIR}))))
+
+####
+
+.PHONY: all build compile rebuild
+all_phony_targets := ${all_phony_targets} all build compile rebuild
+all: build $(if ${BIN_SRC_files},bins,$()) $(if ${EG_SRC_files},examples,$()) $(if ${TEST_SRC_files},tests,$()) ## Build all project targets
+build: ${.DEFAULT_GOAL} ## Build project
+compile: ${OBJ_files} ${OBJ_sup_files} ## Build intermediate targets
+rebuild: clean build ## Clean and re-build project
+
+endif ## not ${has_run_first}
+####
+
+ifneq (${NULL},${BIN_SRC_files})## define 'bins' target only when bin source files are found
+.PHONY: bins
+all_phony_targets := ${all_phony_targets} bins
+bins: ${BIN_bin_files} ## Build extra project binaries
+endif
+ifneq (${NULL},${EG_SRC_files})## define 'examples' target only when examples source files are found
+.PHONY: examples
+all_phony_targets := ${all_phony_targets} examples
+examples: ${EG_bin_files} ## Build project examples
+endif
+ifneq (${NULL},${TEST_SRC_files})## define 'test' and 'tests' targets only when test source files are found
+.PHONY: test tests
+all_phony_targets := ${all_phony_targets} test tests
+test: tests $(addsuffix *[makefile.run]*,${TEST_bin_files}) ## Build/execute project tests
+tests: ${TEST_bin_files} ## Build project tests
+endif
+
+####
 
 # ref: [`make` default rules]<https://www.gnu.org/software/make/manual/html_node/Catalogue-of-Rules.html> @@ <https://archive.is/KDNbA>
 # ref: [make ~ `eval()`](http://make.mad-scientist.net/the-eval-function) @ <https://archive.is/rpUfG>
+# * note: for pattern-based rules/targets, `%` has some special matching mechanics; ref: <https://stackoverflow.com/a/21193953> , <https://www.gnu.org/software/make/manual/html_node/Pattern-Match.html#Pattern-Match> @@ <https://archive.is/GjJ3P>
 
-${PROJECT_TARGET}: ${OBJ_files} ${makefile_abs_path} | ${OUT_DIR_bin}
-	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,${OBJ_files}),$(call %map,%shell_quote,${LIBS}))
+####
+
+%*[makefile.run]*: %
+	@${ECHO} $(call %shell_escape,$(call %info_text,running '$<'))
+	@${ECHO} $(strip ${RUNNER_${CC}} $(call %shell_quote,$<)) ${ARGS}
+
+####
+
+${NAME}: ${PROJECT_TARGET}
+${PROJECT_TARGET}: ${OBJ_files} ${OBJ_sup_files} ${DEPS_common} ${DEPS_target} | ${OUT_DIR_bin}
+	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,${OBJ_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${REZ_files})),$(call %map,%shell_quote,${LIBS}))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
 
-${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.c ${OBJ_deps} ${makefile_abs_path} | ${OUT_DIR_obj}
+####
+
+${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.c ${OBJ_deps} ${DEPS_common} | ${out_dirs}
 	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
 
-${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.cpp ${OBJ_deps} ${makefile_abs_path} | ${OUT_DIR_obj}
+${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.cpp ${OBJ_deps} ${DEPS_common} | ${out_dirs}
 	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
 
-${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.cxx ${OBJ_deps} ${makefile_abs_path} | ${OUT_DIR_obj}
+${OUT_DIR_obj}/%.${O}: ${SRC_DIR}/%.cxx ${OBJ_deps} ${DEPS_common} | ${out_dirs}
 	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
 # or ${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+
+${OUT_DIR_obj}/%.${REZ}: ${SRC_DIR}/%.rc ${DEPS_common} | ${out_dirs}
+	$(call %rc,$(call %shell_quote,$@),$(call %shell_quote,$<))
+# or ${RC} ${RCFLAGS} ${RC_o}$(call %shell_quote,$@) $(call %shell_quote,$<)
+
+####
+
+${BIN_OUT_DIR_bin}/%${EXEEXT}: ${BIN_OUT_DIR_obj}/%.${O} ${BIN_OBJ_sup_files} ${BIN_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${BIN_OUT_DIR_bin}
+	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${BIN_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${BIN_REZ_files})),$(call %map,%shell_quote,${LIBS}))
+	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
+	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
+
+${BIN_OUT_DIR_obj}/%.${O}: ${BIN_DIR}/%.c ${BIN_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+
+${BIN_OUT_DIR_obj}/%.${O}: ${BIN_DIR}/%.cpp ${BIN_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+
+${BIN_OUT_DIR_obj}/%.${O}: ${BIN_DIR}/%.cxx ${BIN_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+# or ${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+
+${BIN_OUT_DIR_obj}/%.${REZ}: ${BIN_DIR}/%.rc ${DEPS_common} | ${out_dirs}
+	$(call %rc,$(call %shell_quote,$@),$(call %shell_quote,$<))
+# or ${RC} ${RCFLAGS} ${RC_o}$(call %shell_quote,$@) $(call %shell_quote,$<)
+
+####
+
+${EG_OUT_DIR_bin}/%${EXEEXT}: ${EG_OUT_DIR_obj}/%.${O} ${EG_OBJ_sup_files} ${EG_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${EG_OUT_DIR_bin}
+	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${EG_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${EG_REZ_files})),$(call %map,%shell_quote,${LIBS}))
+	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
+	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
+
+${EG_OUT_DIR_obj}/%.${O}: ${EG_DIR}/%.c ${EG_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+
+${EG_OUT_DIR_obj}/%.${O}: ${EG_DIR}/%.cpp ${EG_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+
+${EG_OUT_DIR_obj}/%.${O}: ${EG_DIR}/%.cxx ${EG_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+# or ${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+
+${EG_OUT_DIR_obj}/%.${REZ}: ${EG_DIR}/%.rc ${DEPS_common} | ${out_dirs}
+	$(call %rc,$(call %shell_quote,$@),$(call %shell_quote,$<))
+# or ${RC} ${RCFLAGS} ${RC_o}$(call %shell_quote,$@) $(call %shell_quote,$<)
+
+####
+
+${TEST_OUT_DIR_bin}/%${EXEEXT}: ${TEST_OUT_DIR_obj}/%.${O} ${TEST_OBJ_sup_files} ${TEST_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${TEST_OUT_DIR_bin}
+	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${TEST_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${TEST_REZ_files})),$(call %map,%shell_quote,${LIBS}))
+	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
+	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
+
+${TEST_OUT_DIR_obj}/%.${O}: ${TEST_DIR}/%.c ${TEST_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+
+${TEST_OUT_DIR_obj}/%.${O}: ${TEST_DIR}/%.cpp ${TEST_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+
+${TEST_OUT_DIR_obj}/%.${O}: ${TEST_DIR}/%.cxx ${TEST_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+# or ${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+
+${TEST_OUT_DIR_obj}/%.${REZ}: ${TEST_DIR}/%.rc ${DEPS_common} | ${out_dirs}
+	$(call %rc,$(call %shell_quote,$@),$(call %shell_quote,$<))
+# or ${RC} ${RCFLAGS} ${RC_o}$(call %shell_quote,$@) $(call %shell_quote,$<)
+
+####
+
+# ToDO: add support for a 'bin' directory which operates as a holding directory for individual executables (similar to 'examples')
 
 ####
 
@@ -917,13 +1267,20 @@ $(foreach dir,$(filter-out . ..,${out_dirs_for_rules}),$(eval $(call @mkdir_rule
 
 ####
 
-ifeq (${NULL},${SRC_files})
+# suppress auto-deletion of intermediate files
+# ref: [`gmake` ~ removing intermediate files](https://stackoverflow.com/questions/47447369/gnu-make-removing-intermediate-files) @@ <https://archive.is/UXrIv>
+.SECONDARY:
+
+####
+
+ifeq (${NULL},$(or ${SRC_files},${BIN_SRC_files}))
 $(call %warning,no source files found; is `SRC_DIR` ('${SRC_DIR}') set correctly for the project?)
 endif
 
 ifeq (${true},$(call %truthy,${has_run_target}))
-ifneq (${NULL},$(if ${has_run_first},${NULL},$(filter ${phony_targets},${make_run_ARGS})))
+ifneq (${NULL},$(if ${has_run_first},${NULL},$(filter ${all_phony_targets},${make_run_ARGS})))
 $(call %warning,`run` arguments duplicate (and overwrite) standard targets; try using run with arguments as a solo target (`${make_invoke_alias} run ARGS`))
 endif
+# $(info make_run_ARGS=:${make_run_ARGS}:)
 $(eval ${make_run_ARGS}:;@:)
 endif

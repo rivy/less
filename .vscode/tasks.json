@@ -1,84 +1,41 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Build (clang; debug)",
-            "type": "shell",
-            "command": "make",
-            "args": [
-                "-f",
-                "Makefile.win",
-                "CC=clang",
-                "DEBUG=1"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ]
-        },
-        {
-            "label": "Build (gcc; debug)",
-            "type": "shell",
-            "command": "make",
-            "args": [
-                "-f",
-                "Makefile.win",
-                "CC=gcc",
-                "DEBUG=1"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": [
-                "$gcc"
-            ]
-        },
-        {
-            "label": "Clean",
-            "type": "shell",
-            "command": "make",
-            "args": [
-                "-f",
-                "Makefile.win",
-                "clean"
-            ],
-            "group": "none",
-            "problemMatcher": [
-                "$gcc"
-            ]
-        },
-        {
-            "label": "REBuild (clang; debug)",
-            "type": "shell",
-            "command": "make",
-            "args": [
-                "rebuild",
-                "-f",
-                "Makefile.win",
-                "CC=clang",
-                "DEBUG=1"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ]
-        },
-        {
-            "label": "REBuild (gcc; debug)",
-            "type": "shell",
-            "command": "make",
-            "args": [
-                "rebuild",
-                "-f",
-                "Makefile.win",
-                "CC=gcc",
-                "DEBUG=1"
-            ],
-            "group": "build",
-            "problemMatcher": [
-                "$gcc"
-            ]
-        },
-    ]
+	// ref: [MSVSC ~ 'tasks.json' docs](https://go.microsoft.com/fwlink/?LinkId=733558)
+	// note: use IntelliSense to learn about possible attributes; hover to view descriptions of existing attributes.
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Build (gcc/32-bit/DEBUG)",
+			"command": "make CC=gcc DEBUG=1 ARCH=32 OUT_DIR=${config:project.build_dir}/debug.(vscode)-x32 NAME=${config:project.name} EXEEXT=.exe ${config:project.make_options}",
+			"options": { "cwd": "${fileWorkspaceFolder}" },
+			"problemMatcher": ["$gcc"],
+			"group": { "kind": "build", "isDefault": true }
+		},
+		{
+			"type": "shell",
+			"label": "Build (gcc/64-bit/DEBUG)",
+			"command": "make CC=gcc DEBUG=1 ARCH=64 OUT_DIR=${config:project.build_dir}/debug.(vscode)-x64 NAME=${config:project.name} EXEEXT=.exe ${config:project.make_options}",
+			"options": { "cwd": "${fileWorkspaceFolder}" },
+			"problemMatcher": ["$gcc"],
+			"group": { "kind": "build", "isDefault": true }
+		},
+		{ "type": "shell", "label": "Clean (realclean) project", "command": "make realclean" },
+		{
+			"type": "shell",
+			"label": "REbuild (gcc/32-bit/DEBUG)",
+			"command": "make rebuild CC=gcc DEBUG=1 ARCH=32 OUT_DIR=${config:project.build_dir}/debug.(vscode)-x32 NAME=${config:project.name} EXEEXT=.exe ${config:project.make_options}",
+			"options": { "cwd": "${fileWorkspaceFolder}" },
+			"problemMatcher": ["$gcc"],
+			"group": { "kind": "build", "isDefault": true }
+		},
+		{
+			"type": "shell",
+			"label": "REbuild (gcc/64-bit/DEBUG)",
+			"command": "make rebuild CC=gcc DEBUG=1 ARCH=64 OUT_DIR=${config:project.build_dir}/debug.(vscode)-x64 NAME=${config:project.name} EXEEXT=.exe ${config:project.make_options}",
+			"options": { "cwd": "${fileWorkspaceFolder}" },
+			"problemMatcher": ["$gcc"],
+			"group": { "kind": "build", "isDefault": true }
+		}
+		// { "type": "shell", "label": "DEBUG echo", "command": "echo ${fileWorkspaceFolder}" }
+	]
 }

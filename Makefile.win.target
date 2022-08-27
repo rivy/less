@@ -1,0 +1,36 @@
+# spell-checker:ignore (make) EXEEXT addsuffix addprefix devnull falsey ; (names/vars) lessecho lesskey scrsize POSIX
+
+NAME := less
+AUX_names := lessecho lesskey
+AUX_skips := scrsize## `scrsize` is POSIX only
+
+$(call %debug_var,NAME)
+$(call %debug_var,AUX_names)
+$(call %debug_var,AUX_skips)
+
+####
+
+AUX_targets := $(addprefix ${OUT_DIR_bin}/,$(addsuffix ${EXEEXT},${AUX_names}))
+OBJ_files := $(filter-out $(addprefix ${OUT_DIR_obj}/,$(addsuffix .${O},${AUX_names} ${AUX_skips})),${OBJ_files})
+
+$(call %debug_var,AUX_targets)
+$(call %debug_var,OBJ_files)
+
+####
+
+DEFINE_EXT := wn
+${SRC_DIR}/defines.h: ${SRC_DIR}/defines.${DEFINE_EXT} $(filter-out ${SRC_DIR}/defines.h,${DEPS_common})
+	@${CP} $(call %map,%shell_quote,$(call %map,%as_win_path,$< $@)) >${devnull}
+	@$(call %touch,$(call %shell_quote,$@))
+	@${ECHO} $(call %shell_escape,$(call %info_text,created '$@' from '$<'.))
+
+${AUX_targets}: ${OUT_DIR_bin}/%${EXEEXT}: ${OUT_DIR_obj}/%.${O} ${OUT_DIR_obj}/version.${O} ${DEPS_common} | ${OUT_DIR_bin}
+	$(call %link,$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${OUT_DIR_obj}/version.${O}),$(call %map,%shell_quote,${LIBS}))
+	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
+	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
+
+####
+
+all: aux
+# aux: build ${AUX_targets} ## Build auxillary executables (`lessecho` and `lesskey`)
+aux: ${AUX_targets} ## Build auxillary executables (`lessecho` and `lesskey`)

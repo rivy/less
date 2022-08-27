@@ -1,11 +1,1 @@
-{
-    "cSpell.words": [
-        "Nudelman",
-        "dir",
-        "klietz",
-        "msls",
-        "ntfs",
-        "repo"
-    ],
-    "C_Cpp.intelliSenseEngineFallback": "Disabled"
-}
+{ "project": { "name": "project", "build_dir": "#build", "make_options": "" } }

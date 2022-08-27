@@ -156,7 +156,7 @@ opt_j(type, s)
     char *s;
 {
     PARG parg;
-    char buf[16];
+    char buf[32];
     int len;
     int err;
 
@@ -221,7 +221,7 @@ opt_shift(type, s)
     char *s;
 {
     PARG parg;
-    char buf[16];
+    char buf[32];
     int len;
     int err;
 

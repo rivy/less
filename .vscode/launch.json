@@ -1,21 +1,59 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "(gdb) Debug `less`",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/less.exe",
-            // "args": [ "../causes-fault-single-line.txt" ],
-            "stopAtEntry": true,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "logging": { "engineLogging": true },
-            "MIMode": "gdb",
-            "miDebuggerPath": "gdb.exe",
-            "setupCommands": [ { "text": "-enable-pretty-printing", "description": "Enable GDB pretty printing", "ignoreFailures": true } ],
-            "preLaunchTask": "${defaultBuildTask}",
-        }
-    ]
+	// ref: [MSVSC ~ 'launch' configurations](https://go.microsoft.com/fwlink/?linkid=830387)
+	// note: use IntelliSense to learn about possible attributes; hover to view descriptions of existing attributes.
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug (32-bit)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug.(vscode)-x32/bin/${config:project.name}.exe",
+			"args": [], // * note: use this configuration array to add run-time arguments to the debugged process
+			// "args": ["/?"], // * note: use this configuration array to add run-time arguments to the debugged process
+			// "args": ["${fileWorkspaceFolder}/../causes-fault-single-line.txt"],
+			"stopAtEntry": false,
+			"cwd": "${fileWorkspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"miDebuggerPath": "gdb.exe",
+			"setupCommands": [
+				{
+					"description": "Enable GDB pretty-printing",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				},
+				{
+					"description": "Fix pretty-printing of UTF-8 characters; ref: <https://stackoverflow.com/a/68954359/43774>",
+					"text": "set charset UTF-8"
+				}
+			],
+			"preLaunchTask": "Build (gcc/32-bit/DEBUG)"
+		},
+		{
+			"name": "Debug (64-bit)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug.(vscode)-x64/bin/${config:project.name}.exe",
+			"args": [], // * note: use this configuration array to add run-time arguments to the debugged process
+			"stopAtEntry": false,
+			"cwd": "${fileWorkspaceFolder}",
+			"environment": [],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"miDebuggerPath": "gdb.exe",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				},
+				{
+					"description": "Fix pretty-printing of UTF-8 characters; ref: <https://stackoverflow.com/a/68954359/43774>",
+					"text": "set charset UTF-8"
+				}
+			],
+			"preLaunchTask": "Build (gcc/64-bit/DEBUG)"
+		}
+	]
 }
