@@ -42,6 +42,7 @@ SRC_PATH := $()## path to source relative to makefile (defaults to first of ['sr
 BUILD_PATH := $()## path to build storage relative to makefile (defaults to '#build'); used to create ${BUILD_DIR} which is then used as the base path for build outputs
 
 DEPS = $()## list of any additional required (common/shared) dependencies (space-separated); note: use delayed expansion (`=`, not `:=`) if referencing a later defined variable (eg, `{SRC_DIR}/defines.h`)
+INCS = $()## list of any additional required (common/shared) include directories (space-separated; defaults to `${BASEPATH}`); note: use delayed expansion (`=`, not `:=`) if referencing a later defined variable (eg, `{SRC_DIR}/defines.h`)
 LIBS := $()## list of any additional required (common/shared) libraries (space-separated); alternatively, *if not using `gcc`*, `#pragma comment(lib, "LIBRARY_NAME")` within code; ref: [`gcc` pragma library?](https://stackoverflow.com/questions/1685206)@@<https://archive.ph/wip/md6Af>
 RES := $()## list of any additional required (common/shared) resources (space-separated)
 
@@ -95,9 +96,14 @@ makefile_set_abs := $(abspath ${makefile_set})
 
 # use ${BASEPATH} as an anchor to allow otherwise relative path specification of files
 ifneq (${makefile_dir},${current_dir})
-BASEPATH := ${makefile_dir:${current_dir}/%=%}/
+BASEPATH := ${makefile_dir:${current_dir}/%=%}
 # BASEPATH := $(patsubst ./%,%,${makefile_dir:${current_dir}/%=%}/)
 endif
+ifeq (${BASEPATH},)
+BASEPATH := .
+endif
+
+INCLUDE_DIRS := $(or ${INCS},${BASEPATH})
 
 #### Start of system configuration section. ####
 
@@ -138,7 +144,8 @@ STRIP_CC_gcc := strip
 ## -MMD :: create make-compatible dependency information file (a depfile); ref: <https://clang.llvm.org/docs/ClangCommandLineReference.html> , <https://stackoverflow.com/questions/2394609/makefile-header-dependencies>
 ## -D_CRT_SECURE_NO_WARNINGS :: compiler directive == suppress "unsafe function" compiler warning
 ## note: CFLAGS == C flags; CPPFLAGS == C PreProcessor flags; CXXFLAGS := C++ flags; ref: <https://stackoverflow.com/questions/495598/difference-between-cppflags-and-cxxflags-in-gnu-make>
-CFLAGS = -I$(call %shell_quote,${BASEPATH}.) -pedantic-errors -Werror -Wall -MMD -D_CRT_SECURE_NO_WARNINGS## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+CFLAGS = $(call %cflags_incs,${INCLUDE_DIRS}) -pedantic-errors -Werror -Wall -MMD -D_CRT_SECURE_NO_WARNINGS## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+%cflags_incs = $(call %map,$(eval %f=-I$(call %shell_quote,$${1}))%f,$(strip ${1}))
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_ARCH_32 := -m32
 CFLAGS_ARCH_64 := -m64
@@ -246,7 +253,8 @@ STRIP := $()
 ## /subsystem:console,4.00 :: generate "Win32 character-mode" console application; 4.00 => minimum supported system is Win9x/NT; supported only by MSVC 9 (`cl` version "15xx") or less
 ## /subsystem:console,5.01 :: generate "Win32 character-mode" console application; 5.01 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 32-bit
 ## /subsystem:console,5.02 :: generate "Win32 character-mode" console application; 5.02 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 64-bit
-CFLAGS = /nologo /W3 /WX /EHsc /I $(call %shell_quote,${BASEPATH}.) /D "WIN32" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS"## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+CFLAGS = /nologo /W3 /WX /EHsc $(call %cflags_incs,${INCLUDE_DIRS}) /D "WIN32" /D "_CONSOLE" /D "_CRT_SECURE_NO_WARNINGS"## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+%cflags_incs = $(call %map,$(eval %f=/I $(call %shell_quote,$${1}))%f,$(strip ${1}))
 CFLAGS_COMPILE_ONLY := -c
 # CFLAGS_DEBUG_true = /D "DEBUG" /D "_DEBUG" /Od /Zi /Fd"${OUT_DIR_obj}/"
 CFLAGS_DEBUG_true := /D "DEBUG" /D "_DEBUG" /Od /Z7
@@ -302,6 +310,7 @@ STRIP := $()
 
 # * find CC base directory (for include and library directories plus initialization code, as needed); note: CMD/PowerShell is assumed as `bcc32` is DOS/Windows-only
 CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..))
+INCLUDE_DIRS += ${CC_BASEDIR}\include
 LD_INIT_OBJ = $(call %shell_quote,${CC_BASEDIR}\lib\c0x32.obj)## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 LIB_DIRS = $(if $(filter bcc32,${CC_ID}),$(call %shell_quote,${CC_BASEDIR}\lib),$(call %shell_quote,${CC_BASEDIR}\lib\win32c\release);$(call %shell_quote,${CC_BASEDIR}\lib\win32c\release\psdk))## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 
@@ -318,7 +327,8 @@ LIB_DIRS = $(if $(filter bcc32,${CC_ID}),$(call %shell_quote,${CC_BASEDIR}\lib),
 # -v- :: turn off source level debugging and inline expansion on
 # -vi :: turn on inline function expansion
 # -w-pro :: disable warning "Call to function 'function' with no prototype"
-CFLAGS = -q -P-c -d -f- $(if $(filter bcc32,${CC_ID}),-ff-,) -I$(call %shell_quote,${BASEPATH}.) -I$(call %shell_quote,${CC_BASEDIR}\include)## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+CFLAGS = -q -P-c -d -f- $(if $(filter bcc32,${CC_ID}),-ff-,) $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+%cflags_incs = $(call %map,$(eval %f=-I$(call %shell_quote,$${1}))%f,$(strip ${1}))
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_DEBUG_false := -D"NDEBUG" -O2 -v- -vi
 CFLAGS_DEBUG_true := -D"DEBUG" -D"_DEBUG" -Od
@@ -344,7 +354,7 @@ LDFLAGS_DEBUG_false := -Gn -v- -x
 ## /nologo :: startup without logo display
 ## /l 0x409 :: specify default language using language identifier; "0x409" == "en-US"
 ## * ref: [MS LCIDs](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8) @@ <https://archive.is/ReX6o>
-RCFLAGS = /l 0x409 $(if $(filter bcc32,${CC_ID}),-r,) -I$(call %shell_quote,${BASEPATH}.) -I$(call %shell_quote,${CC_BASEDIR}\include)$() $(if $(filter embcc32,${CC_ID}),-I$(call %shell_quote,${CC_BASEDIR}\include\windows\crtl) -I$(call %shell_quote,${CC_BASEDIR}\include\windows\sdk),)
+RCFLAGS = /l 0x409 $(if $(filter bcc32,${CC_ID}),-r,) -I$(call %shell_quote,${BASEPATH}) -I$(call %shell_quote,${CC_BASEDIR}\include)$() $(if $(filter embcc32,${CC_ID}),-I$(call %shell_quote,${CC_BASEDIR}\include\windows\crtl) -I$(call %shell_quote,${CC_BASEDIR}\include\windows\sdk),)
 RCFLAGS_DEBUG_true := /D "DEBUG" /D "_DEBUG"
 RCFLAGS_DEBUG_false := /D "NDEBUG"
 
@@ -851,7 +861,7 @@ RUNNER := ${RUNNER_${CC}}
 
 # note: work within ${BASEPATH} (build directories may not yet be created)
 # note: set LIB as `make` doesn't export the LIB change into `$(shell ...)` invocations
-test_file_stem := $(subst ${SPACE},_,${BASEPATH}__MAKE__${CC}_${ARCH}_${TARGET}_test__)
+test_file_stem := $(subst ${SPACE},_,${BASEPATH}/__MAKE__${CC}_${ARCH}_${TARGET}_test__)
 test_file_cc_string := ${CC_e}$(call %shell_quote,${test_file_stem}${EXEEXT})
 test_success_text := ..TEST-COMPILE-SUCCESSFUL..
 $(call %debug_var,test_file_stem)
@@ -884,24 +894,25 @@ endif
 ####
 
 make_ARGS := ${MAKECMDGOALS}
-has_run_target := $(findstring run,${MAKECMDGOALS})
-has_run_first := $(findstring run,$(firstword ${MAKECMDGOALS}))
-run_position := $(call %position,run,${MAKECMDGOALS})
+has_runner_target := $(strip $(call %map,$(eval %f=$$(findstring $${1},${MAKECMDGOALS}))%f,run test))
+has_runner_first := $(strip $(call %map,$(eval %f=$$(findstring $${1},$$(firstword ${MAKECMDGOALS})))%f,run test))
+runner_position := $(call %map,$(eval %f=$$(call %position,$${1},${MAKECMDGOALS}))%f,${has_runner_target})
 
-make_run_ARGS := $(if ${has_run_target},$(call %tail,$(wordlist ${run_position},$(call %length,${make_ARGS}),${make_ARGS})),)
-override ARGS := ${ARGS} ${make_run_ARGS}
+make_runner_ARGS := $(if ${has_runner_target},$(call %tail,$(wordlist ${runner_position},$(call %length,${make_ARGS}),${make_ARGS})),)
+override ARGS := $(or $(and ${ARGS},${ARGS}${SPACE})${make_runner_ARGS},${ARGS_default_${has_runner_target}})
 
-$(call %debug_var,has_run_first)
-$(call %debug_var,has_run_target)
-$(call %debug_var,run_position)
+$(call %debug_var,has_runner_first)
+$(call %debug_var,has_runner_target)
+$(call %debug_var,runner_position)
 $(call %debug_var,make_ARGS)
-$(call %debug_var,make_run_ARGS)
+$(call %debug_var,make_runner_ARGS)
+$(call %debug_var,ARGS_default_${has_runner_target})
 $(call %debug_var,ARGS)
 
 ####
 
-BUILD_DIR := ${BASEPATH}$(or ${BUILD_PATH},${HASH}build)## note: `${HASH}build` causes issues with OpenWatcom-v2.0 [2020-09-01], but `${DOLLAR}build` causes variable expansion issues for VSCode debugging; note: 'target' is a common alternative
-SRC_DIR := $(firstword $(wildcard $(foreach segment,${SRC_PATH} src source,${BASEPATH}${segment})))
+BUILD_DIR := ${BASEPATH}/$(or ${BUILD_PATH},${HASH}build)## note: `${HASH}build` causes issues with OpenWatcom-v2.0 [2020-09-01], but `${DOLLAR}build` causes variable expansion issues for VSCode debugging; note: 'target' is a common alternative
+SRC_DIR := $(firstword $(wildcard $(foreach segment,${SRC_PATH} src source,${BASEPATH}/${segment})))
 
 CONFIG := $(if $(call %is_truthy,${DEBUG}),debug,release)
 
@@ -934,6 +945,7 @@ BIN_OBJ_sup_files := $(foreach file,${BIN_SRC_sup_files},$(basename $(patsubst $
 BIN_bin_files := $(foreach file,${BIN_SRC_files},$(basename ${BIN_OUT_DIR_bin}/$(patsubst ${BIN_DIR}/%,%,${file}))${EXEEXT})
 BIN_RES_files := $(call %recursive_wildcard,${BIN_DIR},*.rc)## resource files
 BIN_REZ_files := $(BIN_RES_files:${BIN_DIR}/%.rc=${BIN_OUT_DIR_obj}/%.${REZ})## compiled resource files
+BIN_cflags_includes := $(call %cflags_incs,$(strip $(call %uniq,$(or ${INCLUDE_DIRS_bin},${BIN_DIR}))))
 
 $(call %debug_var,BIN_DIR)
 $(call %debug_var,BIN_DIR_filename)
@@ -946,6 +958,7 @@ $(call %debug_var,BIN_OUT_DIR_obj)
 $(call %debug_var,BIN_bin_files)
 $(call %debug_var,BIN_RES_files)
 $(call %debug_var,BIN_REZ_files)
+$(call %debug_var,BIN_cflags_includes)
 
 SRC_sup_files := $(filter-out ${BIN_SRC_files} ${BIN_SRC_sup_files},$(call %recursive_wildcard,$(patsubst %/,%,$(call %dirs_in,${SRC_DIR})),*.c *.cpp *.cxx))## supplemental source files (eg, common or library code)
 
@@ -984,9 +997,9 @@ $(call %debug_var,DEPS_target)
 # examples (within first of ['eg','egs','ex', 'exs', 'example', 'examples'] directories)
 ## * each source file will be compiled to a single target executable within the (same-named) examples output directory
 
-EG_DIR := $(firstword $(wildcard $(foreach segment,eg egs ex exs example examples,${BASEPATH}${segment})))
+EG_DIR := $(firstword $(wildcard $(foreach segment,eg egs ex exs example examples,${BASEPATH}/${segment})))
 EG_DIR_filename := $(notdir ${EG_DIR})
-EG_OUT_DIR_bin := $(and ${EG_DIR},${OUT_DIR}/${EG_DIR:${BASEPATH}%=%})
+EG_OUT_DIR_bin := $(and ${EG_DIR},${OUT_DIR}/${EG_DIR:${BASEPATH}/%=%})
 EG_OUT_DIR_obj := $(and ${EG_DIR},${OUT_DIR_obj}.${EG_DIR_filename})
 EG_SRC_files := $(and ${EG_DIR},$(wildcard ${EG_DIR}/*.c ${EG_DIR}/*.cpp ${EG_DIR}/*.cxx))
 EG_SRC_sup_files := $(and ${EG_DIR},$(call %recursive_wildcard,$(patsubst %/,%,$(call %dirs,${EG_DIR})),*.c *.cpp *.cxx))
@@ -996,6 +1009,7 @@ EG_OBJ_sup_files := $(foreach file,${EG_SRC_sup_files},$(basename $(patsubst ${E
 EG_bin_files := $(foreach file,${EG_SRC_files},$(basename ${EG_OUT_DIR_bin}/$(patsubst ${EG_DIR}/%,%,${file}))${EXEEXT})
 EG_RES_files := $(call %recursive_wildcard,${EG_DIR},*.rc)## resource files
 EG_REZ_files := $(EG_RES_files:${EG_DIR}/%.rc=${EG_OUT_DIR_obj}/%.${REZ})## compiled resource files
+EG_cflags_includes := $(call %cflags_incs,$(strip $(call %uniq,$(or ${INCLUDE_DIRS_eg},${EG_DIR}))))
 
 $(call %debug_var,EG_DIR)
 $(call %debug_var,EG_DIR_filename)
@@ -1008,23 +1022,24 @@ $(call %debug_var,EG_OUT_DIR_obj)
 $(call %debug_var,EG_bin_files)
 $(call %debug_var,EG_RES_files)
 $(call %debug_var,EG_REZ_files)
+$(call %debug_var,EG_cflags_includes)
 
 # tests (within first of ['t','test','tests'] directories)
 ## * each source file will be compiled to a single target executable within the (same-named) test output directory
 
-TEST_DIR := $(firstword $(wildcard $(foreach segment,t test tests,${BASEPATH}${segment})))
+TEST_DIR := $(firstword $(wildcard $(foreach segment,t test tests,${BASEPATH}/${segment})))
 TEST_DIR_filename := $(notdir ${TEST_DIR})
-TEST_OUT_DIR_bin := $(and ${TEST_DIR},${OUT_DIR}/${TEST_DIR:${BASEPATH}%=%})
+TEST_OUT_DIR_bin := $(and ${TEST_DIR},${OUT_DIR}/${TEST_DIR:${BASEPATH}/%=%})
 TEST_OUT_DIR_obj := $(and ${TEST_DIR},${OUT_DIR_obj}.$(notdir ${TEST_DIR}))
 TEST_SRC_files := $(and ${TEST_DIR},$(wildcard ${TEST_DIR}/*.c ${TEST_DIR}/*.cpp ${TEST_DIR}/*.cxx))
 TEST_SRC_sup_files := $(and ${TEST_DIR},$(call %recursive_wildcard,$(patsubst %/,%,$(call %dirs_in,${TEST_DIR})),*.c *.cpp *.cxx))
 TEST_deps := $(and ${TEST_DIR},$(call %recursive_wildcard,${TEST_DIR},*.h *.hpp *.hxx))
 TEST_OBJ_files := $(foreach file,$(strip ${TEST_SRC_files}),$(basename $(patsubst ${TEST_DIR}/%,${TEST_OUT_DIR_obj}/%,${file})).${O})
 TEST_OBJ_sup_files := $(foreach file,${TEST_SRC_sup_files},$(basename $(patsubst ${TEST_DIR}/%,${TEST_OUT_DIR_obj}/%,${file})).${O})
-TEST_OUT_DIR_bin := $(and ${TEST_DIR},${OUT_DIR}/${TEST_DIR})
 TEST_bin_files := $(foreach file,${TEST_SRC_files},$(basename ${TEST_OUT_DIR_bin}/$(patsubst ${TEST_DIR}/%,%,${file}))${EXEEXT})
 TEST_RES_files := $(call %recursive_wildcard,${TEST_DIR},*.rc)## resource files
 TEST_REZ_files := $(TEST_RES_files:${TEST_DIR}/%.rc=${TEST_OUT_DIR_obj}/%.${REZ})## compiled resource files
+TEST_cflags_includes := $(call %cflags_incs,$(strip $(call %uniq,$(or ${INCLUDE_DIRS_test},${TEST_DIR}))))
 
 $(call %debug_var,TEST_DIR)
 $(call %debug_var,TEST_DIR_filename)
@@ -1037,6 +1052,7 @@ $(call %debug_var,TEST_OUT_DIR_obj)
 $(call %debug_var,TEST_bin_files)
 $(call %debug_var,TEST_RES_files)
 $(call %debug_var,TEST_REZ_files)
+$(call %debug_var,TEST_cflags_includes)
 
 # $(call %debug,${OBJ_files} ${OBJ_sup_files} ${BIN_OBJ_files} ${BIN_OBJ_sup_files} ${EG_OBJ_files} ${EG_OBJ_sup_files} ${TEST_OBJ_files} ${TEST_OBJ_sup_files} ${BIN_REZ_files} ${EG_REZ_files} ${TEST_REZ_files} ${REZ_files})
 # $(call %debug,$(dir ${OBJ_files} ${OBJ_sup_files} ${BIN_OBJ_files} ${BIN_OBJ_sup_files} ${EG_OBJ_files} ${EG_OBJ_sup_files} ${TEST_OBJ_files} ${TEST_OBJ_sup_files} ${BIN_REZ_files} ${EG_REZ_files} ${TEST_REZ_files} ${REZ_files}))
@@ -1168,7 +1184,7 @@ endif
 
 %*[makefile.run]*: %
 	@${ECHO} $(call %shell_escape,$(call %info_text,running '$<'))
-	@${ECHO} $(strip ${RUNNER_${CC}} $(call %shell_quote,$<)) ${ARGS}
+	@$(strip ${RUNNER_${CC}} $(call %shell_quote,$<)) ${ARGS}
 
 ####
 
@@ -1202,13 +1218,13 @@ ${BIN_OUT_DIR_bin}/%${EXEEXT}: ${BIN_OUT_DIR_obj}/%.${O} ${BIN_OBJ_sup_files} ${
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
 
 ${BIN_OUT_DIR_obj}/%.${O}: ${BIN_DIR}/%.c ${BIN_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${BIN_cflags_includes} $(call %shell_quote,$<)
 
 ${BIN_OUT_DIR_obj}/%.${O}: ${BIN_DIR}/%.cpp ${BIN_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${BIN_cflags_includes} ${CXXFLAGS} $(call %shell_quote,$<)
 
 ${BIN_OUT_DIR_obj}/%.${O}: ${BIN_DIR}/%.cxx ${BIN_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${BIN_cflags_includes} ${CXXFLAGS} $(call %shell_quote,$<)
 # or ${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
 
 ${BIN_OUT_DIR_obj}/%.${REZ}: ${BIN_DIR}/%.rc ${DEPS_common} | ${out_dirs}
@@ -1223,13 +1239,13 @@ ${EG_OUT_DIR_bin}/%${EXEEXT}: ${EG_OUT_DIR_obj}/%.${O} ${EG_OBJ_sup_files} ${EG_
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
 
 ${EG_OUT_DIR_obj}/%.${O}: ${EG_DIR}/%.c ${EG_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${EG_cflags_includes} $(call %shell_quote,$<)
 
 ${EG_OUT_DIR_obj}/%.${O}: ${EG_DIR}/%.cpp ${EG_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${EG_cflags_includes} ${CXXFLAGS} $(call %shell_quote,$<)
 
 ${EG_OUT_DIR_obj}/%.${O}: ${EG_DIR}/%.cxx ${EG_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${EG_cflags_includes} ${CXXFLAGS} $(call %shell_quote,$<)
 # or ${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
 
 ${EG_OUT_DIR_obj}/%.${REZ}: ${EG_DIR}/%.rc ${DEPS_common} | ${out_dirs}
@@ -1244,13 +1260,13 @@ ${TEST_OUT_DIR_bin}/%${EXEEXT}: ${TEST_OUT_DIR_obj}/%.${O} ${TEST_OBJ_sup_files}
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
 
 ${TEST_OUT_DIR_obj}/%.${O}: ${TEST_DIR}/%.c ${TEST_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
+	${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${TEST_cflags_includes} $(call %shell_quote,$<)
 
 ${TEST_OUT_DIR_obj}/%.${O}: ${TEST_DIR}/%.cpp ${TEST_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${TEST_cflags_includes} ${CXXFLAGS} $(call %shell_quote,$<)
 
 ${TEST_OUT_DIR_obj}/%.${O}: ${TEST_DIR}/%.cxx ${TEST_deps} ${OBJ_deps} ${DEPS_common} | ${out_dirs}
-	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${CXXFLAGS} $(call %shell_quote,$<)
+	${CXX} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} ${TEST_cflags_includes} ${CXXFLAGS} $(call %shell_quote,$<)
 # or ${CC} ${CC_o}$(call %shell_quote,$@) ${CFLAGS_COMPILE_ONLY} ${CPPFLAGS} ${CFLAGS} $(call %shell_quote,$<)
 
 ${TEST_OUT_DIR_obj}/%.${REZ}: ${TEST_DIR}/%.rc ${DEPS_common} | ${out_dirs}
@@ -1277,10 +1293,19 @@ ifeq (${NULL},$(or ${SRC_files},${BIN_SRC_files}))
 $(call %warning,no source files found; is `SRC_DIR` ('${SRC_DIR}') set correctly for the project?)
 endif
 
-ifeq (${true},$(call %truthy,${has_run_target}))
-ifneq (${NULL},$(if ${has_run_first},${NULL},$(filter ${all_phony_targets},${make_run_ARGS})))
-$(call %warning,`run` arguments duplicate (and overwrite) standard targets; try using run with arguments as a solo target (`${make_invoke_alias} run ARGS`))
+$(call %debug_var,NULL)
+$(call %debug_var,has_runner_target)
+$(call %debug_var,all_phony_targets)
+$(call %debug_var,make_runner_ARGS)
+
+x := $(filter ${all_phony_targets},${make_runner_ARGS})
+$(call %debug_var,x)
+
+
+ifeq (${true},$(call %truthy,${has_runner_target}))
+ifneq (${NULL},$(if ${has_runner_target},$(filter ${all_phony_targets},${make_runner_ARGS}),${NULL}))
+$(call %warning,runner arguments duplicate (and overwrite) standard targets; try using `${make_invoke_alias} run ARGS=...`)
 endif
-# $(info make_run_ARGS=:${make_run_ARGS}:)
-$(eval ${make_run_ARGS}:;@:)
+# $(info make_runner_ARGS=:${make_runner_ARGS}:)
+$(eval ${make_runner_ARGS}:;@:)
 endif
