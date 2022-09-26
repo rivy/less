@@ -842,7 +842,7 @@ is_combining_char(ch1, ch2)
     LWCHAR ch2;
 {
     /* The table is small; use linear search. */
-    int i;
+    size_t i;
     for (i = 0;  i < sizeof(comb_table)/sizeof(*comb_table);  i++)
     {
         if (ch1 == comb_table[i].first &&
