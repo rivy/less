@@ -2,7 +2,7 @@ public char * save LESSPARAMS ((constant char *s));
 public VOID_POINTER ecalloc LESSPARAMS ((size_t count, size_t size));
 public char * skipsp LESSPARAMS ((char *s));
 public int sprefix LESSPARAMS ((char *ps, char *s, int uppercase));
-public void quit LESSPARAMS ((int status));
+public NORETURN void quit LESSPARAMS ((int status));
 public void raw_mode LESSPARAMS ((int on));
 public void scrsize LESSPARAMS ((VOID_PARAM));
 public char * special_key_str LESSPARAMS ((int key));
