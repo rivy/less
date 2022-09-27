@@ -120,11 +120,11 @@ pclose(f)
     public int
 default_wheel_lines(VOID_PARAM)
 {
-    int lines = 1;
+    unsigned int lines = 1;
 #if MSDOS_COMPILER==WIN32C
     if (SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &lines, 0))
     {
-        if (lines == WHEEL_PAGESCROLL)
+        if ((lines == WHEEL_PAGESCROLL) || (lines >= INT_MAX))
             lines = 3;
     }
 #endif
