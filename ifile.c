@@ -47,7 +47,7 @@ struct ifile {
  * Anchor for linked list.
  */
 static struct ifile anchor = { &anchor, &anchor, NULL, NULL, 0, 0, '\0',
-                { NULL_POSITION, 0 } };
+                { NULL_POSITION, 0 }, NULL, NULL };
 static int ifiles = 0;
 
     static void
