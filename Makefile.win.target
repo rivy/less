@@ -16,7 +16,8 @@ $(call %debug_var,OBJ_files)
 
 ####
 
-DEFINE_EXT := wn
+DEFINE_EXT := $(if $(filter-out i586-pc-msdosdjgpp-gcc,${CC}),wn,ds)
+
 ${SRC_DIR}/defines.h: ${SRC_DIR}/defines.${DEFINE_EXT} $(filter-out ${SRC_DIR}/defines.h,${DEPS_common})
 	@${CP} $(call %map,%shell_quote,$(call %map,%as_win_path,$< $@)) >${devnull}
 	@$(call %touch,$(call %shell_quote,$@))
