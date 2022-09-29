@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.09.26)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.09.28)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -14,6 +14,7 @@
 # ToDO: investigate portably adding resources to executables; ref: [Embed Resources into Executables](https://caiorss.github.io/C-Cpp-Notes/resources-executable.html) @@ <https://archive.is/pjDzW>
 # FixME: [2021-09-26; rivy] clang `llvm-rc` is broken (not preprocessing; see <https://bugzilla.mozilla.org/show_bug.cgi?id=1537703#c1> @@ <https://archive.is/fK3Vi>)
 # *=> for `clang` builds requiring resources, `clang` will utilize `windres`, if found on PATH, otherwise gracefully degrades by skipping the resource entirely and linking an empty object file
+# * [2022-09-28; rivy] llvm-rc v13 to v15 are still broken when expanding macros
 
 # `make [ARCH=32|64|..] [CC=cl|clang|gcc|..] [CC_DEFINES=<truthy>] [DEBUG=<truthy>] [STATIC=<truthy>] [SUBSYSTEM=console|windows|..] [TARGET=..] [COLOR=<truthy>] [MAKEFLAGS_debug=<truthy>] [VERBOSE=<truthy>] [MAKE_TARGET...]`
 
@@ -437,15 +438,20 @@ ifeq (,$(filter-out clang gcc,${CC_ID}))
 ## `clang` or `gcc`
 CXX := ${CC:gcc=g}++
 LD := ${CXX}
-# FixME: [2021-09-26; rivy] clang `llvm-rc` is broken (not preprocessing) => use `windres`, if available
-RC_CC_clang := $(subst -FOUND,,$(filter windres-FOUND,$(shell windres --version 2>&1 && echo windres-FOUND || echo)))
-RC_CC_gcc := windres
-RC := ${RC_CC_${CC_ID}}
+# DONE: [2022-09-27; rivy]; FixME: [2021-09-26; rivy] clang `llvm-rc` is broken (not preprocessing) => use `windres`, if available
+# note: `llvm-rc` is broken for `clang` < v13, use `windres` instead, if present, for those versions
+available_windres := $(subst -FOUND,,$(filter windres-FOUND,$(shell windres --version 2>&1 && echo windres-FOUND || echo)))
+# RC_clang_clang13+_false := $(or $(and ${available_windres},windres),llvm-rc)
+# RC_clang_clang13+_true := llvm-rc
+RC_clang := $(and ${available_windres},windres)
+RC_gcc := windres
+RC := ${RC_${CC_ID}}## if empty/null, RC will be determined later, if possible, based on compiler and version
 %link = ${LD} ${1} ${LD_o}${2} ${3} ${4} ${5}## $(call %link,LDFLAGS,EXE,OBJs,REZs,LDX_flags); function => requires delayed expansion
 # %link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3} -Wlinker,--start-group ${4} -Wlinker,--end-group## $(call %link,EXE,OBJs,REZs,LIBs); function => requires delayed expansion
 # %link = ${LD} ${LDFLAGS} ${LD_o}${1} ${2} ${3} -Xlinker --start-group ${4} -Xlinker --end-group## $(call %link,EXE,OBJs,REZs,LIBs); function => requires delayed expansion
-# NOTE: currently resource embedding via linking is only supported on Windows platforms
-%rc = $(if $(and $(call %eq,${OSID},win),${RC}),${RC} ${RCFLAGS} ${RC_o}${1} ${2},${CC} ${CFLAGS_COMPILE_ONLY} ${CFLAGS_ARCH_${ARCH_ID}} -w -x c - <${devnull} ${CC_o}${1})## $(call %link,REZ,RES); function => requires delayed expansion
+# NOTE: currently (2022-09-27) resource embedding via linking is only supported on Windows platforms
+# NOTE: if ${RC} not defined, WARN and use ${CC} to build an empty compiled "resource" file
+%rc = $(if $(and $(call %eq,${OSID},win),${RC}),${RC} ${RCFLAGS} ${RC_o}${1} ${2},$(info $(call %warning_text,Unable to find viable resource compiler; using `${CC}` to build an empty compiled resource file as fallback))${CC} ${CFLAGS_COMPILE_ONLY} ${CFLAGS_ARCH_${ARCH_ID}} -w -x c - <${devnull} ${CC_o}${1})## $(call %link,REZ,RES); function => requires delayed expansion
 STRIP_CC_clang_OSID_nix := strip
 STRIP_CC_clang_OSID_win := llvm-strip
 STRIP_CC_gcc := strip
@@ -503,9 +509,14 @@ LDFLAGS_gcc += -lstdc++
 ## for `clang`, use `llvm-rc -H` for option help
 ## for `gcc`, use `windres --help` for option help
 RCFLAGS += $()
-# RCFLAGS_clang := -L 0x409$()## `llvm-rc`
-RCFLAGS_clang += -l 0x409$()## `windres`
-RCFLAGS_gcc += -l 0x409$()
+# RCFLAGS_clang_clang13+_true := -L 0x409$()## `llvm-rc`
+# RCFLAGS_clang_clang13+_false := -l 0x409$()## `windres`
+RCFLAGS_clang := -l 0x409$()## `windres`
+RCFLAGS_gcc := -l 0x409$()
+RCFLAGS_ARCH_32 := $()
+RCFLAGS_ARCH_64 := $()
+RCFLAGS_DEBUG_true := -DDEBUG -D_DEBUG
+RCFLAGS_DEBUG_false := -DNDEBUG
 RCFLAGS_TARGET_clang_ARCH_32 := --target=$(if $(call %eq,${CC},clang),i686-w64-mingw32,${CC})$()
 RCFLAGS_TARGET_clang_ARCH_64 := --target=$(if $(call %eq,${CC},clang),x86_64-w64-mingw32,${CC})$()
 RCFLAGS_TARGET_gcc_ARCH_32 := --target=$(if $(or $(call %eq,${CC},gcc),$(call %eq,${CC},i586-pc-msdosdjgpp-gcc)),i686-w64-mingw32,${CC})$()
@@ -516,8 +527,9 @@ CC_is_MinGW_w64 := $(call %as_truthy,$(findstring -w64-mingw32-,${CC}))
 DEP_ext_${CC_ID} := d
 REZ_ext_${CC_ID} := res.o
 
-# RC_clang_o := /fo## `llvm-rc`
-RC_clang_o := -o## `windres`
+# RC_clang_clang13+_true_o = /Fo## '/Fo' for `llvm-rc`; '-o' for `windres`
+# RC_clang_clang13+_false_o = -o## '/Fo' for `llvm-rc`; '-o' for `windres`
+RC_clang_o := -o
 RC_gcc_o := -o
 
 # %ld_subsystem = /subsystem:$(if $(filter-out file,$(origin SUBSYSTEM)),${SUBSYSTEM},${1}$(if $(call %is_falsey,${is_CL1600+}),${COMMA}4.00,$(if $(filter ${ARCH_32},${ARCH_ID}),${COMMA}5.01,${COMMA}5.02)))
@@ -541,7 +553,7 @@ ifeq (cl,${CC_ID})
 ## `cl` (MSVC)
 CXX := ${CC}
 LD := $(if $(filter clang-cl,${CC}),clang-cl,link)
-RC := rc
+RC := $(if $(filter clang-cl,${CC}),llvm-rc,rc)
 %link = ${LD} ${1} ${LD_o}${2} ${3} ${4} ${5}## $(call %link,LDFLAGS,EXE,OBJs,REZs,LDX_flags); function => requires delayed expansion
 %rc = $(strip ${RC} ${RCFLAGS} ${RC_o}${1} ${2}$(if $(call %is_falsey,${is_CL1600+}),>${devnull},))## $(call %link,REZ,RES); function => requires delayed expansion
 STRIP := $()
@@ -619,14 +631,16 @@ LDXFLAGS_ARCH_32 := /machine:I386
 ## /l 0x409 :: specify default language using language identifier; "0x409" == "en-US"
 ## * ref: [MS LCIDs](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8) @@ <https://archive.is/ReX6o>
 RCFLAGS += /l 0x409 $()
+RCFLAGS_ARCH_32 = $()
+RCFLAGS_ARCH_64 = $()
 RCFLAGS_DEBUG_true := /D "DEBUG" /D "_DEBUG"
 RCFLAGS_DEBUG_false := /D "NDEBUG"
-RCFLAGS_VC6_false := /nologo
+RCFLAGS_VC6_false := $(if $(filter clang-cl,${CC}),,/nologo)
 
 CC_${CC_ID}_e := /Fe
 CC_${CC_ID}_o := /Fo
 LD_${CC_ID}_o := $(if $(filter clang-cl,${CC}),/Fe,/out:)
-RC_${CC_ID}_o := /fo
+RC_${CC_ID}_o := /Fo
 
 O_${CC_ID} := obj
 
@@ -695,6 +709,8 @@ LDFLAGS_DEBUG_false := -Gn -v- -x
 ## /l 0x409 :: specify default language using language identifier; "0x409" == "en-US"
 ## * ref: [MS LCIDs](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/63d3d639-7fd2-4afb-abbe-0d5b5551eef8) @@ <https://archive.is/ReX6o>
 RCFLAGS += /l 0x409 $(if $(filter bcc32,${CC_ID}),-r,) -I$(call %shell_quote,${BASEPATH}) -I$(call %shell_quote,${CC_BASEDIR}\include)$() $(if $(filter embcc32,${CC_ID}),-I$(call %shell_quote,${CC_BASEDIR}\include\windows\crtl) -I$(call %shell_quote,${CC_BASEDIR}\include\windows\sdk),)
+RCFLAGS_ARCH_32 := $()
+RCFLAGS_ARCH_64 := $()
 RCFLAGS_DEBUG_true := /D "DEBUG" /D "_DEBUG"
 RCFLAGS_DEBUG_false := /D "NDEBUG"
 
@@ -714,31 +730,38 @@ OUT_obj_filesets := ${OUT_obj_filesets} $() *.obj *.ilc *.ild *.ilf *.ils *.tds#
 $(call %debug_var,OSID)
 $(call %debug_var,SHELL)
 
+$(call %debug_var,COLOR)
+$(call %debug_var,DEBUG)
+$(call %debug_var,STATIC)
+$(call %debug_var,VERBOSE)
+
+$(call %debug_var,MAKEFLAGS_debug)
+
 $(call %debug_var,CC_ID)
 $(call %debug_var,CC)
 $(call %debug_var,CXX)
 $(call %debug_var,LD)
-$(call %debug_var,RC)
+$(call %debug_var,RC)## if $(), default/fixup later
 $(call %debug_var,CFLAGS)
 $(call %debug_var,CPPFLAGS)
 $(call %debug_var,CXXFLAGS)
 $(call %debug_var,LDFLAGS)
 
+$(call %debug_var,CC_is_MinGW_w64)
+
 $(call %debug_var,INCLUDE_DIRS)
 
-# $(call %debug_var,%LDX_flags)
 $(call %debug_var,OUT_obj_filesets)
-
-$(call %debug_var,CC_is_MinGW_w64)
 
 CC_e := $(or ${CC_${CC_ID}_e},-o${SPACE})
 CC_o := $(or ${CC_${CC_ID}_o},-o${SPACE})
 LD_o := $(or ${LD_${CC_ID}_o},-o${SPACE})
-RC_o := $(or ${RC_${CC_ID}_o},-o${SPACE})
+RC_o := ${RC_${CC_ID}_o}## if $(), default/fixup later
 
 $(call %debug_var,CC_e)
 $(call %debug_var,CC_o)
 $(call %debug_var,LD_o)
+$(call %debug_var,RC_o)
 
 D := $(or ${DEP_ext_${CC_ID}},$())
 
@@ -751,13 +774,6 @@ $(call %debug_var,O)
 REZ := $(or ${REZ_ext_${CC_ID}},res)
 
 $(call %debug_var,REZ)
-
-$(call %debug_var,COLOR)
-$(call %debug_var,DEBUG)
-$(call %debug_var,STATIC)
-$(call %debug_var,VERBOSE)
-
-$(call %debug_var,MAKEFLAGS_debug)
 
 #### End of compiler configuration section. ####
 
@@ -837,9 +853,9 @@ $(call %error,Unknown architecture "$(ARCH)"; valid values are [""$(subst $(SPAC
 endif
 
 SUBSYSTEM_allowed := $(sort console windows posix)
-# ifneq (${ARCH},$(filter ${ARCH},${ARCH_allowed}))
-# $(call %error,Unknown architecture "$(ARCH)"; valid values are [""$(subst $(SPACE),$(),$(addprefix ${COMMA}",$(addsuffix ",${ARCH_allowed})))])
-# endif
+ifneq (${SUBSYSTEM},$(filter ${SUBSYSTEM},${SUBSYSTEM_allowed}))
+$(call %error,Unknown subsystem "$(SUBSYSTEM)"; valid values are [""$(subst $(SPACE),$(),$(addprefix ${COMMA}",$(addsuffix ",${SUBSYSTEM_allowed})))])
+endif
 
 line_marker := $(if $(filter-out ${CC},clang-cl),1:,2:)
 $(call %debug_var,line_marker)
@@ -900,6 +916,7 @@ CC_version_m := $(strip $(word 2,${CC_version_parts}))
 CC_version_r := $(strip $(word 3,${CC_version_parts}))
 CC_version_Mm := $(strip ${CC_version_M}.${CC_version_m})
 
+is_clang13+ := $(call %as_truthy,$(and $(call %eq,clang,${CC_ID}),$(call %not,$(filter ${CC_version_M},0 1 2 3 4 5 6 7 8 9 10 11 12)),${true}))
 is_CL1600+ := $(call %as_truthy,$(or $(call %eq,clang-cl,${CC}),$(and $(call %eq,cl,${CC}),$(call %not,$(filter ${CC_version_M},0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)),${true})))
 is_VC6 := $(call %as_truthy,$(and $(call %eq,cl,${CC}),$(call %eq,12,${CC_version_M}),${true}))
 
@@ -909,6 +926,7 @@ $(call %debug_var,CC_version_M)
 $(call %debug_var,CC_version_m)
 $(call %debug_var,CC_version_r)
 $(call %debug_var,CC_version_Mm)
+$(call %debug_var,is_clang13+)
 $(call %debug_var,is_CL1600+)
 $(call %debug_var,is_VC6)
 
@@ -938,6 +956,27 @@ $(call %debug_var,OUT_DIR_EXT)
 
 ####
 
+# NOTE: [2022-09-29; rivy] `llvm-rc` for `clang`, as of v15, is still broken, unable to compile more than the most simplistic resource file; so, avoid these useless RC fixups
+# # * RC/RC_o fixups (based on CC version)
+#
+# $(call %debug_var,RC)
+# $(call %debug_var,RC_${CC_ID}_clang13+_${is_clang13+})
+# $(call %debug_var,RC_${CC_ID})
+# $(call %debug_var,RC_o)
+# $(call %debug_var,RC_${CC_ID}_clang13+_${is_clang13+}_o)
+# $(call %debug_var,RC_${CC_ID}_o)
+#
+# RC := $(or ${RC},${RC_${CC_ID}_clang13+_${is_clang13+}},${RC_${CC_ID}},$(if $(filter win,${OSID}),windres,llvm-rc))
+# RC_o := $(or ${RC_o},${RC_${CC_ID}_clang13+_${is_clang13+}_o},${RC_${CC_ID}_o},-o)
+# RC := $(or ${RC},${RC_${CC_ID}},$(if $(filter win,${OSID}),windres,llvm-rc))
+#
+# $(call %debug_var,RC)
+# $(call %debug_var,RC_o)
+
+####
+
+CC_DEFINES_CLI := -D_CC=\"${CC}\" -D_CC_ID=\"${CC_ID}\" -D_CC_VERSION=\"${CC_version}\" -D_CC_MACHINE=\"${CC_machine}\" -D_CC_TARGET=\"${TARGET}\" -D_CC_TARGET_ARCH=\"${ARCH}\" -D_CC_TARGET_ARCH_ID=\"${ARCH_ID}\"$()
+
 CFLAGS += ${CFLAGS_ARCH_${ARCH_ID}}
 CFLAGS += ${CFLAGS_TARGET}
 CFLAGS += ${CFLAGS_DEBUG_${DEBUG}}
@@ -947,7 +986,7 @@ CFLAGS += ${CFLAGS_VERBOSE_${VERBOSE}}
 CFLAGS += ${CFLAGS_${CC_ID}}
 CFLAGS += ${CFLAGS_${CC_ID}_${OSID}}
 
-CPPFLAGS += $(strip $(if $(call %is_truthy,${CC_DEFINES}),-D_CC=\"${CC}\" -D_CC_ID=\"${CC_ID}\" -D_CC_version=\"${CC_version}\" -D_CC_machine=\"${CC_machine}\" -D_CC_target=\"${TARGET}\" -D_CC_target_ARCH=\"${ARCH}\" -D_CC_target_ARCH_ID=\"${ARCH_ID}\",$()))
+CPPFLAGS += $(strip $(if $(call %is_truthy,${CC_DEFINES}),${CC_DEFINES_CLI},$()))
 CPPFLAGS += ${CPPFLAGS_${CC_ID}}
 CPPFLAGS += ${CPPFLAGS_${CC_ID}_${OSID}}
 
@@ -958,18 +997,24 @@ LDFLAGS += ${LDFLAGS_ARCH_${ARCH_ID}}
 LDFLAGS += ${LDFLAGS_TARGET}
 LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}}
 LDFLAGS += ${LDFLAGS_STATIC_${STATIC}}
-LDFLAGS += ${LDFLAGS_VC6_${is_VC6}}
+LDFLAGS += ${LDFLAGS_VC6_${is_VC6}}## name-expanded variable is only defined for ${CC_ID}=='cl'
 LDFLAGS += ${LDFLAGS_${CC_ID}}
 LDFLAGS += ${LDFLAGS_${CC_ID}_${OSID}}
 
-LDXFLAGS += ${LDXFLAGS_CL1600+_${is_CL1600+}}
-LDXFLAGS += ${LDXFLAGS_CL1600+_${is_CL1600+}_ARCH_${ARCH_ID}}
+LDXFLAGS += ${LDXFLAGS_CL1600+_${is_CL1600+}}## name-expanded variable is only defined for ${CC_ID}=='cl'
+LDXFLAGS += ${LDXFLAGS_CL1600+_${is_CL1600+}_ARCH_${ARCH_ID}}## name-expanded variable is only defined for ${CC_ID}=='cl'
 LDXFLAGS += ${LDXFLAGS_${CC_ID}}
 LDXFLAGS += ${LDXFLAGS_${CC_ID}_${OSID}}
 
+# RCFLAGS += $(strip $(subst -D_CC,-DCC,$(if $(call %is_truthy,${CC_DEFINES}),${CC_DEFINES_CLI},$())))
+# RCFLAGS += $(strip $(if $(call %is_truthy,${CC_DEFINES}),${CC_DEFINES_CLI},$()))
+# * MSVC/cl windres is unable to correctly handle backslash-quoted defines; removing them works for the other compilers as well
+RCFLAGS += $(strip $(subst ${BACKSLASH}",",$(if $(call %is_truthy,${CC_DEFINES}),${CC_DEFINES_CLI},$())))
+RCFLAGS += ${RCFLAGS_ARCH_${ARCH_ID}}
 RCFLAGS += ${RCFLAGS_TARGET}
 RCFLAGS += ${RCFLAGS_DEBUG_${DEBUG}}
-RCFLAGS += ${RCFLAGS_VC6_${is_VC6}}
+RCFLAGS += ${RCFLAGS_VC6_${is_VC6}}## name-expanded variable is only defined for ${CC_ID}=='cl'
+# RCFLAGS += ${RCFLAGS_${CC_ID}_clang13+_${is_clang13+}}## name-expanded variable is only defined for ${CC_ID}=='clang'
 RCFLAGS += ${RCFLAGS_${CC_ID}}
 RCFLAGS += ${RCFLAGS_${CC_ID}_${OSID}}
 
@@ -1029,7 +1074,7 @@ $(call %debug_var,CC_ARCH_ID)
 
 ifeq (${false},$(and ${ARCH_available},$(or $(call %eq,${ARCH_ID},${CC_ARCH_ID}),$(call %neq,cl,${CC}))))
 error_text := Unable to build $(if ${TARGET},architecture/target "${ARCH}/${TARGET}",architecture "${ARCH}") for this version of `${CC}` (v${CC_version}/${CC_machine})$(if ${test_compile_fail},; test compilation failed with "${test_output}",)
-error_text := $(if $(and $(filter clang,${CC_ID}),$(filter cl,$(shell cl 2>&1 >${devnull} && echo cl || echo))),${error_text}; NOTE: early versions of `cl` may interfere with `clang` builds/compiles,${error_text})
+error_text := $(if $(and $(or $(filter clang,${CC_ID}),$(filter clang-cl,${CC})),$(filter cl,$(shell cl 2>&1 >${devnull} && echo cl || echo))),${error_text}; ${color_warning}NOTE:${color_reset} early versions of `cl` may interfere with `${CC}` builds/compiles,${error_text})
 $(call %error,${error_text})
 endif
 
@@ -1390,7 +1435,7 @@ endif ## not ${has_run_first}
 
 ${NAME}: ${PROJECT_TARGET}
 ${PROJECT_TARGET}: ${OBJ_files} ${OBJ_sup_files} ${DEPS_common} ${DEPS_target} | ${OUT_DIR_bin}
-	$(call %link,${LDFLAGS},$(call %shell_quote,$@),$(call %map,%shell_quote,${OBJ_files} ${OBJ_sup_files} ${LINKS}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${REZ_files})),$(call %LDX_flags,$(if $(call %is_gui,$@),windows,)))
+	$(call %link,${LDFLAGS},$(call %shell_quote,$@),$(call %map,%shell_quote,${OBJ_files} ${OBJ_sup_files} ${LINKS}),$(call %map,%shell_quote,${REZ_files}),$(call %LDX_flags,$(if $(call %is_gui,$@),windows,)))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
 
