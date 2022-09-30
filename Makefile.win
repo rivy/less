@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.09.28)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.09.29)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -665,7 +665,7 @@ STRIP := $()
 # * find CC base directory (for include and library directories plus initialization code, as needed); note: CMD/PowerShell is assumed as `bcc32` is DOS/Windows-only
 CC_BASEDIR := $(subst /,\,$(abspath $(firstword $(shell scoop which ${CC} 2>NUL) $(shell which ${CC} 2>NUL) $(shell where ${CC} 2>NUL))\..\..))
 INCLUDE_DIRS += ${CC_BASEDIR}\include
-LD_INIT_OBJ = $(call %shell_quote,${CC_BASEDIR}\lib\c0x32.obj)## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+LD_INIT_OBJ = $(call %shell_quote,${CC_BASEDIR}\lib\c0$(if $(filter windows,${SUBSYSTEM}),w,x)32.obj)## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 LIB_DIRS = $(if $(filter bcc32,${CC_ID}),$(call %shell_quote,${CC_BASEDIR}\lib),$(call %shell_quote,${CC_BASEDIR}\lib\win32c\release);$(call %shell_quote,${CC_BASEDIR}\lib\win32c\release\psdk))## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 
 # ref: BCCTool help file
@@ -680,8 +680,8 @@ LIB_DIRS = $(if $(filter bcc32,${CC_ID}),$(call %shell_quote,${CC_BASEDIR}\lib),
 # -ff- :: use strict ANSI floating point rules (disables "fast floating point" optimizations)
 # -v- :: turn off source level debugging and inline expansion on
 # -vi :: turn on inline function expansion
-# -w-pro :: disable warning "Call to function 'function' with no prototype"
-CFLAGS = -q -P-c -d -f- $(if $(filter bcc32,${CC_ID}),-ff-,) $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+# -w! :: warnings as errors
+CFLAGS = -q -P-c -d -f- $(if $(filter bcc32,${CC_ID}),-ff-,) -w! $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 %cflags_incs = $(call %map,$(eval %f=-I$(call %shell_quote,$${1}))%f,$(strip ${1}))
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_DEBUG_false := -D"NDEBUG" -O2 -v- -vi
@@ -702,7 +702,7 @@ CXXFLAGS += -P
 # -V4.0 :: specifies minimum expected Windows version (4.0 == Windows 9x/NT+)
 # -v- :: disable debugging information
 # -x :: suppress creation of a MAP file
-LDFLAGS += -q -Tpe -ap -c -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}## requires delayed expansion (b/c indirectly uses %shell_quote for ${LIB_DIRS} and ${LS_INIT_OBJ})
+LDFLAGS += -q -Tpe$(if $(filter windows,${SUBSYSTEM}),, -ap) -c -V4.0 -GF:AGGRESSIVE -L${LIB_DIRS} ${LD_INIT_OBJ}## requires delayed expansion (b/c indirectly uses %shell_quote for ${LIB_DIRS} and ${LS_INIT_OBJ})
 LDFLAGS_DEBUG_false := -Gn -v- -x
 ## * resource compiler; see `rc -?` for options help
 ## /nologo :: startup without logo display
