@@ -1,0 +1,138 @@
+name: Mirror
+
+# Force mirror repositories ('source' => 'target')
+# * execution is gated by 'owner' match to ${{ github.repository_owner }} for fork protection
+# * a partial 'target' specification (eg, 'git@HOST:USER') will add 'source' REPO to the target
+
+# spell-checker:ignore (people) Roy Ivy III * rivy
+
+on:
+  push:
+  # schedule:
+  #   - cron: '3 3 3 * *' # runs monthly, at 03:03 on the third day of the month ## see <https://crontab.guru/#3_3_3_*_*>
+
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          # note: env context is not available at this point; workflow variables are used as a work-around ## ref: <https://docs.github.com/en/actions/learn-github-actions/contexts>
+          ## URLs == "git://HOST/USER/REPO.git", "git@HOST:USER/REPO.git", or "https://HOST/USER/REPO.git"; note: target may be partially specified (eg, missing REPO)
+          - { target: 'git@gitlab.com:rivy-mirrors' }
+          # - { target: 'git@gitlab.com:rivy-mirrors/less.git' }
+          # - { target: 'git@gitlab.com:rivy-private/win-less.git' }
+          # - { target: 'git@bitbucket.org:rivy/win-less.git' }
+    steps:
+      - name: Initialize workflow
+        id: vars
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SOURCE_SSH_PRIVATE_KEY: ${{ secrets.SOURCE_SSH_PRIVATE_KEY }}
+          DESTINATION_SSH_PRIVATE_KEY: ${{ secrets.DESTINATION_SSH_PRIVATE_KEY }}
+        run: |
+          ## Initialize
+          ## VARs setup
+          outputs() { for var in "$@" ; do echo steps.vars.outputs.${var}="${!var}"; echo ::set-output name=${var}::${!var}; done; }
+          # setup defaults
+          OWNER="${{ matrix.job.owner }}"
+          SOURCE="${{ matrix.job.source }}" ;
+          if [ -z "${SOURCE}" ]; then
+            SOURCE="${{ github.repositoryUrl }}" ## "git://github.com/USER/REPO" format
+          fi
+          TARGET="${{ matrix.job.target }}"
+          # * SOURCE verification and fixup
+          re_source="^(https|git)(:\/\/|@)([^\/:]+)([\/:])([^\/:]+)([\/]([^\/]*.git)?)$"
+          re_target="^(https|git)(:\/\/|@)([^\/:]+)([\/:])([^\/:]+)([\/]([^\/]*.git)?)?$"
+          if [[ ${SOURCE} =~ ${re_source} ]]; then
+            protocol=${BASH_REMATCH[1]}
+            prot_sep=${BASH_REMATCH[2]}
+            host=${BASH_REMATCH[3]}
+            host_sep=${BASH_REMATCH[4]}
+            user=${BASH_REMATCH[5]}
+            # path=${BASH_REMATCH[6]}
+            repo=${BASH_REMATCH[7]}
+            # GHA `git-sync` breaks with URLs of the form 'git://HOST/USER/REPO' => normalize to 'git@HOST:USER/REPO' form
+            if [ "${protocol}" == 'git' ]; then
+              SOURCE="git@${host}:${user}/${repo}"
+            fi
+          else
+            echo "::error ::ERROR: malformed SOURCE URL ('${SOURCE}'); must match either either 'git://HOST/USER/REPO.git', 'git@HOST:USER/REPO.git', or 'https://HOST/USER/REPO.git'"
+            exit 1
+          fi
+          # * OWNER fixup
+          if [ -z "${OWNER}" ]; then OWNER="${user}" ; fi
+          # * partial TARGET fixup
+          source_repo="${repo}"
+          if [[ ${TARGET} =~ ${re_target} ]]; then
+            protocol=${BASH_REMATCH[1]}
+            prot_sep=${BASH_REMATCH[2]}
+            host=${BASH_REMATCH[3]}
+            host_sep=${BASH_REMATCH[4]}
+            user=${BASH_REMATCH[5]}
+            # path=${BASH_REMATCH[6]}
+            repo=${BASH_REMATCH[7]}
+            if [ -z "${repo}" ]; then repo="${source_repo}" ; fi
+            # GHA `git-sync` breaks with URLs of the form 'git://HOST/USER/REPO' => normalize to 'git@HOST:USER/REPO' form
+            if [ "${protocol}" == 'git' ]; then
+              prot_sep='@'
+              host_sep=':'
+            fi
+            TARGET="${protocol}${prot_sep}${host}${host_sep}${user}/${repo}"
+          else
+            echo "::error ::ERROR: malformed TARGET URL ('${TARGET}'); must match either either 'git://HOST/USER[/REPO.git', 'git@HOST:USER[/REPO.git]', or 'https://HOST/USER[/REPO.git]'"
+            exit 1
+          fi
+          outputs OWNER SOURCE TARGET
+          # check OWNER
+          OWN_REPO="" ; if [ "${{ github.repository_owner }}" == "${OWNER}" ]; then OWN_REPO="true" ; fi
+          outputs OWN_REPO
+          # check SSH keys
+          HAS_SSH_KEYS=
+          if [ -n "${SSH_PRIVATE_KEY}" ]; then HAS_SSH_KEYS='true'; fi
+          if [ -n "${SOURCE_SSH_PRIVATE_KEY}" ] && [ -n "${DESTINATION_SSH_PRIVATE_KEY}" ] ; then HAS_SSH_KEYS='true'; fi
+          outputs HAS_SSH_KEYS
+          ## Notices
+          # * OWN_REPO
+          if [ -z "${OWN_REPO}" ]; then
+            echo "::notice ::NOTE: SKIPPING mirror actions; owner ('${OWNER}') doesn't match github.repository_owner ('${{ github.repository_owner }}'); to fix, set 'env.PROJECT_AUTH' or 'matrix.job.owner'"
+          else
+            # * is OWN_REPO
+            ## Verify configuration
+            # * check for non-empty SOURCE and TARGET
+            if [ -z "${SOURCE}" ] || [ -z "${TARGET}" ]; then
+              echo "::error ::ERROR: empty SOURCE and/or TARGET repository"
+              exit 1
+            fi
+            # * check for SSH keys
+            if [ -z "${HAS_SSH_KEYS}" ]; then
+              echo "::error ::ERROR: missing SSH keys (configure secrets; SSH_PRIVATE_KEY and/or SOURCE_SSH_PRIVATE_KEY DESTINATION_SSH_PRIVATE_KEY)"
+              exit 1
+            fi
+          fi
+      - uses: actions/checkout@v2
+        if: ${{ steps.vars.outputs.OWN_REPO == 'true' }} ## avoid automatic/un-requested runs on forks
+      - name: Mirror/Sync (branches)
+        if: ${{ steps.vars.outputs.OWN_REPO == 'true' }} ## avoid automatic/un-requested runs on forks
+        uses: rivy/gha.git-sync@5eacd8ac78ae91a984f3aa430b09a0051abb2dc0
+        with:
+          source_repo: ${{ steps.vars.outputs.SOURCE }}
+          destination_repo: ${{ steps.vars.outputs.TARGET }}
+          source_branch: 'refs/remotes/source/*'
+          destination_branch: 'refs/heads/*'
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }} # optional
+          # source_ssh_private_key: ${{ secrets.SOURCE_SSH_PRIVATE_KEY }} # optional, will override `SSH_PRIVATE_KEY`
+          # destination_ssh_private_key: ${{ secrets.DESTINATION_SSH_PRIVATE_KEY }} # optional, will override `SSH_PRIVATE_KEY`
+      - name: Mirror/Sync (tags)
+        if: ${{ steps.vars.outputs.OWN_REPO == 'true' }} ## avoid automatic/un-requested runs on forks
+        uses: rivy/gha.git-sync@5eacd8ac78ae91a984f3aa430b09a0051abb2dc0
+        with:
+          source_repo: ${{ steps.vars.outputs.SOURCE }}
+          destination_repo: ${{ steps.vars.outputs.TARGET }}
+          source_branch: 'refs/remotes/source/*'
+          destination_branch: 'refs/heads/*'
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }} # optional
+          # source_ssh_private_key: ${{ secrets.SOURCE_SSH_PRIVATE_KEY }} # optional, will override `SSH_PRIVATE_KEY`
+          # destination_ssh_private_key: ${{ secrets.DESTINATION_SSH_PRIVATE_KEY }} # optional, will override `SSH_PRIVATE_KEY`
