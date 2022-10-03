@@ -38,263 +38,263 @@ static char* metachars = NULL;
 static int num_metachars = 0;
 static int size_metachars = 0;
 
-	static void
+    static void
 pr_usage(VOID_PARAM)
 {
-	fprintf(stderr,
-		"usage: lessecho [-ox] [-cx] [-pn] [-dn] [-mx] [-nn] [-ex] [-fn] [-a] file ...\n");
+    fprintf(stderr,
+        "usage: lessecho [-ox] [-cx] [-pn] [-dn] [-mx] [-nn] [-ex] [-fn] [-a] file ...\n");
 }
 
-	static void
+    static void
 pr_version(VOID_PARAM)
 {
-	char *p;
-	char buf[10];
-	char *pbuf = buf;
+    char *p;
+    char buf[10];
+    char *pbuf = buf;
 
-	for (p = version;  *p != ' ';  p++)
-		if (*p == '\0')
-			return;
-	for (p++;  *p != '$' && *p != ' ' && *p != '\0';  p++)
-		*pbuf++ = *p;
-	*pbuf = '\0';
-	printf("%s\n", buf);
+    for (p = version;  *p != ' ';  p++)
+        if (*p == '\0')
+            return;
+    for (p++;  *p != '$' && *p != ' ' && *p != '\0';  p++)
+        *pbuf++ = *p;
+    *pbuf = '\0';
+    printf("%s\n", buf);
 }
 
-	static void
+    static void
 pr_error(s)
-	char *s;
+    char *s;
 {
-	fprintf(stderr, "%s\n", s);
-	exit(1);
+    fprintf(stderr, "%s\n", s);
+    exit(1);
 }
 
-	static long
+    static long
 lstrtol(s, radix, pend)
-	char *s;
-	int radix;
-	char **pend;
+    char *s;
+    int radix;
+    char **pend;
 {
-	int v;
-	int neg = 0;
-	long n = 0;
+    int v;
+    int neg = 0;
+    long n = 0;
 
-	/* Skip leading white space. */
-	while (*s == ' ' || *s == '\t')
-		s++;
+    /* Skip leading white space. */
+    while (*s == ' ' || *s == '\t')
+        s++;
 
-	/* Check for a leading + or -. */
-	if (*s == '-')
-	{
-		neg = 1;
-		s++;
-	} else if (*s == '+')
-	{
-		s++;
-	}
+    /* Check for a leading + or -. */
+    if (*s == '-')
+    {
+        neg = 1;
+        s++;
+    } else if (*s == '+')
+    {
+        s++;
+    }
 
-	/* Determine radix if caller does not specify. */
-	if (radix == 0)
-	{
-		radix = 10;
-		if (*s == '0')
-		{
-			switch (*++s)
-			{
-			case 'x':
-				radix = 16;
-				s++;
-				break;
-			default:
-				radix = 8;
-				break;
-			}
-		}
-	}
+    /* Determine radix if caller does not specify. */
+    if (radix == 0)
+    {
+        radix = 10;
+        if (*s == '0')
+        {
+            switch (*++s)
+            {
+            case 'x':
+                radix = 16;
+                s++;
+                break;
+            default:
+                radix = 8;
+                break;
+            }
+        }
+    }
 
-	/* Parse the digits of the number. */
-	for (;;)
-	{
-		if (*s >= '0' && *s <= '9')
-			v = *s - '0';
-		else if (*s >= 'a' && *s <= 'f')
-			v = *s - 'a' + 10;
-		else if (*s >= 'A' && *s <= 'F')
-			v = *s - 'A' + 10;
-		else
-			break;
-		if (v >= radix)
-			break;
-		n = n * radix + v;
-		s++;
-	}
+    /* Parse the digits of the number. */
+    for (;;)
+    {
+        if (*s >= '0' && *s <= '9')
+            v = *s - '0';
+        else if (*s >= 'a' && *s <= 'f')
+            v = *s - 'a' + 10;
+        else if (*s >= 'A' && *s <= 'F')
+            v = *s - 'A' + 10;
+        else
+            break;
+        if (v >= radix)
+            break;
+        n = n * radix + v;
+        s++;
+    }
 
-	if (pend != NULL)
-	{
-		/* Skip trailing white space. */
-		while (*s == ' ' || *s == '\t')
-			s++;
-		*pend = s;
-	}
-	if (neg)
-		return (-n);
-	return (n);
+    if (pend != NULL)
+    {
+        /* Skip trailing white space. */
+        while (*s == ' ' || *s == '\t')
+            s++;
+        *pend = s;
+    }
+    if (neg)
+        return (-n);
+    return (n);
 }
 
-	static void
+    static void
 add_metachar(ch)
-	int ch;
+    int ch;
 {
-	if (num_metachars+1 >= size_metachars)
-	{
-		char *p;
-		size_metachars = (size_metachars > 0) ? size_metachars*2 : 16;
-		p = (char *) malloc(size_metachars);
-		if (p == NULL)
-			pr_error("Cannot allocate memory");
+    if (num_metachars+1 >= size_metachars)
+    {
+        char *p;
+        size_metachars = (size_metachars > 0) ? size_metachars*2 : 16;
+        p = (char *) malloc(size_metachars);
+        if (p == NULL)
+            pr_error("Cannot allocate memory");
 
-		if (metachars != NULL)
-		{
-			strcpy(p, metachars);
-			free(metachars);
-		}
-		metachars = p;
-	}
-	metachars[num_metachars++] = ch;
-	metachars[num_metachars] = '\0';
+        if (metachars != NULL)
+        {
+            strcpy(p, metachars);
+            free(metachars);
+        }
+        metachars = p;
+    }
+    metachars[num_metachars++] = ch;
+    metachars[num_metachars] = '\0';
 }
 
-	static int
+    static int
 is_metachar(ch)
-	int ch;
+    int ch;
 {
-	return (metachars != NULL && strchr(metachars, ch) != NULL);
+    return (metachars != NULL && strchr(metachars, ch) != NULL);
 }
 
 #if !HAVE_STRCHR
-	char *
+    char *
 strchr(s, c)
-	char *s;
-	int c;
+    char *s;
+    int c;
 {
-	for ( ;  *s != '\0';  s++)
-		if (*s == c)
-			return (s);
-	if (c == '\0')
-		return (s);
-	return (NULL);
+    for ( ;  *s != '\0';  s++)
+        if (*s == c)
+            return (s);
+    if (c == '\0')
+        return (s);
+    return (NULL);
 }
 #endif
 
-	int
+    int
 main(argc, argv)
-	int argc;
-	char *argv[];
+    int argc;
+    char *argv[];
 {
-	char *arg;
-	char *s;
-	int no_more_options;
+    char *arg;
+    char *s;
+    int no_more_options;
 
-	no_more_options = 0;
-	while (--argc > 0)
-	{
-		arg = *++argv;
-		if (*arg != '-' || no_more_options)
-			break;
-		switch (*++arg)
-		{
-		case 'a':
-			quote_all = 1;
-			break;
-		case 'c':
-			closequote = *++arg;
-			break;
-		case 'd':
-			closequote = lstrtol(++arg, 0, &s);
-			if (s == arg)
-				pr_error("Missing number after -d");
-			break;
-		case 'e':
-			if (strcmp(++arg, "-") == 0)
-				meta_escape = "";
-			else
-				meta_escape = arg;
-			break;
-		case 'f':
-			meta_escape_buf[0] = lstrtol(++arg, 0, &s);
-			meta_escape_buf[1] = '\0';
-			meta_escape = meta_escape_buf;
-			if (s == arg)
-				pr_error("Missing number after -f");
-			break;
-		case 'o':
-			openquote = *++arg;
-			break;
-		case 'p':
-			openquote = lstrtol(++arg, 0, &s);
-			if (s == arg)
-				pr_error("Missing number after -p");
-			break;
-		case 'm':
-			add_metachar(*++arg);
-			break;
-		case 'n':
-			add_metachar(lstrtol(++arg, 0, &s));
-			if (s == arg)
-				pr_error("Missing number after -n");
-			break;
-		case '?':
-			pr_usage();
-			return (0);
-		case '-':
-			if (*++arg == '\0')
-			{
-				no_more_options = 1;
-				break;
-			}
-			if (strcmp(arg, "version") == 0)
-			{
-				pr_version();
-				return (0);
-			}
-			if (strcmp(arg, "help") == 0)
-			{
-				pr_usage();
-				return (0);
-			}
-			pr_error("Invalid option after --");
-		default:
-			pr_error("Invalid option letter");
-		}
-	}
+    no_more_options = 0;
+    while (--argc > 0)
+    {
+        arg = *++argv;
+        if (*arg != '-' || no_more_options)
+            break;
+        switch (*++arg)
+        {
+        case 'a':
+            quote_all = 1;
+            break;
+        case 'c':
+            closequote = *++arg;
+            break;
+        case 'd':
+            closequote = lstrtol(++arg, 0, &s);
+            if (s == arg)
+                pr_error("Missing number after -d");
+            break;
+        case 'e':
+            if (strcmp(++arg, "-") == 0)
+                meta_escape = "";
+            else
+                meta_escape = arg;
+            break;
+        case 'f':
+            meta_escape_buf[0] = lstrtol(++arg, 0, &s);
+            meta_escape_buf[1] = '\0';
+            meta_escape = meta_escape_buf;
+            if (s == arg)
+                pr_error("Missing number after -f");
+            break;
+        case 'o':
+            openquote = *++arg;
+            break;
+        case 'p':
+            openquote = lstrtol(++arg, 0, &s);
+            if (s == arg)
+                pr_error("Missing number after -p");
+            break;
+        case 'm':
+            add_metachar(*++arg);
+            break;
+        case 'n':
+            add_metachar(lstrtol(++arg, 0, &s));
+            if (s == arg)
+                pr_error("Missing number after -n");
+            break;
+        case '?':
+            pr_usage();
+            return (0);
+        case '-':
+            if (*++arg == '\0')
+            {
+                no_more_options = 1;
+                break;
+            }
+            if (strcmp(arg, "version") == 0)
+            {
+                pr_version();
+                return (0);
+            }
+            if (strcmp(arg, "help") == 0)
+            {
+                pr_usage();
+                return (0);
+            }
+            pr_error("Invalid option after --");
+        default:
+            pr_error("Invalid option letter");
+        }
+    }
 
-	while (argc-- > 0)
-	{
-		int has_meta = 0;
-		arg = *argv++;
-		for (s = arg;  *s != '\0';  s++)
-		{
-			if (is_metachar(*s))
-			{
-				has_meta = 1;
-				break;
-			}
-		}
-		if (quote_all || (has_meta && strlen(meta_escape) == 0))
-			printf("%c%s%c", openquote, arg, closequote);
-		else 
-		{
-			for (s = arg;  *s != '\0';  s++)
-			{
-				if (is_metachar(*s))
-					printf("%s", meta_escape);
-				printf("%c", *s);
-			}
-		}
-		if (argc > 0)
-			printf(" ");
-		else
-			printf("\n");
-	}
-	return (0);
+    while (argc-- > 0)
+    {
+        int has_meta = 0;
+        arg = *argv++;
+        for (s = arg;  *s != '\0';  s++)
+        {
+            if (is_metachar(*s))
+            {
+                has_meta = 1;
+                break;
+            }
+        }
+        if (quote_all || (has_meta && strlen(meta_escape) == 0))
+            printf("%c%s%c", openquote, arg, closequote);
+        else
+        {
+            for (s = arg;  *s != '\0';  s++)
+            {
+                if (is_metachar(*s))
+                    printf("%s", meta_escape);
+                printf("%c", *s);
+            }
+        }
+        if (argc > 0)
+            printf(" ");
+        else
+            printf("\n");
+    }
+    return (0);
 }

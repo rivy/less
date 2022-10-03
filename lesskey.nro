@@ -11,17 +11,17 @@ lesskey \- customize key bindings for less
 .br
 .B "lesskey \-\-version"
 .SH SCOPE
-This document describes the format of the 
+This document describes the format of the
 .I lesskey
 source file, which is used by
 .I less
 version 582 and later.
-In previous versions of 
+In previous versions of
 .IR less ,
 a separate program called
 .I lesskey
-was used to compile the 
-.I lesskey 
+was used to compile the
+.I lesskey
 source file into a format understood by
 .IR less .
 This compilation step is no longer required and the
@@ -60,7 +60,7 @@ If the command section is the first section in the file,
 this line may be omitted.
 The command section consists of lines of the form:
 .sp
-	\fIstring\fP <whitespace> \fIaction\fP [extra-string] <newline>
+    \fIstring\fP <whitespace> \fIaction\fP [extra-string] <newline>
 .sp
 Whitespace is any sequence of one or more spaces and/or tabs.
 The \fIstring\fP is the command key(s) which invoke the action.
@@ -75,33 +75,33 @@ characters as follows:
 .RS 5m
 .TS
 l l l.
-\eb	BACKSPACE	(0x08)
-\ee	ESCAPE	(0x1B)
-\en	NEWLINE	(0x0A)
-\er	RETURN	(0x0D)
-\et	TAB	(0x09)
+\eb BACKSPACE   (0x08)
+\ee ESCAPE  (0x1B)
+\en NEWLINE (0x0A)
+\er RETURN  (0x0D)
+\et TAB (0x09)
 .TE
 .sp
 \ek followed by a single character represents the char(s) produced when one of these keys is pressed:
 .TS
 l l.
-\ekb	BACKSPACE (the BACKSPACE key)
-\ekB	ctrl-BACKSPACE
-\ekd	DOWN ARROW
-\ekD	PAGE DOWN
-\eke	END
-\ekh	HOME
-\eki	INSERT
-\ekl	LEFT ARROW
-\ekL	ctrl-LEFT ARROW
-\ekr	RIGHT ARROW
-\ekR	ctrl-RIGHT ARROW
-\ekt	BACKTAB
-\eku	UP ARROW
-\ekU	PAGE UP
-\ekx	DELETE
-\ekX	ctrl-DELETE
-\ek1	F1
+\ekb    BACKSPACE (the BACKSPACE key)
+\ekB    ctrl-BACKSPACE
+\ekd    DOWN ARROW
+\ekD    PAGE DOWN
+\eke    END
+\ekh    HOME
+\eki    INSERT
+\ekl    LEFT ARROW
+\ekL    ctrl-LEFT ARROW
+\ekr    RIGHT ARROW
+\ekR    ctrl-RIGHT ARROW
+\ekt    BACKTAB
+\eku    UP ARROW
+\ekU    PAGE UP
+\ekx    DELETE
+\ekX    ctrl-DELETE
+\ek1    F1
 .TE
 
 .PP
@@ -126,7 +126,7 @@ quits, the first character of the extra string is used as its exit status.
 .
 .SH EXAMPLE
 The following input file describes the set of
-default command keys used by 
+default command keys used by
 .IR less .
 Documentation on each command can be found in the
 .less
@@ -136,126 +136,126 @@ man page, under the key sequence which invokes the command.
 .TS
 l l.
 #command
-\er	forw-line
-\en	forw-line
-e	forw-line
-j	forw-line
-\ekd	forw-line
-^E	forw-line
-^N	forw-line
-k	back-line
-y	back-line
-^Y	back-line
-^K	back-line
-^P	back-line
-J	forw-line-force
-K	back-line-force
-Y	back-line-force
-d	forw-scroll
-^D	forw-scroll
-u	back-scroll
-^U	back-scroll
-\e40	forw-screen
-f	forw-screen
-^F	forw-screen
-^V	forw-screen
-\ekD	forw-screen
-b	back-screen
-^B	back-screen
-\eev	back-screen
-\ekU	back-screen
-z	forw-window
-w	back-window
-\ee\e40	forw-screen-force
-F	forw-forever
-\eeF	forw-until-hilite
-R	repaint-flush
-r	repaint
-^R	repaint
-^L	repaint
-\eeu	undo-hilite
-\eeU	clear-search
-g	goto-line
-\ekh	goto-line
-<	goto-line
-\ee<	goto-line
-p	percent
-%	percent
-\ee[	left-scroll
-\ee]	right-scroll
-\ee(	left-scroll
-\ee)	right-scroll
-\ekl	left-scroll
-\ekr	right-scroll
-\ee{	no-scroll
-\ee}	end-scroll
-{	forw-bracket {}
-}	back-bracket {}
-(	forw-bracket ()
-)	back-bracket ()
-[	forw-bracket []
-]	back-bracket []
-\ee^F	forw-bracket
-\ee^B	back-bracket
-G	goto-end
-\ee>	goto-end
->	goto-end
-\eke	goto-end
-\eeG	goto-end-buffered
-\&=	status
-^G	status
-:f	status
-/	forw-search
-?	back-search
-\ee/	forw-search *
-\ee?	back-search *
-n	repeat-search
-\een	repeat-search-all
-N	reverse-search
-\eeN	reverse-search-all
-&	filter
-m	set-mark
-M	set-mark-bottom
-\eem	clear-mark
-'	goto-mark
-^X^X	goto-mark
-E	examine
-:e	examine
-^X^V	examine
-:n	next-file
-:p	prev-file
-t	next-tag
-T	prev-tag
-:x	index-file
-:d	remove-file
--	toggle-option
-:t	toggle-option t
-s	toggle-option o
-	## Use a long option name by starting the extra string with ONE dash; eg:
-	##   s toggle-option -log-file\n
-\&_	display-option
-|	pipe
-v	visual
-!	shell
-+	firstcmd
-H	help
-h	help
-V	version
-0	digit
-1	digit
-2	digit
-3	digit
-4	digit
-5	digit
-6	digit
-7	digit
-8	digit
-9	digit
-q	quit
-Q	quit
-:q	quit
-:Q	quit
-ZZ	quit
+\er forw-line
+\en forw-line
+e   forw-line
+j   forw-line
+\ekd    forw-line
+^E  forw-line
+^N  forw-line
+k   back-line
+y   back-line
+^Y  back-line
+^K  back-line
+^P  back-line
+J   forw-line-force
+K   back-line-force
+Y   back-line-force
+d   forw-scroll
+^D  forw-scroll
+u   back-scroll
+^U  back-scroll
+\e40    forw-screen
+f   forw-screen
+^F  forw-screen
+^V  forw-screen
+\ekD    forw-screen
+b   back-screen
+^B  back-screen
+\eev    back-screen
+\ekU    back-screen
+z   forw-window
+w   back-window
+\ee\e40 forw-screen-force
+F   forw-forever
+\eeF    forw-until-hilite
+R   repaint-flush
+r   repaint
+^R  repaint
+^L  repaint
+\eeu    undo-hilite
+\eeU    clear-search
+g   goto-line
+\ekh    goto-line
+<   goto-line
+\ee<    goto-line
+p   percent
+%   percent
+\ee[    left-scroll
+\ee]    right-scroll
+\ee(    left-scroll
+\ee)    right-scroll
+\ekl    left-scroll
+\ekr    right-scroll
+\ee{    no-scroll
+\ee}    end-scroll
+{   forw-bracket {}
+}   back-bracket {}
+(   forw-bracket ()
+)   back-bracket ()
+[   forw-bracket []
+]   back-bracket []
+\ee^F   forw-bracket
+\ee^B   back-bracket
+G   goto-end
+\ee>    goto-end
+>   goto-end
+\eke    goto-end
+\eeG    goto-end-buffered
+\&= status
+^G  status
+:f  status
+/   forw-search
+?   back-search
+\ee/    forw-search *
+\ee?    back-search *
+n   repeat-search
+\een    repeat-search-all
+N   reverse-search
+\eeN    reverse-search-all
+&   filter
+m   set-mark
+M   set-mark-bottom
+\eem    clear-mark
+'   goto-mark
+^X^X    goto-mark
+E   examine
+:e  examine
+^X^V    examine
+:n  next-file
+:p  prev-file
+t   next-tag
+T   prev-tag
+:x  index-file
+:d  remove-file
+-   toggle-option
+:t  toggle-option t
+s   toggle-option o
+    ## Use a long option name by starting the extra string with ONE dash; eg:
+    ##   s toggle-option -log-file\n
+\&_ display-option
+|   pipe
+v   visual
+!   shell
++   firstcmd
+H   help
+h   help
+V   version
+0   digit
+1   digit
+2   digit
+3   digit
+4   digit
+5   digit
+6   digit
+7   digit
+8   digit
+9   digit
+q   quit
+Q   quit
+:q  quit
+:Q  quit
+ZZ  quit
 .TE
 .RE
 .sp
@@ -305,34 +305,34 @@ default line-editing keys used by
 .TS
 l l.
 #line-edit
-\et	forw-complete
-\e17	back-complete
-\ee\et	back-complete
-^L	expand
-^V	literal
-^A	literal
-\eel	right
-\ekr	right
-\eeh	left
-\ekl	left
-\eeb	word-left
-\ee\ekl	word-left
-\eew	word-right
-\ee\ekr	word-right
-\eei	insert
-\eex	delete
-\ekx	delete
-\eeX	word-delete
-\eekx	word-delete
-\ee\eb	word-backspace
-\ee0	home
-\ekh	home
-\ee$	end
-\eke	end
-\eek	up
-\eku	up
-\eej	down
-^G	abort
+\et forw-complete
+\e17    back-complete
+\ee\et  back-complete
+^L  expand
+^V  literal
+^A  literal
+\eel    right
+\ekr    right
+\eeh    left
+\ekl    left
+\eeb    word-left
+\ee\ekl word-left
+\eew    word-right
+\ee\ekr word-right
+\eei    insert
+\eex    delete
+\ekx    delete
+\eeX    word-delete
+\eekx   word-delete
+\ee\eb  word-backspace
+\ee0    home
+\ekh    home
+\ee$    end
+\eke    end
+\eek    up
+\eku    up
+\eej    down
+^G  abort
 .TE
 .RE
 .sp
@@ -370,7 +370,7 @@ matches the operator.
 This can be helpful if a lesskey file is used by different versions of
 .IR less .
 .sp
-For example, suppose that a new command named 'sideways-search' is added in 
+For example, suppose that a new command named 'sideways-search' is added in
 .I less
 version 777.
 Then the following line would assign the command to the Q key, but only in versions of
@@ -378,19 +378,19 @@ Then the following line would assign the command to the Q key, but only in versi
 which support it. The line would be ignored by versions earlier than 777.
 .sp
 .nf
-	#version >= 777  Q sideways-search
+    #version >= 777  Q sideways-search
 .fi
 .sp
 These six operators are supported:
 .RS 5m
 .TS
 l l.
- >	Greater than
- <	Less than
- >=	Greater than or equal to
- <=	Less than or equal to
- =	Equal to
- !=	Not equal to
+ >  Greater than
+ <  Less than
+ >= Greater than or equal to
+ <= Less than or equal to
+ =  Equal to
+ != Not equal to
 .TE
 .RE
 .sp
@@ -407,9 +407,9 @@ The following input file sets the \-i and \-S options when
 is run and, on version 595 and higher, adds a \-\-color option.
 .sp
 .nf
-	#env
-	LESS = \-i\ \-S
-	#version\ >=\ 595\ \ LESS\ +=\ \-\-color=Hkc
+    #env
+    LESS = \-i\ \-S
+    #version\ >=\ 595\ \ LESS\ +=\ \-\-color=Hkc
 .fi
 .
 .SH "SEE ALSO"
