@@ -28,7 +28,7 @@ DISTFILES_W = \
 	defines.o2  Makefile.o2e \
 	defines.o9  Makefile.o9c Makefile.o9u \
 	defines.wn  Makefile.wnm Makefile.wnb Makefile.wng \
-	configure 
+	configure
 UNICODE_FILES = \
 	compose.uni fmt.uni ubin.uni wide.uni
 DISTFILES = \
@@ -45,17 +45,17 @@ DISTFILES = \
 	mkutable $(UNICODE_FILES) \
 	${DISTFILES_W}
 
-all: help.c funcs.h $(UNICODE_FILES) ${srcdir}/configure 
+all: help.c funcs.h $(UNICODE_FILES) ${srcdir}/configure
 
 release: .FORCE
-	${MAKE} -f Makefile.aut tagall 
-	${MAKE} -f Makefile.aut all 
-	${MAKE} -f Makefile.aut clean 
+	${MAKE} -f Makefile.aut tagall
+	${MAKE} -f Makefile.aut all
+	${MAKE} -f Makefile.aut clean
 	${MAKE} -f Makefile.aut dist
 
 .FORCE:
 
-help.c: less.hlp 
+help.c: less.hlp
 	-mv -f ${srcdir}/help.c ${srcdir}/help.c.old
 	rm -rf help.c
 	${srcdir}/${MKHELP} < less.hlp > help.c
@@ -72,11 +72,11 @@ funcs.h: ${SRC:%=${srcdir}/%}
 lint:
 	lint -I. ${CPPFLAGS} ${SRC}
 
-clean: 
+clean:
 	rm -f Makefile config.status config.log config.cache defines.h stamp-h \
 		configure defines.h.in funcs.h help.c \
 		README NEWS \
-		less.nro less.man lesskey.nro lesskey.man lessecho.nro lessecho.man 
+		less.nro less.man lesskey.nro lesskey.man lessecho.nro lessecho.man
 
 distclean: clean
 realclean: clean

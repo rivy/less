@@ -572,7 +572,7 @@ The \-d option does not otherwise change the behavior of
 on a dumb terminal.
 .IP "\-D\fBx\fP\fIcolor\fP or \-\-color=\fBx\fP\fIcolor\fP"
 Changes the color of different parts of the displayed text.
-\fBx\fP is a single character which selects the type of text 
+\fBx\fP is a single character which selects the type of text
 whose color is being set:
 .RS
 .IP "B"
@@ -602,16 +602,16 @@ Standout text.
 .IP "u"
 Underlined text.
 .RE
- 
+
 .RS
 The uppercase letters can be used only when the \-\-use-color option is enabled.
 When text color is specified by both an uppercase letter and a lowercase letter,
-the uppercase letter takes precedence. 
+the uppercase letter takes precedence.
 For example, error messages are normally displayed as standout text.
 So if both "s" and "E" are given a color, the "E" color applies
 to error messages, and the "s" color applies to other standout text.
-The "d" and "u" letters refer to bold and underline text formed by 
-overstriking with backspaces (see the \-u option), 
+The "d" and "u" letters refer to bold and underline text formed by
+overstriking with backspaces (see the \-u option),
 not to text using ANSI escape sequences with the \-R option.
 .PP
 A lowercase letter may be followed by a + to indicate that
@@ -622,8 +622,8 @@ But \-Du+g displays underlined text as both green and in underlined format.
 .PP
 \fIcolor\fP is either a 4-bit color string or an 8-bit color string:
 .PP
-A 4-bit color string is zero, one or two characters, where 
-the first character specifies the foreground color and 
+A 4-bit color string is zero, one or two characters, where
+the first character specifies the foreground color and
 the second specifies the background color as follows:
 .IP "b"
 Blue
@@ -643,14 +643,14 @@ White
 Yellow
 .PP
 The corresponding upper-case letter denotes a brighter shade of the color.
-For example, \-DNGk displays line numbers as bright green text on a black 
-background, and \-DEbR displays error messages as blue text on a 
+For example, \-DNGk displays line numbers as bright green text on a black
+background, and \-DEbR displays error messages as blue text on a
 bright red background.
-If either character is a "-" or is omitted, the corresponding color 
+If either character is a "-" or is omitted, the corresponding color
 is set to that of normal text.
 .PP
 An 8-bit color string is one or two decimal integers separated by a dot,
-where the first integer specifies the foreground color and 
+where the first integer specifies the foreground color and
 the second specifies the background color.
 Each integer is a value between 0 and 255 inclusive which selects
 a "CSI 38;5" color value (see
@@ -660,11 +660,11 @@ https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters)
 .hy
 If either integer is a "-" or is omitted,
 the corresponding color is set to that of normal text.
-On MS-DOS versions of 
+On MS-DOS versions of
 .IR less ,
 8-bit color is not supported; instead, decimal values are interpreted as 4-bit
 CHAR_INFO.Attributes values
-(see 
+(see
 .br
 .nh
 https://docs.microsoft.com/en-us/windows/console/char-info-str).
@@ -886,10 +886,10 @@ USE OF THE \-r OPTION IS NOT RECOMMENDED.
 Like \-r, but only ANSI "color" escape sequences and OSC 8 hyperlink
 sequences are output in "raw" form.
 Unlike \-r, the screen appearance is maintained correctly,
-provided that there are no escape sequences in the file 
+provided that there are no escape sequences in the file
 other than these types of escape sequences.
 Color escape sequences are only supported when the color
-is changed within one line, not across lines. 
+is changed within one line, not across lines.
 In other words, the beginning of each line is assumed to be
 normal (non-colored), regardless of any escape sequences in previous lines.
 For the purpose of keeping track of screen appearance,
@@ -897,14 +897,14 @@ these escape sequences are assumed to not move the cursor.
 .sp
 OSC 8 hyperlinks are sequences of the form:
 .sp
-	ESC ] 8 ; \&...\& \\7
+    ESC ] 8 ; \&...\& \\7
 .sp
-The terminating sequence may be either a BEL character (\\7) 
+The terminating sequence may be either a BEL character (\\7)
 or the two-character sequence "ESC \\".
 .sp
 ANSI color escape sequences are sequences of the form:
 .sp
-	ESC [ \&...\& m
+    ESC [ \&...\& m
 .sp
 where the "...\&" is zero or more color specification characters.
 You can make
@@ -941,7 +941,7 @@ If the environment variable LESSGLOBALTAGS is set, it is taken to be
 the name of a command compatible with
 .IR global (1),
 and that command is executed to find the tag.
-(See 
+(See
 .nh
 http://www.gnu.org/software/global/global.html).
 .hy
@@ -1070,7 +1070,7 @@ will display the contents of that new file.
 .IP "\-\-incsearch"
 Subsequent search commands will be "incremental"; that is,
 .I less
-will advance to the next line containing the search pattern 
+will advance to the next line containing the search pattern
 as each character of the pattern is typed in.
 .IP "\-\-line-num-width"
 Sets the minimum width of the line number field when the \-N option is in effect.
@@ -1120,9 +1120,9 @@ This allows a dollar sign to be included in option strings.
 .IP "\-\-use-color"
 Enables the colored text in various places.
 The -D option can be used to change the colors.
-Colored text works only if the terminal supports 
+Colored text works only if the terminal supports
 ANSI color escape sequences (as defined in ECMA-48 SGR;
-see 
+see
 .br
 .nh
 https://www.ecma-international.org/publications-and-standards/standards/ecma-48).
@@ -1327,33 +1327,33 @@ view them directly:
 .PP
 lessopen.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	case "$1" in
+    case "$1" in
 .br
-	*.Z)	TEMPFILE=$(mktemp)
+    *.Z)    TEMPFILE=$(mktemp)
 .br
-		uncompress \-c $1  >$TEMPFILE  2>/dev/null
+        uncompress \-c $1  >$TEMPFILE  2>/dev/null
 .br
-		if [ \-s $TEMPFILE ]; then
+        if [ \-s $TEMPFILE ]; then
 .br
-			echo $TEMPFILE
+            echo $TEMPFILE
 .br
-		else
+        else
 .br
-			rm \-f $TEMPFILE
+            rm \-f $TEMPFILE
 .br
-		fi
+        fi
 .br
-		;;
+        ;;
 .br
-	esac
+    esac
 .PP
 lessclose.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	rm $2
+    rm $2
 .PP
 To use these scripts, put them both where they can be executed and
 set LESSOPEN="lessopen.sh\ %s", and
@@ -1386,21 +1386,21 @@ previous example scripts:
 .PP
 lesspipe.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	case "$1" in
+    case "$1" in
 .br
-	*.Z)	uncompress \-c $1  2>/dev/null
+    *.Z)    uncompress \-c $1  2>/dev/null
 .br
-		;;
+        ;;
 .br
-	*)	exit 1
+    *)  exit 1
 .br
-		;;
+        ;;
 .br
-	esac
+    esac
 .br
-	exit $?
+    exit $?
 .br
 .PP
 To use this script, put it where it can be executed and set
@@ -1513,16 +1513,16 @@ to each of the possible values for LESSCHARSET:
 .RS 5m
 .TS
 l l.
-ascii	8bcccbcc18b95.b
-dos	8bcccbcc12bc5b95.b.
-ebcdic	5bc6bcc7bcc41b.9b7.9b5.b..8b6.10b6.b9.7b
-	9.8b8.17b3.3b9.7b9.8b8.6b10.b.b.b.
-IBM-1047	4cbcbc3b9cbccbccbb4c6bcc5b3cbbc4bc4bccbc
-	191.b
-iso8859	8bcccbcc18b95.33b.
-koi8-r	8bcccbcc18b95.b128.
-latin1	8bcccbcc18b95.33b.
-next	8bcccbcc18b95.bb125.bb
+ascii   8bcccbcc18b95.b
+dos 8bcccbcc12bc5b95.b.
+ebcdic  5bc6bcc7bcc41b.9b7.9b5.b..8b6.10b6.b9.7b
+    9.8b8.17b3.3b9.7b9.8b8.6b10.b.b.b.
+IBM-1047    4cbcbc3b9cbccbccbb4c6bcc5b3cbbc4bc4bccbc
+    191.b
+iso8859 8bcccbcc18b95.33b.
+koi8-r  8bcccbcc18b95.b128.
+latin1  8bcccbcc18b95.33b.
+next    8bcccbcc18b95.bb125.bb
 .TE
 .RE
 .PP
@@ -1737,17 +1737,17 @@ Each is broken into two lines here for readability only.
 .nf
 .sp
 ?n?f%f\ .?m(%T\ %i\ of\ %m)\ ..?e(END)\ ?x-\ Next\e:\ %x.:
-	?pB%pB\e%:byte\ %bB?s/%s...%t
+    ?pB%pB\e%:byte\ %bB?s/%s...%t
 .sp
 ?f%f\ .?n?m(%T\ %i\ of\ %m)\ ..?ltlines\ %lt-%lb?L/%L.\ :
-	byte\ %bB?s/%s.\ .?e(END)\ ?x-\ Next\e:\ %x.:?pB%pB\e%..%t
+    byte\ %bB?s/%s.\ .?e(END)\ ?x-\ Next\e:\ %x.:?pB%pB\e%..%t
 .sp
 .fi
 And here is the default message produced by the = command:
 .nf
 .sp
 ?f%f\ .?m(%T\ %i\ of\ %m)\ .?ltlines\ %lt-%lb?L/%L.\ .
-	byte\ %bB?s/%s.\ ?e(END)\ :?pB%pB\e%..%t
+    byte\ %bB?s/%s.\ ?e(END)\ :?pB%pB\e%..%t
 .fi
 .PP
 The prompt expansion features are also used for another purpose:
@@ -1757,7 +1757,7 @@ The LESSEDIT string is expanded in the same way as the prompt strings.
 The default value for LESSEDIT is:
 .nf
 .sp
-	%E\ ?lm+%lm.\ %g
+    %E\ ?lm+%lm.\ %g
 .sp
 .fi
 Note that this expands to the editor name, followed by a + and the
