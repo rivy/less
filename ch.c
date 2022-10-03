@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2020  Mark Nudelman
+ * Copyright (C) 1984-2021  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -41,7 +41,7 @@ struct bufnode {
     struct bufnode *hnext, *hprev;
 };
 
-#define LBUFSIZE    8192
+#define LBUFSIZE        8192
 struct buf {
     struct bufnode node;
     BLOCKNUM block;
@@ -67,15 +67,15 @@ struct filestate {
     POSITION fsize;
 };
 
-#define ch_bufhead  thisfile->buflist.next
-#define ch_buftail  thisfile->buflist.prev
-#define ch_nbufs    thisfile->nbufs
-#define ch_block    thisfile->block
-#define ch_offset   thisfile->offset
-#define ch_fpos     thisfile->fpos
-#define ch_fsize    thisfile->fsize
-#define ch_flags    thisfile->flags
-#define ch_file     thisfile->file
+#define ch_bufhead      thisfile->buflist.next
+#define ch_buftail      thisfile->buflist.prev
+#define ch_nbufs        thisfile->nbufs
+#define ch_block        thisfile->block
+#define ch_offset       thisfile->offset
+#define ch_fpos         thisfile->fpos
+#define ch_fsize        thisfile->fsize
+#define ch_flags        thisfile->flags
+#define ch_file         thisfile->file
 
 #define END_OF_CHAIN    (&thisfile->buflist)
 #define END_OF_HCHAIN(h) (&thisfile->hashtbl[h])
@@ -286,7 +286,7 @@ ch_get(VOID_PARAM)
      * If we have a log file, write the new data to it.
      */
     if (!secure && logfile >= 0 && n > 0)
-        (void)! write(logfile, (char *) &bp->data[bp->datasize], n);
+        write(logfile, (char *) &bp->data[bp->datasize], n);
 #endif
 
     ch_fpos += n;
@@ -311,13 +311,7 @@ ch_get(VOID_PARAM)
                 parg.p_string = wait_message();
                 ierror("%s", &parg);
             }
-#if !MSDOS_COMPILER
-            sleep(1);
-#else
-#if MSDOS_COMPILER==WIN32C
-            Sleep(1000);
-#endif
-#endif
+            sleep_ms(2); /* Reduce system load */
             slept = TRUE;
 
 #if HAVE_STAT_INO
@@ -435,7 +429,7 @@ sync_logfile(VOID_PARAM)
             bp = bufnode_buf(bn);
             if (bp->block == block)
             {
-                (void)! write(logfile, (char *) bp->data, bp->datasize);
+                write(logfile, (char *) bp->data, bp->datasize);
                 wrote = TRUE;
                 break;
             }

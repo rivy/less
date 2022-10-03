@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2020  Mark Nudelman
+ * Copyright (C) 1984-2021  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -22,7 +22,7 @@
  * -ex  Specifies "x" to be the escape char for metachars.
  * -fn  Specifies "x" to be the escape char for metachars, as an integer.
  * -a   Specifies that all arguments are to be quoted.
- *  The default is that only arguments containing spaces are quoted.
+ *      The default is that only arguments containing spaces are quoted.
  */
 
 #include "less.h"
@@ -180,7 +180,7 @@ main(argc, argv)
             closequote = *++arg;
             break;
         case 'd':
-            closequote = (char)lstrtol(++arg, 0, &s); // interpret as ASCII character, ignoring overflow
+            closequote = lstrtol(++arg, 0, &s);
             if (s == arg)
                 pr_error("Missing number after -d");
             break;
@@ -191,7 +191,7 @@ main(argc, argv)
                 meta_escape = arg;
             break;
         case 'f':
-            meta_escape_buf[0] = (char)lstrtol(++arg, 0, &s); // interpret as ASCII character, ignoring overflow
+            meta_escape_buf[0] = lstrtol(++arg, 0, &s);
             meta_escape = meta_escape_buf;
             if (s == arg)
                 pr_error("Missing number after -f");
@@ -200,7 +200,7 @@ main(argc, argv)
             openquote = *++arg;
             break;
         case 'p':
-            openquote = (char)lstrtol(++arg, 0, &s); // interpret as ASCII character, ignoring overflow
+            openquote = lstrtol(++arg, 0, &s);
             if (s == arg)
                 pr_error("Missing number after -p");
             break;
@@ -209,7 +209,7 @@ main(argc, argv)
             metachars[num_metachars] = '\0';
             break;
         case 'n':
-            metachars[num_metachars++] = (char)lstrtol(++arg, 0, &s); // interpret as ASCII character, ignoring overflow
+            metachars[num_metachars++] = lstrtol(++arg, 0, &s);
             if (s == arg)
                 pr_error("Missing number after -n");
             metachars[num_metachars] = '\0';

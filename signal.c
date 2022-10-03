@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2020  Mark Nudelman
+ * Copyright (C) 1984-2021  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -33,6 +33,7 @@ extern int linenums;
 extern int wscroll;
 extern int reading;
 extern int quit_on_intr;
+extern int secure;
 extern long jump_sline_fraction;
 
 /*
@@ -58,6 +59,9 @@ u_interrupt(type)
      */
     if (kbhit())
         getkey();
+#endif
+#if HILITE_SEARCH
+    set_filter_pattern(NULL, 0);
 #endif
     if (reading)
         intread(); /* May longjmp */
@@ -113,7 +117,6 @@ winch(type)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-static BOOL WINAPI wbreak_handler(DWORD);
     static BOOL WINAPI
 wbreak_handler(dwCtrlType)
     DWORD dwCtrlType;
@@ -123,6 +126,9 @@ wbreak_handler(dwCtrlType)
     case CTRL_C_EVENT:
     case CTRL_BREAK_EVENT:
         sigs |= S_INTERRUPT;
+#if HILITE_SEARCH
+        set_filter_pattern(NULL, 0);
+#endif
         return (TRUE);
     default:
         break;
@@ -131,7 +137,6 @@ wbreak_handler(dwCtrlType)
 }
 #endif
 
-static RETSIGTYPE terminate(int);
     static RETSIGTYPE
 terminate(type)
     int type;
@@ -157,7 +162,7 @@ init_signals(on)
         (void) LSIGNAL(SIGINT, u_interrupt);
 #endif
 #ifdef SIGTSTP
-        (void) LSIGNAL(SIGTSTP, stop);
+        (void) LSIGNAL(SIGTSTP, secure ? SIG_IGN : stop);
 #endif
 #ifdef SIGWINCH
         (void) LSIGNAL(SIGWINCH, winch);

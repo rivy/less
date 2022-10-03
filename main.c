@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2020  Mark Nudelman
+ * Copyright (C) 1984-2021  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -19,23 +19,22 @@
 #endif
 
 public char *   every_first_cmd = NULL;
-public int  new_file;
-public int  is_tty;
+public int      new_file;
+public int      is_tty;
 public IFILE    curr_ifile = NULL_IFILE;
 public IFILE    old_ifile = NULL_IFILE;
 public struct scrpos initial_scrpos;
-public int  any_display = FALSE;
 public POSITION start_attnpos = NULL_POSITION;
 public POSITION end_attnpos = NULL_POSITION;
-public int  wscroll;
+public int      wscroll;
 public char *   progname;
-public int  quitting;
-public int  secure;
-public int  dohelp;
+public int      quitting;
+public int      secure;
+public int      dohelp;
 
 #if LOGFILE
-public int  logfile = -1;
-public int  force_logfile = FALSE;
+public int      logfile = -1;
+public int      force_logfile = FALSE;
 public char *   namelogfile = NULL;
 #endif
 
@@ -47,20 +46,21 @@ public char *   editproto;
 #if TAGS
 extern char *   tags;
 extern char *   tagoption;
-extern int  jump_sline;
+extern int      jump_sline;
 #endif
 
 #ifdef WIN32
 static char consoleTitle[256];
 #endif
 
-public int  one_screen;
-extern int  less_is_more;
-extern int  missing_cap;
-extern int  know_dumb;
-extern int  pr_type;
-extern int  quit_if_one_screen;
-extern int  no_init;
+public int      one_screen;
+extern int      less_is_more;
+extern int      missing_cap;
+extern int      know_dumb;
+extern int      pr_type;
+extern int      quit_if_one_screen;
+extern int      no_init;
+extern int errmsgs;
 
 
 /*
@@ -82,10 +82,14 @@ main(argc, argv)
     progname = *argv++;
     argc--;
 
+#if SECURE
+    secure = 1;
+#else
     secure = 0;
     s = lgetenv("LESSSECURE");
     if (!isnullenv(s))
         secure = 1;
+#endif
 
 #ifdef WIN32
     if (getenv("HOME") == NULL)
@@ -219,6 +223,7 @@ main(argc, argv)
          * Output is not a tty.
          * Just copy the input file(s) to output.
          */
+        set_output(1); /* write to stdout */
         SET_BINARY(1);
         if (edit_first() == 0)
         {
@@ -282,6 +287,18 @@ main(argc, argv)
         }
     }
 
+    if (errmsgs > 0)
+    {
+        /*
+         * We displayed some messages on error output
+         * (file descriptor 2; see flush()).
+         * Before erasing the screen contents, wait for a keystroke.
+         */
+        less_printf("Press RETURN to continue ", NULL_PARG);
+        get_return();
+        putchr('\n');
+    }
+    set_output(1);
     init();
     commands();
     quit(QUIT_OK);
@@ -310,8 +327,8 @@ save(s)
  */
     public VOID_POINTER
 ecalloc(count, size)
-    size_t count;
-    size_t size;
+    int count;
+    unsigned int size;
 {
     VOID_POINTER p;
 
@@ -388,10 +405,13 @@ quit(status)
         status = save_status;
     else
         save_status = status;
+#if LESSTEST
+    rstat('Q');
+#endif /*LESSTEST*/
     quitting = 1;
     edit((char*)NULL);
     save_cmdhist();
-    if (any_display && is_tty)
+    if (interactive())
         clear_bot();
     deinit();
     flush();
