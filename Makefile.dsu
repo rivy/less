@@ -37,7 +37,7 @@ OBJ = \
 
 all: less lesskey
 
-# This is really horrible, but the command line is too long for 
+# This is really horrible, but the command line is too long for
 # MS-DOS if we try to link $(OBJ).
 less: $(OBJ)
 	-if exist lesskey.obj del lesskey.obj
@@ -53,7 +53,6 @@ defines.h: defines.ds
 $(OBJ): less.h defines.h
 
 clean:
-	-del *.obj 
+	-del *.obj
 	-del less.exe
 	-del lesskey.exe
-

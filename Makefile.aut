@@ -29,7 +29,7 @@ DISTFILES_W = \
 	defines.o2  Makefile.o2e \
 	defines.o9  Makefile.o9c Makefile.o9u \
 	defines.wn  Makefile.wnm Makefile.wnb Makefile.wng \
-	configure 
+	configure
 UNICODE_FILES = \
 	compose.uni fmt.uni ubin.uni wide.uni
 DISTFILES = \
@@ -46,18 +46,18 @@ DISTFILES = \
 	mkutable $(UNICODE_FILES) \
 	${DISTFILES_W}
 
-all: help.c funcs.h $(UNICODE_FILES) ${srcdir}/configure 
+all: help.c funcs.h $(UNICODE_FILES) ${srcdir}/configure
 
 release: .FORCE
 	@if grep -s 'Major changes between .*${REL}' NEWS ; then :; else echo '*** NEWS is not updated for ${REL}'; exit 1; fi
-	${MAKE} -f Makefile.aut tagall 
-	${MAKE} -f Makefile.aut all 
-	${MAKE} -f Makefile.aut clean 
+	${MAKE} -f Makefile.aut tagall
+	${MAKE} -f Makefile.aut all
+	${MAKE} -f Makefile.aut clean
 	${MAKE} -f Makefile.aut dist
 
 .FORCE:
 
-help.c: less.hlp 
+help.c: less.hlp
 	-mv -f ${srcdir}/help.c ${srcdir}/help.c.old
 	rm -rf help.c
 	${srcdir}/${MKHELP} < less.hlp > help.c
@@ -74,10 +74,10 @@ funcs.h: ${SRC:%=${srcdir}/%}
 lint:
 	lint -I. ${CPPFLAGS} ${SRC}
 
-clean: 
+clean:
 	rm -f Makefile config.status config.log config.cache defines.h stamp-h \
 		configure defines.h.in funcs.h help.c \
-		less.nro less.man lesskey.nro lesskey.man lessecho.nro lessecho.man 
+		less.nro less.man lesskey.nro lesskey.man lessecho.nro lessecho.man
 
 distclean: clean
 realclean: clean
@@ -122,7 +122,7 @@ unicode/EastAsianWidth.txt:
 
 distfiles: ${DISTFILES}
 
-echo_distfiles: 
+echo_distfiles:
 	echo ${DISTFILES}
 
 dist: ${DISTFILES}
@@ -154,4 +154,4 @@ gnu_upload:
 	gpg -b less-${REL}.tar.gz && \
 	( echo "version: 1.2"; echo "directory: less"; echo "filename: less-${REL}.tar.gz" ) > less-${REL}.tar.gz.directive && \
 	gpg --clearsign less-${REL}.tar.gz.directive
-	@echo "upload ready: cd release/less-${REL}; ftp ftp-upload.gnu.org; cd /incoming/ftp; put less-${REL}.tar.gz less-${REL}.tar.gz.sig less-${REL}.tar.gz.directive.asc" 
+	@echo "upload ready: cd release/less-${REL}; ftp ftp-upload.gnu.org; cd /incoming/ftp; put less-${REL}.tar.gz less-${REL}.tar.gz.sig less-${REL}.tar.gz.directive.asc"

@@ -3,9 +3,9 @@
 
 struct xbuffer
 {
-	char *data;
-	int end;
-	int size;
+    char *data;
+    int end;
+    int size;
 };
 
 void xbuf_init(struct xbuffer *xbuf);

@@ -62,5 +62,5 @@ extern int reg_show_error;
 
 #if NO_REGEX
 #define PATTERN_TYPE          void *
-#define SET_NULL_PATTERN(name)   
+#define SET_NULL_PATTERN(name)
 #endif
