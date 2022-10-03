@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2021  Mark Nudelman
+ * Copyright (C) 1984-2022  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -240,6 +240,7 @@ public int can_goto_line;               /* Can move cursor to any line */
 public int clear_bg;            /* Clear fills with background color */
 public int missing_cap = 0;     /* Some capability is missing */
 public char *kent = NULL;       /* Keypad ENTER sequence */
+public int term_init_done = FALSE;
 
 static int attrmode = AT_NORMAL;
 static int termcap_debug = -1;
@@ -936,6 +937,7 @@ special_key_str(key)
     static char k_delete[]          = { '\340', PCK_DELETE, 0  };
     static char k_ctl_delete[]      = { '\340', PCK_CTL_DELETE, 0  };
     static char k_ctl_backspace[]   = { '\177', 0 };
+    static char k_backspace[]       = { '\b', 0 };
     static char k_home[]            = { '\340', PCK_HOME, 0 };
     static char k_end[]             = { '\340', PCK_END, 0 };
     static char k_up[]              = { '\340', PCK_UP, 0 };
@@ -1035,6 +1037,9 @@ special_key_str(key)
     case SK_CTL_DELETE:
         s = k_ctl_delete;
         break;
+    case SK_BACKSPACE:
+        s = k_backspace;
+        break;
     case SK_F1:
         s = k_f1;
         break;
@@ -1071,6 +1076,15 @@ special_key_str(key)
         if (s == NULL)
         {
                 tbuf[0] = '\177';
+                tbuf[1] = '\0';
+                s = tbuf;
+        }
+        break;
+    case SK_BACKSPACE:
+        s = ltgetstr("kb", &sp);
+        if (s == NULL)
+        {
+                tbuf[0] = '\b';
                 tbuf[1] = '\0';
                 s = tbuf;
         }
@@ -1718,7 +1732,10 @@ init(VOID_PARAM)
     if (!(quit_if_one_screen && one_screen))
     {
         if (!no_init)
+        {
             ltputs(sc_init, sc_height, putchr);
+            term_init_done = 1;
+        }
         if (!no_keypad)
             ltputs(sc_s_keypad, sc_height, putchr);
         if (mousecap)
@@ -1744,7 +1761,10 @@ init(VOID_PARAM)
     if (!(quit_if_one_screen && one_screen))
     {
         if (!no_init)
+        {
             win32_init_term();
+            term_init_done = 1;
+        }
         if (mousecap)
             init_mouse();
 
@@ -2533,7 +2553,7 @@ tput_fmt(fmt, color, f_putc)
     int color;
     int (*f_putc)(int);
 {
-    char buf[32];
+    char buf[INT_STRLEN_BOUND(int)+16];
     if (color == attrcolor)
         return;
     SNPRINTF1(buf, sizeof(buf), fmt, color);
@@ -2614,7 +2634,7 @@ WIN32put_fmt(fmt, color)
     char *fmt;
     int color;
 {
-    char buf[16];
+    char buf[INT_STRLEN_BOUND(int)+16];
     int len = SNPRINTF1(buf, sizeof(buf), fmt, color);
     WIN32textout(buf, len);
     return TRUE;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2021  Mark Nudelman
+ * Copyright (C) 1984-2022  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -68,6 +68,8 @@ extern int linenums;
 extern int sigs;
 extern int sc_height;
 extern int screen_trashed;
+extern int header_lines;
+extern int nonum_headers;
 
 /*
  * Initialize the line number structures.
@@ -491,4 +493,17 @@ scan_eof(VOID_PARAM)
         if (ABORT_SIGS())
             break;
     }
+}
+
+/*
+ * Return a line number adjusted for display
+ * (handles the --no-number-headers option).
+ */
+    public LINENUM
+vlinenum(linenum)
+    LINENUM linenum;
+{
+    if (nonum_headers)
+        linenum = (linenum < header_lines) ? 0 : linenum - header_lines;
+    return linenum;
 }
