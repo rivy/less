@@ -326,7 +326,7 @@ struct wchar_range
         LWCHAR first, last;
 };
 
-struct wchar_range_table 
+struct wchar_range_table
 {
         struct wchar_range *table;
         int count;
@@ -412,12 +412,12 @@ struct wchar_range_table
 typedef enum { CT_NULL, CT_4BIT, CT_6BIT } COLOR_TYPE;
 
 typedef enum {
-	CV_BLUE     = 1,
-	CV_GREEN    = 2,
-	CV_RED      = 4,
-	CV_BRIGHT   = 8,
-	CV_NOCHANGE = -2,
-	CV_ERROR    = -1
+    CV_BLUE     = 1,
+    CV_GREEN    = 2,
+    CV_RED      = 4,
+    CV_BRIGHT   = 8,
+    CV_NOCHANGE = -2,
+    CV_ERROR    = -1
 } COLOR_VALUE;
 
 /* ANSI states */

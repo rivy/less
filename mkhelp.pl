@@ -3,7 +3,7 @@ use strict;
 
 # Silly little program to generate the help.c source file
 # from the less.hlp text file.
-# The output of this script is a C program defining a char array 
+# The output of this script is a C program defining a char array
 # whose content is the input to this script.
 
 {

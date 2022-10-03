@@ -37,15 +37,15 @@ extern int utf_mode;
 extern int wheel_lines;
 
 #if !MSDOS_COMPILER
-	static int
+    static int
 open_tty_device(dev)
-	constant char* dev;
+    constant char* dev;
 {
 #if OS2
-	/* The __open() system call translates "/dev/tty" to "con". */
-	return __open(dev, OPEN_READ);
+    /* The __open() system call translates "/dev/tty" to "con". */
+    return __open(dev, OPEN_READ);
 #else
-	return open(dev, OPEN_READ);
+    return open(dev, OPEN_READ);
 #endif
 }
 
@@ -55,67 +55,67 @@ open_tty_device(dev)
  * In Unix, file descriptor 2 is usually attached to the screen,
  * but also usually lets you read from the keyboard.
  */
-	public int
+    public int
 open_tty(VOID_PARAM)
 {
-	int fd = -1;
+    int fd = -1;
 #if LESSTEST
-	if (ttyin_name != NULL)
-		fd = open_tty_device(ttyin_name);
+    if (ttyin_name != NULL)
+        fd = open_tty_device(ttyin_name);
 #endif /*LESSTEST*/
 #if HAVE_TTYNAME
-	if (fd < 0)
-	{
-		constant char *dev = ttyname(2);
-		if (dev != NULL)
-			fd = open_tty_device(dev);
-	}
+    if (fd < 0)
+    {
+        constant char *dev = ttyname(2);
+        if (dev != NULL)
+            fd = open_tty_device(dev);
+    }
 #endif
-	if (fd < 0)
-		fd = open_tty_device("/dev/tty");
-	if (fd < 0)
-		fd = 2;
-	return fd;
+    if (fd < 0)
+        fd = open_tty_device("/dev/tty");
+    if (fd < 0)
+        fd = 2;
+    return fd;
 }
 #endif /* MSDOS_COMPILER */
 
 /*
  * Open keyboard for input.
  */
-	public void
+    public void
 open_getchr(VOID_PARAM)
 {
 #if MSDOS_COMPILER==WIN32C
-	/* Need this to let child processes inherit our console handle */
-	SECURITY_ATTRIBUTES sa;
-	memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
-	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-	sa.bInheritHandle = TRUE;
-	tty = CreateFile("CONIN$", GENERIC_READ | GENERIC_WRITE,
-			FILE_SHARE_READ, &sa, 
-			OPEN_EXISTING, 0L, NULL);
-	GetConsoleMode(tty, &console_mode);
-	/* Make sure we get Ctrl+C events. */
-	SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
+    /* Need this to let child processes inherit our console handle */
+    SECURITY_ATTRIBUTES sa;
+    memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.bInheritHandle = TRUE;
+    tty = CreateFile("CONIN$", GENERIC_READ | GENERIC_WRITE,
+            FILE_SHARE_READ, &sa,
+            OPEN_EXISTING, 0L, NULL);
+    GetConsoleMode(tty, &console_mode);
+    /* Make sure we get Ctrl+C events. */
+    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
 #else
 #if MSDOS_COMPILER
-	extern int fd0;
-	/*
-	 * Open a new handle to CON: in binary mode 
-	 * for unbuffered keyboard read.
-	 */
-	 fd0 = dup(0);
-	 close(0);
-	 tty = open("CON", OPEN_READ);
+    extern int fd0;
+    /*
+     * Open a new handle to CON: in binary mode
+     * for unbuffered keyboard read.
+     */
+     fd0 = dup(0);
+     close(0);
+     tty = open("CON", OPEN_READ);
 #if MSDOS_COMPILER==DJGPPC
-	/*
-	 * Setting stdin to binary causes Ctrl-C to not
-	 * raise SIGINT.  We must undo that side-effect.
-	 */
-	(void) __djgpp_set_ctrl_c(1);
+    /*
+     * Setting stdin to binary causes Ctrl-C to not
+     * raise SIGINT.  We must undo that side-effect.
+     */
+    (void) __djgpp_set_ctrl_c(1);
 #endif
 #else
-	tty = open_tty();
+    tty = open_tty();
 #endif
 #endif
 }
@@ -123,12 +123,12 @@ open_getchr(VOID_PARAM)
 /*
  * Close the keyboard.
  */
-	public void
+    public void
 close_getchr(VOID_PARAM)
 {
 #if MSDOS_COMPILER==WIN32C
-	SetConsoleMode(tty, console_mode);
-	CloseHandle(tty);
+    SetConsoleMode(tty, console_mode);
+    CloseHandle(tty);
 #endif
 }
 
@@ -136,136 +136,136 @@ close_getchr(VOID_PARAM)
 /*
  * Close the pipe, restoring the keyboard (CMD resets it, losing the mouse).
  */
-	int
+    int
 pclose(f)
-	FILE *f;
+    FILE *f;
 {
-	int result;
+    int result;
 
-	result = _pclose(f);
-	SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
-	return result;
+    result = _pclose(f);
+    SetConsoleMode(tty, ENABLE_PROCESSED_INPUT | ENABLE_MOUSE_INPUT);
+    return result;
 }
 #endif
 
 /*
  * Get the number of lines to scroll when mouse wheel is moved.
  */
-	public int
+    public int
 default_wheel_lines(VOID_PARAM)
 {
-	int lines = 1;
+    int lines = 1;
 #if MSDOS_COMPILER==WIN32C
-	if (SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &lines, 0))
-	{
-		if (lines == WHEEL_PAGESCROLL)
-			lines = 3;
-	}
+    if (SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &lines, 0))
+    {
+        if (lines == WHEEL_PAGESCROLL)
+            lines = 3;
+    }
 #endif
-	return lines;
+    return lines;
 }
 
 #if LESSTEST
-	public void
+    public void
 rstat(st)
-	char st;
+    char st;
 {
-	if (rstat_file < 0)
-		return;
-	lseek(rstat_file, SEEK_SET, 0);
-	write(rstat_file, &st, 1);
+    if (rstat_file < 0)
+        return;
+    lseek(rstat_file, SEEK_SET, 0);
+    write(rstat_file, &st, 1);
 }
 #endif /*LESSTEST*/
 
 /*
  * Get a character from the keyboard.
  */
-	public int
+    public int
 getchr(VOID_PARAM)
 {
-	char c;
-	int result;
+    char c;
+    int result;
 
-	do
-	{
-		flush();
+    do
+    {
+        flush();
 #if MSDOS_COMPILER && MSDOS_COMPILER != DJGPPC
-		/*
-		 * In raw read, we don't see ^C so look here for it.
-		 */
+        /*
+         * In raw read, we don't see ^C so look here for it.
+         */
 #if MSDOS_COMPILER==WIN32C
-		if (ABORT_SIGS())
-			return (READ_INTR);
-		c = WIN32getch();
+        if (ABORT_SIGS())
+            return (READ_INTR);
+        c = WIN32getch();
 #else
-		c = getch();
+        c = getch();
 #endif
-		result = 1;
-		if (c == '\003')
-			return (READ_INTR);
+        result = 1;
+        if (c == '\003')
+            return (READ_INTR);
 #else
 #if LESSTEST
-		rstat('R');
+        rstat('R');
 #endif /*LESSTEST*/
-		{
-			unsigned char uc;
-			result = iread(tty, &uc, sizeof(char));
-			c = (char) uc;
-		}
+        {
+            unsigned char uc;
+            result = iread(tty, &uc, sizeof(char));
+            c = (char) uc;
+        }
 #if LESSTEST
-		rstat('B');
+        rstat('B');
 #endif /*LESSTEST*/
-		if (result == READ_INTR)
-			return (READ_INTR);
-		if (result < 0)
-		{
-			/*
-			 * Don't call error() here,
-			 * because error calls getchr!
-			 */
-			quit(QUIT_ERROR);
-		}
+        if (result == READ_INTR)
+            return (READ_INTR);
+        if (result < 0)
+        {
+            /*
+             * Don't call error() here,
+             * because error calls getchr!
+             */
+            quit(QUIT_ERROR);
+        }
 #endif
 #if 0 /* allow entering arbitrary hex chars for testing */
-		/* ctrl-A followed by two hex chars makes a byte */
-	{
-		static int hex_in = 0;
-		static int hex_value = 0;
-		if (c == CONTROL('A'))
-		{
-			hex_in = 2;
-			result = 0;
-			continue;
-		}
-		if (hex_in > 0)
-		{
-			int v;
-			if (c >= '0' && c <= '9')
-				v = c - '0';
-			else if (c >= 'a' && c <= 'f')
-				v = c - 'a' + 10;
-			else if (c >= 'A' && c <= 'F')
-				v = c - 'A' + 10;
-			else
-				v = 0;
-			hex_value = (hex_value << 4) | v;
-			if (--hex_in > 0)
-			{
-				result = 0;
-				continue;
-			}
-			c = hex_value;
-		}
-	}
+        /* ctrl-A followed by two hex chars makes a byte */
+    {
+        static int hex_in = 0;
+        static int hex_value = 0;
+        if (c == CONTROL('A'))
+        {
+            hex_in = 2;
+            result = 0;
+            continue;
+        }
+        if (hex_in > 0)
+        {
+            int v;
+            if (c >= '0' && c <= '9')
+                v = c - '0';
+            else if (c >= 'a' && c <= 'f')
+                v = c - 'a' + 10;
+            else if (c >= 'A' && c <= 'F')
+                v = c - 'A' + 10;
+            else
+                v = 0;
+            hex_value = (hex_value << 4) | v;
+            if (--hex_in > 0)
+            {
+                result = 0;
+                continue;
+            }
+            c = hex_value;
+        }
+    }
 #endif
-		/*
-		 * Various parts of the program cannot handle
-		 * an input character of '\0'.
-		 * If a '\0' was actually typed, convert it to '\340' here.
-		 */
-		if (c == '\0')
-			c = '\340';
-	} while (result != 1);
+        /*
+         * Various parts of the program cannot handle
+         * an input character of '\0'.
+         * If a '\0' was actually typed, convert it to '\340' here.
+         */
+        if (c == '\0')
+            c = '\340';
+    } while (result != 1);
 
-	return (c & 0xFF);
+    return (c & 0xFF);
 }

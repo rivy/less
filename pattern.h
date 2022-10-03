@@ -72,7 +72,7 @@ extern int reg_show_error;
 /* ---- NONE  ---- */
 #if NO_REGEX
 #define PATTERN_TYPE             void *
-#define SET_NULL_PATTERN(name)   
+#define SET_NULL_PATTERN(name)
 #endif
 
 #ifndef re_handles_caseless

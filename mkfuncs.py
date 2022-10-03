@@ -21,6 +21,6 @@ for line in fileinput.input():
                 print(f'{definition}));')
                 state = 0
             elif test := re.search(r'^\s*([^;]*)', line):
-                if (definition[-1:] != '('): definition += ', ' 
-                definition += test.group(1) 
+                if (definition[-1:] != '('): definition += ', '
+                definition += test.group(1)
                 params = 1
