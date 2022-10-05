@@ -29,6 +29,16 @@
 #endif
 
 /*
+ * NORETURN
+ */
+#if defined(__clang__) || defined(__GNUC__)
+#define NORETURN _Noreturn
+#else /* MSVC, ... */
+// #define NORETURN __declspec(noreturn)
+#define NORETURN
+#endif
+
+/*
  * Include the file of compile-time options.
  * The <> make cc search for it in -I., not srcdir.
  */

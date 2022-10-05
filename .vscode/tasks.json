@@ -6,7 +6,7 @@
 		{
 			"type": "shell",
 			"label": "Build (gcc/32-bit/DEBUG)",
-			"command": "make CC=gcc DEBUG=1 ARCH=32 OUT_DIR=${config:project.build_dir}/debug.(vscode)-x32 NAME=${config:project.name} EXEEXT=.exe ${config:project.make_options}",
+			"command": "make debug CC=gcc DEBUG=1 ARCH=32 ${config:project.make_options} DEBUG_FROM=${file}",
 			"options": { "cwd": "${fileWorkspaceFolder}" },
 			"problemMatcher": ["$gcc"],
 			"group": { "kind": "build", "isDefault": true }
@@ -14,7 +14,7 @@
 		{
 			"type": "shell",
 			"label": "Build (gcc/64-bit/DEBUG)",
-			"command": "make CC=gcc DEBUG=1 ARCH=64 OUT_DIR=${config:project.build_dir}/debug.(vscode)-x64 NAME=${config:project.name} EXEEXT=.exe ${config:project.make_options}",
+			"command": "make debug CC=gcc DEBUG=1 ARCH=64 ${config:project.make_options} DEBUG_FROM=${file}",
 			"options": { "cwd": "${fileWorkspaceFolder}" },
 			"problemMatcher": ["$gcc"],
 			"group": { "kind": "build", "isDefault": true }
@@ -23,7 +23,7 @@
 		{
 			"type": "shell",
 			"label": "REbuild (gcc/32-bit/DEBUG)",
-			"command": "make rebuild CC=gcc DEBUG=1 ARCH=32 OUT_DIR=${config:project.build_dir}/debug.(vscode)-x32 NAME=${config:project.name} EXEEXT=.exe ${config:project.make_options}",
+			"command": "make rebuild debug CC=gcc DEBUG=1 ARCH=32 ${config:project.make_options} DEBUG_FROM=${file}",
 			"options": { "cwd": "${fileWorkspaceFolder}" },
 			"problemMatcher": ["$gcc"],
 			"group": { "kind": "build", "isDefault": true }
@@ -31,7 +31,7 @@
 		{
 			"type": "shell",
 			"label": "REbuild (gcc/64-bit/DEBUG)",
-			"command": "make rebuild CC=gcc DEBUG=1 ARCH=64 OUT_DIR=${config:project.build_dir}/debug.(vscode)-x64 NAME=${config:project.name} EXEEXT=.exe ${config:project.make_options}",
+			"command": "make rebuild debug CC=gcc DEBUG=1 ARCH=64 ${config:project.make_options} DEBUG_FROM=${file}",
 			"options": { "cwd": "${fileWorkspaceFolder}" },
 			"problemMatcher": ["$gcc"],
 			"group": { "kind": "build", "isDefault": true }

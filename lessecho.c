@@ -60,7 +60,8 @@ pr_version(VOID_PARAM)
     printf("%s\n", buf);
 }
 
-    static void
+    NORETURN
+    static void 
 pr_error(s)
     char *s;
 {

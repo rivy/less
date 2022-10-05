@@ -235,7 +235,12 @@
 /* #undef HAVE_REGCMP */
 /* #undef HAVE_V8_REGCOMP */
 #if MSDOS_COMPILER==DJGPPC
+#if __DJGPP__ < 2
 #define HAVE_POSIX_REGCOMP 1
+#else
+#define HAVE_V8_REGCOMP 1
+#define HAVE_REGEXEC2 1
+#endif
 #else
 #define NO_REGEX 1
 #endif

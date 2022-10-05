@@ -7,7 +7,7 @@
 			"name": "Debug (32-bit)",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug.(vscode)-x32/bin/${config:project.name}.exe",
+			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug-x32/executable.exe",
 			"args": [], // * note: use this configuration array to add run-time arguments to the debugged process
 			// "args": ["/?"], // * note: use this configuration array to add run-time arguments to the debugged process
 			// "args": ["${fileWorkspaceFolder}/../causes-fault-single-line.txt"],
@@ -34,7 +34,7 @@
 			"name": "Debug (64-bit)",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug.(vscode)-x64/bin/${config:project.name}.exe",
+			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug-x64/executable.exe",
 			"args": [], // * note: use this configuration array to add run-time arguments to the debugged process
 			"stopAtEntry": false,
 			"cwd": "${fileWorkspaceFolder}",
