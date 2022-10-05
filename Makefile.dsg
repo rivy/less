@@ -85,8 +85,3 @@ distclean: clean
 
 realclean: distclean
 	command.com /c if exist TAGS del TAGS
-
-build: all
-compile: ${OBJ}
-rebuild: clean build
-veryclean: realclean

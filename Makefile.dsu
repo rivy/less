@@ -56,9 +56,3 @@ clean:
 	-del *.obj
 	-del less.exe
 	-del lesskey.exe
-
-build: all
-compile: $(OBJ)
-rebuild: clean build
-realclean: clean
-veryclean: realclean

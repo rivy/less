@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2020  Mark Nudelman
+ * Copyright (C) 1984-2021  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -22,7 +22,7 @@
  * -ex  Specifies "x" to be the escape char for metachars.
  * -fn  Specifies "x" to be the escape char for metachars, as an integer.
  * -a   Specifies that all arguments are to be quoted.
- *  The default is that only arguments containing spaces are quoted.
+ *      The default is that only arguments containing spaces are quoted.
  */
 
 #include "less.h"
