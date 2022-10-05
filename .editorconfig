@@ -1,5 +1,8 @@
-# EditorConfig (is awesome): http://EditorConfig.org
-# v2022.08.26; rivy
+# EditorConfig (is awesome!; ref: http://EditorConfig.org)
+# ref: [EditorConfig ~ Level-0 Coding Standard](https://themightyprogrammer.dev/article/editor-config) @@ <https://archive.is/5wK2a>
+# v2022.10.05; rivy
+
+# spell-checker:ignore (words) akefile makefile makefiles MSVC POSIX VCproj
 
 # * top-most EditorConfig file
 root = true
@@ -12,7 +15,7 @@ indent_size = 4
 indent_style = space
 insert_final_newline = true
 max_line_length = 100
-smart_tabs = unset # unstable; ref: <https://github.com/editorconfig/editorconfig/issues/323>
+smart_tabs = unset  # ## unstable; ref: <https://github.com/editorconfig/editorconfig/issues/323>
 tab_width = unset # default to 'indent_size'
 trim_trailing_whitespace = true
 
@@ -29,19 +32,21 @@ indent_style = space
 # BAT/CMD ~ DOS/Win requires BAT/CMD files to have CRLF EOLNs
 end_of_line = crlf
 
-[*.{c,cpp,cxx,h,hpp,hxx}]
-indent_size = 2
+[*.{c,cc,cpp,cxx,h,hh,hpp,hxx,[Cc],[Cc][Cc],[Cc][Pp][Pp],[Cc][Xx][Xx],[Hh],[Hh][Hh],[Hh][Pp][Pp],[Hh][Xx][Xx]}]
+# C/C++
+indent_size = 3
+smart_tabs = true  # ## unstable; ref: <https://github.com/editorconfig/editorconfig/issues/323>
 
 [*.{cjs,cjx,cts,ctx,js,jsx,mjs,mts,mtx,ts,tsx,json,jsonc,vue}]
 # js/ts/json ~ Prettier/XO-style == TAB indention + SPACE alignment
 indent_size = 2
 indent_style = tab
-smart_tabs = true
+smart_tabs = true  # ## unstable; ref: <https://github.com/editorconfig/editorconfig/issues/323>
 
 [*.go]
 # go ~ TAB-style indentation (SPACE-style alignment); ref: <https://blog.golang.org/gofmt>@@<https://archive.is/wip/9B6FC>
 indent_style = tab
-smart_tabs = true
+smart_tabs = true # ## unstable; ref: <https://github.com/editorconfig/editorconfig/issues/323>
 
 [*.jq]
 # `jq` script files
@@ -58,7 +63,7 @@ indent_style = space
 end_of_line = crlf
 insert_final_newline = false
 
-[*.{yaml,yml,[Yy][Mm][Ll],[Yy][Aa][Mm][Ll]}]
+[*.{yaml,yml,[Yy][Aa][Mm][Ll],[Yy][Mm][Ll]}]
 # YAML
 indent_size = 2
 indent_style = space

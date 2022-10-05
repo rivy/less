@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.09.29)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2022.10.05)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -1412,9 +1412,6 @@ endif
 
 .PHONY: debug ${DEBUG_TARGET}
 all_phony_targets += debug ${DEBUG_TARGET}
-# debug: ${DEBUG_OUT_FILE} ## Build a specific debug executable (use `DEBUG_FROM=...` to specify a specific source file)
-# 	${CP} $(call %shell_quote,$(call %as_os_path,$<)) $(call %shell_quote,$(call %as_os_path,${DEBUG_TARGET})) >${devnull}
-# 	${ECHO} $(call %shell_escape,$(call %success_text,made '${DEBUG_TARGET}'.))
 debug: ${DEBUG_TARGET} ## Build a specific executable for debugging (use `DEBUG_FROM=...` to specify a specific source file)
 
 ####
@@ -1435,6 +1432,7 @@ endif ## not ${has_run_first}
 
 ${NAME}: ${PROJECT_TARGET}
 ${PROJECT_TARGET}: ${OBJ_files} ${OBJ_sup_files} ${DEPS_common} ${DEPS_target} | ${OUT_DIR_bin}
+	@$(if $(call %is_truthy,${VERBOSE}),${ECHO} $(call %shell_escape,$(call %info_text,'$@' is $(if $(call %is_gui,$@),GUI,console)-type.)),$(call !shell_noop))
 	$(call %link,${LDFLAGS},$(call %shell_quote,$@),$(call %map,%shell_quote,${OBJ_files} ${OBJ_sup_files} ${LINKS}),$(call %map,%shell_quote,${REZ_files}),$(call %LDX_flags,$(if $(call %is_gui,$@),windows,)))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
@@ -1458,6 +1456,7 @@ ${OUT_DIR_obj}/%.${REZ}: ${SRC_DIR}/%.rc ${DEPS_common} | ${out_dirs}
 ####
 
 ${BIN_OUT_DIR_bin}/%${EXEEXT}: ${BIN_OUT_DIR_obj}/%.${O} ${BIN_OBJ_sup_files} ${BIN_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${BIN_OUT_DIR_bin}
+	@$(if $(call %is_truthy,${VERBOSE}),${ECHO} $(call %shell_escape,$(call %info_text,'$@' is $(if $(call %is_gui,$@),GUI,console)-type.)),$(call !shell_noop))
 	$(call %link,${LDFLAGS},$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${BIN_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${BIN_REZ_files})),$(call %LDX_flags,$(if $(call %is_gui,$@),windows,${SUBSYSTEM})))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
@@ -1479,7 +1478,7 @@ ${BIN_OUT_DIR_obj}/%.${REZ}: ${BIN_DIR}/%.rc ${DEPS_common} | ${out_dirs}
 ####
 
 ${EG_OUT_DIR_bin}/%${EXEEXT}: ${EG_OUT_DIR_obj}/%.${O} ${EG_OBJ_sup_files} ${EG_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${EG_OUT_DIR_bin}
-#	@${ECHO} $(call %shell_escape,$(call %info_text,'$@' is $(if $(call %is_gui,$@),GUI,console)-type.))
+	@$(if $(call %is_truthy,${VERBOSE}),${ECHO} $(call %shell_escape,$(call %info_text,'$@' is $(if $(call %is_gui,$@),GUI,console)-type.)),$(call !shell_noop))
 	$(call %link,${LDFLAGS},$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${EG_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${EG_REZ_files})),$(call %LDX_flags,$(if $(call %is_gui,$@),windows,${SUBSYSTEM})))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))
@@ -1501,6 +1500,7 @@ ${EG_OUT_DIR_obj}/%.${REZ}: ${EG_DIR}/%.rc ${DEPS_common} | ${out_dirs}
 ####
 
 ${TEST_OUT_DIR_bin}/%${EXEEXT}: ${TEST_OUT_DIR_obj}/%.${O} ${TEST_OBJ_sup_files} ${TEST_REZ_files} ${OBJ_sup_files} ${DEPS_common} | ${TEST_OUT_DIR_bin}
+	@$(if $(call %is_truthy,${VERBOSE}),${ECHO} $(call %shell_escape,$(call %info_text,'$@' is $(if $(call %is_gui,$@),GUI,console)-type.)),$(call !shell_noop))
 	$(call %link,${LDFLAGS},$(call %shell_quote,$@),$(call %map,%shell_quote,$< ${TEST_OBJ_sup_files} ${OBJ_sup_files}),$(call %map,%shell_quote,$(call %filter_by_stem,$@,${TEST_REZ_files})),$(call %LDX_flags,$(if $(call %is_gui,$@),windows,${SUBSYSTEM})))
 	$(if $(and ${STRIP},$(call %is_falsey,${DEBUG})),${STRIP} $(call %shell_quote,$@),)
 	@${ECHO} $(call %shell_escape,$(call %success_text,made '$@'.))

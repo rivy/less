@@ -63,4 +63,3 @@ struct loption
     void (*ofunc) LESSPARAMS ((int, char*)); /* Pointer to special handling function */
     char *odesc[3];     /* Description of each value */
 };
-

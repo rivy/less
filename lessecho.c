@@ -61,7 +61,7 @@ pr_version(VOID_PARAM)
 }
 
     NORETURN
-    static void 
+    static void
 pr_error(s)
     char *s;
 {
