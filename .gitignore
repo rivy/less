@@ -1,4 +1,5 @@
-# v2022-08-26+less-mods [rivy]
+# v2022-08-27 [rivy]
+# + local-start/end mods for `less`
 
 # NOTE: Git GLOBSTAR syntax [see `git help gitignore`]
 # * ref: [.gitignore] http://git-scm.com/docs/gitignore @@ http://archive.is/Rk6rO
@@ -19,13 +20,14 @@ node_modules
 package-lock.json
 yarn.lock
 
-# ignore localized VSCode logs/settings
+# ignore local-only VSCode artifacts
+# * logs/settings
 .vscode/c_cpp_properties.json
 .vscode/makefile.extension.output
-# * ignore VSCode precompiled headers for IntelliSense
+# * precompiled headers for IntelliSense
 .vscode/ipch/
 
-## local additions ##
+#!local-start
 
 # `less` ~ most older Makefiles still generate artifacts *within* the source code folder
 
@@ -44,3 +46,5 @@ defines.h
 # * object files
 *.o
 *.obj
+
+#!local-end
