@@ -16,8 +16,8 @@ LESSKEY(1)                  General Commands Manual                 LESSKEY(1)
        The input file is a text file which describes the key bindings.  If the
        input  file is "-", standard input is read.  If no input file is speci-
        fied, a standard filename is used as the name of the input file,  which
-       depends  on the system being used: On Unix systems, "$HOME/.lesskey" is
-       used; on MS-DOS systems, "$HOME/_lesskey" is used; and on OS/2  systems
+       depends  on the system being used: On Unix or Windows systems, "$HOME/.lesskey"
+       is used; on MS-DOS systems, "$HOME/_lesskey" is used; and on OS/2  systems
        "$HOME/lesskey.ini"  is  used, or "$INIT/lesskey.ini" if $HOME is unde-
        fined.  The output file is a binary file which is used by [4mless[24m.  If  no
        output  file is specified, and the environment variable LESSKEY is set,
