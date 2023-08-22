@@ -1271,7 +1271,8 @@ On Unix systems, the system-wide lesskey file is /usr/local/etc/sysless.
 .I less
 was built with a different sysconf directory than /usr/local/etc,
 that directory is where the sysless file is found.)
-On MS-DOS and Windows systems, the system-wide lesskey file is c:\e_sysless.
+On Windows systems, the system-wide lesskey file is c:\eProgramData\less\sysless.
+On MS-DOS systems, the system-wide lesskey file is c:\e_sysless.
 On OS/2 systems, the system-wide lesskey file is c:\esysless.ini.
 .
 .SH "INPUT PREPROCESSOR"

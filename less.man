@@ -1191,8 +1191,9 @@ LESS(1)                     General Commands Manual                    LESS(1)
        Unix  systems,  the system-wide lesskey file is /usr/local/etc/sysless.
        (However, if [4mless[24m was built with a  different  sysconf  directory  than
        /usr/local/etc, that directory is where the sysless file is found.)  On
-       MS-DOS and Windows systems, the system-wide lesskey  file  is  c:\_sys-
-       less.  On OS/2 systems, the system-wide lesskey file is c:\sysless.ini.
+       Windows systems, the system-wide lesskey  file  is  c:\ProgramData\less\sys-
+       less.  On MS-DOS systems, the system-wide lesskey file is c:\_sysless.
+       On OS/2 systems, the system-wide lesskey file is c:\sysless.ini.
 
 [1mINPUT PREPROCESSOR[0m
        You  may  define an "input preprocessor" for [4mless[24m.  Before [4mless[24m opens a

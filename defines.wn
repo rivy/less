@@ -117,7 +117,7 @@
  * (in the HOME directory).
  */
 #define LESSKEYFILE         "_less"
-#define LESSKEYFILE_SYS     "c:\\_sysless"
+#define LESSKEYFILE_SYS     "c:\\ProgramData\\less\\sysless"
 #define DEF_LESSKEYINFILE   ".lesskey"
 #define LESSHISTFILE        ".lesshst"
 
