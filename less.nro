@@ -1240,6 +1240,11 @@ looks in a standard place for the lesskey file:
 On Unix systems,
 .I less
 looks for a lesskey file called "$HOME/.less".
+On Windows systems,
+.I less
+looks for a lesskey file called "$HOME/.less", and if it is not found there,
+then looks for a lesskey file called ".less" in any directory specified
+in the PATH environment variable.
 On MS-DOS and Windows systems,
 .I less
 looks for a lesskey file called "$HOME/_less", and if it is not found there,
