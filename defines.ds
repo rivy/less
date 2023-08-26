@@ -406,7 +406,7 @@
 #define S_IFMT      _S_IFMT
 #define S_IFDIR     _S_IFDIR
 #define S_IFREG     _S_IFREG
-#define dup     _dup
+#define dup         _dup
 #define open        _open
 #define lseek       _lseek
 #define write       _write
