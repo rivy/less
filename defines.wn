@@ -391,8 +391,8 @@
 #endif
 
 #ifdef _MSC_VER
-#define popen   _popen
 #define pclose  _pclose
+#define popen   _popen
 #if (_MSC_VER < 1300)
 #define intptr_t long
 #endif
