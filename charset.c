@@ -542,7 +542,7 @@ is_utf8_well_formed(ss, slen)
     if (IS_UTF8_INVALID(s[0]))
         return (0);
 
-    len = utf_len(s[0]);
+    len = (size_t)utf_len(s[0]);
     if (len > slen)
         return (0);
     if (len == 1)
