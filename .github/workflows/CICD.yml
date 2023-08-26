@@ -55,7 +55,7 @@ jobs:
         run: |
           ## VARs setup
           log() { for var in "$@" ; do echo ${var}="${!var}"; done; }
-          outputs() { for var in "$@" ; do echo steps.vars.outputs.${var}="${!var}"; echo ::set-output name=${var}::${!var}; done; }
+          outputs() { step_id="${{ github.action }}"; for var in "$@" ; do echo steps.${step_id}.outputs.${var}="${!var}"; echo "${var}=${!var}" >> $GITHUB_OUTPUT; done; }
           # staging directory
           STAGING='_staging'
           outputs STAGING
