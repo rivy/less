@@ -621,7 +621,8 @@ ansi_step(pansi, ch)
     if (pansi->hindex >= 0)
     {
         static char hlink_prefix[] = ESCS "]8;";
-        if (ch == hlink_prefix[pansi->hindex] ||
+        // FixME: [2023-08-14; rivy] verify re-cast of `hlink_prefix[pansi->hindex]' to LWCHAR is correct and safe
+        if (ch == (LWCHAR)hlink_prefix[pansi->hindex] ||
             (pansi->hindex == 0 && IS_CSI_START(ch)))
         {
             pansi->hindex++;
