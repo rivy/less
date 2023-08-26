@@ -1454,8 +1454,8 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos, pla
                          */
                         if (sp != NULL && ep != NULL)
                         {
-                            int start_off = sp - cline;
-                            int end_off = ep - cline;
+                            POSITION start_off = (POSITION)(sp - cline);
+                            POSITION end_off = (POSITION)(ep - cline);
                             int save_hshift = hshift;
                             int sshift;
                             int eshift;
@@ -1485,7 +1485,7 @@ search_range(pos, endpos, search_type, matches, maxlines, plinepos, pendpos, pla
                          */
                         if (ep != NULL)
                         {
-                            int end_off = ep - cline;
+                            POSITION end_off = (POSITION)(ep - cline);
                             if (end_off >= swidth * sheight / 4) /* heuristic */
                                 *plastlinepos = get_lastlinepos(linepos, linepos + chpos[end_off], sheight);
                         }

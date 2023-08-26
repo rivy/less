@@ -458,7 +458,7 @@ pwidth(ch, a, prev_ch, prev_a)
          * Backspace moves backwards one or two positions.
          */
         if (prev_a & (AT_ANSI|AT_BINARY))
-            return strlen(prchar('\b'));
+            return (int)strlen(prchar('\b'));
         return (utf_mode && is_wide_char(prev_ch)) ? -2 : -1;
     }
 
