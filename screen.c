@@ -2258,11 +2258,13 @@ beep(VOID_PARAM)
 #if !MSDOS_COMPILER
     putchr(CONTROL('G'));
 #else
-#if MSDOS_COMPILER==WIN32C
-    MessageBeep(0);
-#else
+// ToDO: [2023-10-10; rivy] replace disabled WinOS code with an option gated call to `MessageBeep()` or `write(1, "\7", 1)`
+//   ... * use `--enable-bell` as the configuration option?
+// #if MSDOS_COMPILER == WIN32C
+//     MessageBeep(0);
+// #else
     write(1, "\7", 1);
-#endif
+// #endif
 #endif
 }
 
