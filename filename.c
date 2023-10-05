@@ -635,8 +635,8 @@ lglob(filename)
      * The globbing function returns a list of names.
      */
     int length;
-    char *p;
-    char *qfilename;
+    char *p = 0;
+    char *qfilename = 0;
     DECL_GLOB_LIST(list)
 
     GLOB_LIST(filename, list);
