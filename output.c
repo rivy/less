@@ -40,7 +40,7 @@ extern int ul_fg_color, ul_bg_color;
 extern int so_fg_color, so_bg_color;
 extern int bl_fg_color, bl_bg_color;
 extern int sgr_mode;
-#if MSDOS_COMPILER==WIN32C
+#if MSDOS_COMPILER==WIN32C || MSDOS_COMPILER==DJGPPC
 extern int vt_enabled;
 #endif
 #endif

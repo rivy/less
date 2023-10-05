@@ -185,6 +185,8 @@ static int sy_bg_color;
 public int sgr_mode;            /* Honor ANSI sequences rather than using above */
 #if MSDOS_COMPILER==WIN32C
 static DWORD init_output_mode;  /* The initial console output mode */
+#endif
+#if MSDOS_COMPILER==WIN32C || MSDOS_COMPILER==DJGPPC
 public int vt_enabled = -1;     /* Is virtual terminal processing available? */
 #endif
 #else
