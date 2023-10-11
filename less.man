@@ -1171,10 +1171,13 @@ LESS(1)                     General Commands Manual                    LESS(1)
        variables.   If the environment variable LESSKEY is set, [4mless[24m uses that
        as the name of the lesskey file.  Otherwise, [4mless[24m looks in  a  standard
        place  for  the lesskey file: On Unix systems, [4mless[24m looks for a lesskey
-       file called "$HOME/.less".  On MS-DOS and Windows systems,  [4mless[24m  looks
-       for  a lesskey file called "$HOME/_less", and if it is not found there,
-       then looks for a lesskey file called "_less" in any directory specified
-       in  the  PATH  environment variable.  On OS/2 systems, [4mless[24m looks for a
+       file called "$HOME/.less".  On Windows systems,  [4mless[24m  looks
+       for  a lesskey file called "$HOME/.less", and if it is not found there,
+       then looks for a lesskey file called ".less" in any directory specified
+       in  the  PATH  environment variable.  On MS-DOS and Windows systems,
+       [4mless[24m  looks for  a lesskey file called "$HOME/_less", and if it is
+       not found there, then looks for a lesskey file called "_less" in any directory
+       specified in the PATH environment variable.  On OS/2 systems, [4mless[24m looks for a
        lesskey file called "$HOME/less.ini", and if  it  is  not  found,  then
        looks  for  a lesskey file called "less.ini" in any directory specified
        in the INIT environment variable, and if it not found there, then looks
@@ -1191,8 +1194,9 @@ LESS(1)                     General Commands Manual                    LESS(1)
        Unix  systems,  the system-wide lesskey file is /usr/local/etc/sysless.
        (However, if [4mless[24m was built with a  different  sysconf  directory  than
        /usr/local/etc, that directory is where the sysless file is found.)  On
-       MS-DOS and Windows systems, the system-wide lesskey  file  is  c:\_sys-
-       less.  On OS/2 systems, the system-wide lesskey file is c:\sysless.ini.
+       Windows systems, the system-wide lesskey  file  is  c:\ProgramData\less\sys-
+       less.  On MS-DOS systems, the system-wide lesskey file is c:\_sysless.
+       On OS/2 systems, the system-wide lesskey file is c:\sysless.ini.
 
 [1mINPUT PREPROCESSOR[0m
        You  may  define an "input preprocessor" for [4mless[24m.  Before [4mless[24m opens a
@@ -1729,9 +1733,8 @@ LESS(1)                     General Commands Manual                    LESS(1)
               Name  of  the  history file used to remember search commands and
               shell commands between invocations of [4mless[24m.  If set  to  "-"  or
               "/dev/null",  a  history  file  is  not  used.   The  default is
-              "$HOME/.lesshst" on Unix systems, "$HOME/_lesshst"  on  DOS  and
-              Windows  systems,  or "$HOME/lesshst.ini" or "$INIT/lesshst.ini"
-              on OS/2 systems.
+              "$HOME/.lesshst" on Unix or Windows systems, "$HOME/_lesshst" on DOS
+              systems,  or "$HOME/lesshst.ini" or "$INIT/lesshst.ini" on OS/2 systems.
 
        LESSHISTSIZE
               The maximum number of commands to save in the history file.  The

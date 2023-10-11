@@ -116,10 +116,10 @@
  * LESSHISTFILE is the filename of the history file
  * (in the HOME directory).
  */
-#define LESSKEYFILE         "_less"
-#define LESSKEYFILE_SYS     "c:\\_sysless"
-#define DEF_LESSKEYINFILE   "_lesskey"
-#define LESSHISTFILE        "_lesshst"
+#define LESSKEYFILE         ".less"
+#define LESSKEYFILE_SYS     "c:\\ProgramData\\less\\sysless"
+#define DEF_LESSKEYINFILE   ".lesskey"
+#define LESSHISTFILE        ".lesshst"
 
 
 /* Settings always true for Windows systems.  */
@@ -391,8 +391,8 @@
 #endif
 
 #ifdef _MSC_VER
-#define popen   _popen
 #define pclose  _pclose
+#define popen   _popen
 #if (_MSC_VER < 1300)
 #define intptr_t long
 #endif

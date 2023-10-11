@@ -18,7 +18,7 @@ The input file is a text file which describes the key bindings.
 If the input file is "\-", standard input is read.
 If no input file is specified, a standard filename is used
 as the name of the input file, which depends on the system being used:
-On Unix systems, "$HOME/.lesskey" is used;
+On Unix or Windows systems, "$HOME/.lesskey" is used;
 on MS-DOS systems, "$HOME/_lesskey" is used;
 and on OS/2 systems "$HOME/lesskey.ini" is used,
 or "$INIT/lesskey.ini" if $HOME is undefined.
