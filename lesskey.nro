@@ -1,8 +1,8 @@
 '\" t
-.TH LESSKEY 1 "Version 581.2: 28 Apr 2021"
+.TH LESSKEY 1 "Version 590: 03 Jun 2021"
 .SH NAME
 lesskey \- specify key bindings for less
-.SH SYNOPSIS
+.SH "SYNOPSIS (deprecated)"
 .B "lesskey [\-o output] [\-\-] [input]"
 .br
 .B "lesskey [\-\-output=output] [\-\-] [input]"
@@ -35,13 +35,24 @@ and on OS/2 systems, "$HOME/less.ini" is used,
 or "$INIT/less.ini" if $HOME is undefined.
 If the output file already exists,
 .I lesskey
-will overwrite it.
-.PP
-The \-V or \-\-version option causes
+source file, which is used by
+.I less
+version 582 and later.
+In previous versions of
+.IR less ,
+a separate program called
 .I lesskey
-to print its version number and immediately exit.
-If \-V or \-\-version is present, other options and arguments are ignored.
+was used to compile the
+.I lesskey
+source file into a format understood by
+.IR less .
+This compilation step is no longer required and the
+.I lesskey
+program is therefore deprecated although the file format remains supported by
+.I less
+itself.
 .PP
+.SH FILE FORMAT
 The input file consists of one or more
 .I sections.
 Each section starts with a line that identifies the type of section.
