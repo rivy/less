@@ -8,13 +8,9 @@
  */
 
 #include "less.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "lesskey.h"
 #include "cmd.h"
 #include "xbuf.h"
-#include "defines.h"
 
 #define CONTROL(c)      ((c)&037)
 #define ESC             CONTROL('[')
