@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2021  Mark Nudelman
+ * Copyright (C) 1984-2022  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -125,21 +125,22 @@
 #define EV_OK       01
 
 /* Special keys (keys which output different strings on different terminals) */
-#define SK_SPECIAL_KEY      CONTROL('K')
-#define SK_RIGHT_ARROW      1
-#define SK_LEFT_ARROW       2
-#define SK_UP_ARROW     3
-#define SK_DOWN_ARROW       4
-#define SK_PAGE_UP      5
-#define SK_PAGE_DOWN        6
-#define SK_HOME         7
-#define SK_END          8
-#define SK_DELETE       9
-#define SK_INSERT       10
-#define SK_CTL_LEFT_ARROW   11
-#define SK_CTL_RIGHT_ARROW  12
-#define SK_CTL_DELETE       13
-#define SK_F1           14
-#define SK_BACKTAB      15
-#define SK_CTL_BACKSPACE    16
-#define SK_CONTROL_K        40
+#define SK_SPECIAL_KEY         CONTROL('K')
+#define SK_RIGHT_ARROW         1
+#define SK_LEFT_ARROW          2
+#define SK_UP_ARROW            3
+#define SK_DOWN_ARROW          4
+#define SK_PAGE_UP             5
+#define SK_PAGE_DOWN           6
+#define SK_HOME                7
+#define SK_END                 8
+#define SK_DELETE              9
+#define SK_INSERT              10
+#define SK_CTL_LEFT_ARROW      11
+#define SK_CTL_RIGHT_ARROW     12
+#define SK_CTL_DELETE          13
+#define SK_F1                  14
+#define SK_BACKTAB             15
+#define SK_CTL_BACKSPACE       16
+#define SK_BACKSPACE           17
+#define SK_CONTROL_K           40
