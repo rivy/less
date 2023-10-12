@@ -124,15 +124,15 @@ lesskey_parse_error(s)
 
     void *
 ecalloc(count, size)
-    int count;
-    unsigned int size;
+    size_t count;
+    size_t size;
 {
-    void *p;
+    VOID_POINTER p;
 
-    p = calloc(count, size);
+    p = (VOID_POINTER) calloc(count, size);
     if (p != NULL)
         return (p);
-    fprintf(stderr, "lesskey: cannot allocate %d bytes of memory\n", count*size);
+    fprintf(stderr, "lesskey: cannot allocate %zu bytes of memory\n", count*size);
     exit(1);
 }
 
