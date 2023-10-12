@@ -7,6 +7,7 @@
  * For more information, see the README file.
  */
 
+#include "less.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,10 +18,6 @@
 
 #define CONTROL(c)      ((c)&037)
 #define ESC             CONTROL('[')
-
-extern void lesskey_parse_error(char *msg);
-extern char *homefile(char *filename);
-extern void *ecalloc(int count, unsigned int size);
 
 static int linenum;
 static int errors;
