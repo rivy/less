@@ -279,7 +279,7 @@ issp(ch)
 /*
  * Skip leading spaces in a string.
  */
-    static char *
+    char *
 skipsp(s)
     char *s;
 {
