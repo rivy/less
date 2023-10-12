@@ -128,7 +128,7 @@ parse_error(s1, s2)
     char *s1;
     char *s2;
 {
-    char buf[1024];
+    char buf[2048];
     ++errors;
     snprintf(buf, sizeof(buf), "%s: line %d: %s%s", lesskey_file, linenum, s1, s2);
     lesskey_parse_error(buf);
