@@ -132,7 +132,7 @@ ecalloc(count, size)
     p = (VOID_POINTER) calloc(count, size);
     if (p != NULL)
         return (p);
-    fprintf(stderr, "lesskey: cannot allocate %zu bytes of memory\n", count*size);
+    fprintf(stderr, "lesskey: cannot allocate %lu bytes of memory\n", (long unsigned)(count*size));
     exit(1);
 }
 
