@@ -15,6 +15,8 @@
 #define CONTROL(c)      ((c)&037)
 #define ESC             CONTROL('[')
 
+extern char version[];
+
 static int linenum;
 static int errors;
 static int less_version = 0;
