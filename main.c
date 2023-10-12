@@ -342,18 +342,6 @@ ecalloc(count, size)
 }
 
 /*
- * Skip leading spaces in a string.
- */
-    public char *
-skipsp(s)
-    char *s;
-{
-    while (*s == ' ' || *s == '\t')
-        s++;
-    return (s);
-}
-
-/*
  * See how many characters of two strings are identical.
  * If uppercase is true, the first string must begin with an uppercase
  * character; the remainder of the first string may be either case.
