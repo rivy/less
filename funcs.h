@@ -361,3 +361,5 @@ public void xbuf_init LESSPARAMS ((struct xbuffer *xbuf));
 public void xbuf_deinit LESSPARAMS ((struct xbuffer *xbuf));
 public void xbuf_reset LESSPARAMS ((struct xbuffer *xbuf));
 public void xbuf_add LESSPARAMS ((struct xbuffer *xbuf, int ch));
+public int xbuf_pop LESSPARAMS ((struct xbuffer *xbuf));
+public void xbuf_set LESSPARAMS ((struct xbuffer *dst, struct xbuffer *src));
