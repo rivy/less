@@ -2978,7 +2978,7 @@ WIN32getch(VOID_PARAM)
         // If multibyte character, return its first byte
         if (currentKey.ascii != currentKey.unicode)
         {
-            utf8_size = WideCharToMultiByte(CP_UTF8, 0, &currentKey.unicode, 1, &utf8, sizeof(utf8), NULL, NULL);
+            utf8_size = WideCharToMultiByte(CP_UTF8, 0, &currentKey.unicode, 1, (LPSTR)&utf8, sizeof(utf8), NULL, NULL);
             if (utf8_size == 0 )
                 return '\0';
             ascii = utf8[0];
