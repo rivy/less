@@ -6,20 +6,20 @@
  */
 public void xbuf_init(struct xbuffer *xbuf)
 {
-	xbuf->data = NULL;
-	xbuf->size = xbuf->end = 0;
+    xbuf->data = NULL;
+    xbuf->size = xbuf->end = 0;
 }
 
 public void xbuf_deinit(struct xbuffer *xbuf)
 {
-	if (xbuf->data != NULL)
-		free(xbuf->data);
-	xbuf_init(xbuf);
+    if (xbuf->data != NULL)
+        free(xbuf->data);
+    xbuf_init(xbuf);
 }
 
 public void xbuf_reset(struct xbuffer *xbuf)
 {
-	xbuf->end = 0;
+    xbuf->end = 0;
 }
 
 /*
@@ -27,45 +27,45 @@ public void xbuf_reset(struct xbuffer *xbuf)
  */
 public void xbuf_add_byte(struct xbuffer *xbuf, unsigned char b)
 {
-	if (xbuf->end >= xbuf->size)
-	{
-		unsigned char *data;
-		if (ckd_add(&xbuf->size, xbuf->size, xbuf->size ? xbuf->size : 16))
-			out_of_memory();
-		data = (unsigned char *) ecalloc(xbuf->size, sizeof(unsigned char));
-		if (xbuf->data != NULL)
-		{
-			memcpy(data, xbuf->data, xbuf->end);
-			free(xbuf->data);
-		}
-		xbuf->data = data;
-	}
-	xbuf->data[xbuf->end++] = (unsigned char) b;
+    if (xbuf->end >= xbuf->size)
+    {
+        unsigned char *data;
+        if (ckd_add(&xbuf->size, xbuf->size, xbuf->size ? xbuf->size : 16))
+            out_of_memory();
+        data = (unsigned char *) ecalloc(xbuf->size, sizeof(unsigned char));
+        if (xbuf->data != NULL)
+        {
+            memcpy(data, xbuf->data, xbuf->end);
+            free(xbuf->data);
+        }
+        xbuf->data = data;
+    }
+    xbuf->data[xbuf->end++] = (unsigned char) b;
 }
 
 public void xbuf_add_data(struct xbuffer *xbuf, unsigned char *data, int len)
 {
-	int i;
-	for (i = 0;  i < len;  i++)
-		xbuf_add_byte(xbuf, data[i]);
+    int i;
+    for (i = 0;  i < len;  i++)
+        xbuf_add_byte(xbuf, data[i]);
 }
 
 public int xbuf_pop(struct xbuffer *buf)
 {
-	if (buf->end == 0)
-		return -1;
-	return (int) buf->data[--(buf->end)];
+    if (buf->end == 0)
+        return -1;
+    return (int) buf->data[--(buf->end)];
 }
 
 public void xbuf_set(struct xbuffer *dst, struct xbuffer *src)
 {
-	xbuf_reset(dst);
-	xbuf_add_data(dst, src->data, src->end);
+    xbuf_reset(dst);
+    xbuf_add_data(dst, src->data, src->end);
 }
 
 public char * xbuf_char_data(struct xbuffer *xbuf)
 {
-	return (char *)(xbuf->data);
+    return (char *)(xbuf->data);
 }
 
 
@@ -86,61 +86,61 @@ public char * xbuf_char_data(struct xbuffer *xbuf)
  */
 static int help_fixup(void *r, uintmax val, int rsize, int rsigned)
 {
-	if (rsigned)
-	{
-		if (rsize == sizeof (int))
-		{
-			int *pr = r;
-			if (INT_MAX < val)
-				return TRUE;
-			*pr = val;
+    if (rsigned)
+    {
+        if (rsize == sizeof (int))
+        {
+            int *pr = r;
+            if (INT_MAX < val)
+                return TRUE;
+            *pr = val;
 #ifdef LLONG_MAX
-		} else if (rsize == sizeof (long long))
-		{
-			long long *pr = r;
-			if (LLONG_MAX < val)
-				return TRUE;
-			*pr = val;
+        } else if (rsize == sizeof (long long))
+        {
+            long long *pr = r;
+            if (LLONG_MAX < val)
+                return TRUE;
+            *pr = val;
 #endif
 #ifdef INTMAX_MAX
-		} else if (rsize == sizeof (intmax_t)) {
-			intmax_t *pr = r;
-			if (INTMAX_MAX < val)
-				return TRUE;
-			*pr = val;
+        } else if (rsize == sizeof (intmax_t)) {
+            intmax_t *pr = r;
+            if (INTMAX_MAX < val)
+                return TRUE;
+            *pr = val;
 #endif
-		} else /* rsize == sizeof (long) */
-		{
-			long *pr = r;
-			if (LONG_MAX < val)
-				return TRUE;
-			*pr = val;
-		}
-	} else {
-		if (rsize == sizeof (unsigned)) {
-			unsigned *pr = r;
-			if (UINT_MAX < val)
-				return TRUE;
-			*pr = val;
-		} else if (rsize == sizeof (unsigned long)) {
-			unsigned long *pr = r;
-			if (ULONG_MAX < val)
-				return TRUE;
-			*pr = val;
+        } else /* rsize == sizeof (long) */
+        {
+            long *pr = r;
+            if (LONG_MAX < val)
+                return TRUE;
+            *pr = val;
+        }
+    } else {
+        if (rsize == sizeof (unsigned)) {
+            unsigned *pr = r;
+            if (UINT_MAX < val)
+                return TRUE;
+            *pr = val;
+        } else if (rsize == sizeof (unsigned long)) {
+            unsigned long *pr = r;
+            if (ULONG_MAX < val)
+                return TRUE;
+            *pr = val;
 #ifdef ULLONG_MAX
-		} else if (rsize == sizeof (unsigned long long)) {
-			long long *pr = r;
-			if (ULLONG_MAX < val)
-				return TRUE;
-			*pr = val;
+        } else if (rsize == sizeof (unsigned long long)) {
+            long long *pr = r;
+            if (ULLONG_MAX < val)
+                return TRUE;
+            *pr = val;
 #endif
-		} else /* rsize == sizeof (uintmax) */
-		{
-			uintmax *pr = r;
-			*pr = val;
-		}
-	}
-	return FALSE;
+        } else /* rsize == sizeof (uintmax) */
+        {
+            uintmax *pr = r;
+            *pr = val;
+        }
+    }
+    return FALSE;
 }
 /*
  * If *R can represent the mathematical sum of A and B, store the sum
@@ -150,14 +150,14 @@ static int help_fixup(void *r, uintmax val, int rsize, int rsigned)
  */
 public int help_ckd_add(void *r, uintmax a, uintmax b, int rsize, int rsigned)
 {
-	uintmax sum = a + b;
-	return sum < a || help_fixup(r, sum, rsize, rsigned);
+    uintmax sum = a + b;
+    return sum < a || help_fixup(r, sum, rsize, rsigned);
 }
 /* Likewise, but for the product of A and B.  */
 public int help_ckd_mul(void *r, uintmax a, uintmax b, int rsize, int rsigned)
 {
-	uintmax product = a * b;
-	return ((b != 0 && a != product / b)
-		|| help_fixup(r, product, rsize, rsigned));
+    uintmax product = a * b;
+    return ((b != 0 && a != product / b)
+        || help_fixup(r, product, rsize, rsigned));
 }
 #endif

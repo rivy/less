@@ -94,10 +94,10 @@ public void init_poll(void)
         waiting_for_data_delay = idelay;
 #if USE_POLL
 #if defined(__APPLE__)
-	/* In old versions of MacOS, poll() does not work with /dev/tty. */
-	struct utsname uts;
-	if (uname(&uts) < 0 || lstrtoi(uts.release, NULL, 10) < 20)
-		use_poll = FALSE;
+    /* In old versions of MacOS, poll() does not work with /dev/tty. */
+    struct utsname uts;
+    if (uname(&uts) < 0 || lstrtoi(uts.release, NULL, 10) < 20)
+        use_poll = FALSE;
 #endif
 #endif
 }
@@ -111,39 +111,39 @@ public void init_poll(void)
  */
 static int check_poll(int fd, int tty)
 {
-	struct pollfd poller[2] = { { fd, POLLIN, 0 }, { tty, POLLIN, 0 } };
-	int timeout = (waiting_for_data && !(scanning_eof && follow_mode == FOLLOW_NAME)) ? -1 : waiting_for_data_delay;
-	poll(poller, 2, timeout);
+    struct pollfd poller[2] = { { fd, POLLIN, 0 }, { tty, POLLIN, 0 } };
+    int timeout = (waiting_for_data && !(scanning_eof && follow_mode == FOLLOW_NAME)) ? -1 : waiting_for_data_delay;
+    poll(poller, 2, timeout);
 #if LESSTEST
-	if (ttyin_name == NULL) /* Check for ^X only on a real tty. */
+    if (ttyin_name == NULL) /* Check for ^X only on a real tty. */
 #endif /*LESSTEST*/
-	{
-		if (poller[1].revents & POLLIN) 
-		{
-			LWCHAR ch = getchr();
-			if (ch == intr_char)
-				/* Break out of "waiting for data". */
-				return (READ_INTR);
-			ungetcc_back(ch);
-		}
-	}
-	if (ignore_eoi && exit_F_on_close && (poller[0].revents & (POLLHUP|POLLIN)) == POLLHUP)
-		/* Break out of F loop on HUP due to --exit-follow-on-close. */
-		return (READ_INTR);
-	if ((poller[0].revents & (POLLIN|POLLHUP|POLLERR)) == 0)
-		/* No data available; let caller take action, then try again. */
-		return (READ_AGAIN);
-	/* There is data (or HUP/ERR) available. Safe to call read() without blocking. */
-	return (0);
+    {
+        if (poller[1].revents & POLLIN)
+        {
+            LWCHAR ch = getchr();
+            if (ch == intr_char)
+                /* Break out of "waiting for data". */
+                return (READ_INTR);
+            ungetcc_back(ch);
+        }
+    }
+    if (ignore_eoi && exit_F_on_close && (poller[0].revents & (POLLHUP|POLLIN)) == POLLHUP)
+        /* Break out of F loop on HUP due to --exit-follow-on-close. */
+        return (READ_INTR);
+    if ((poller[0].revents & (POLLIN|POLLHUP|POLLERR)) == 0)
+        /* No data available; let caller take action, then try again. */
+        return (READ_AGAIN);
+    /* There is data (or HUP/ERR) available. Safe to call read() without blocking. */
+    return (0);
 }
 #endif /* USE_POLL */
 
 public int supports_ctrl_x(void)
 {
 #if USE_POLL
-	return (use_poll);
+    return (use_poll);
 #else
-	return (FALSE);
+    return (FALSE);
 #endif /* USE_POLL */
 }
 
@@ -154,135 +154,135 @@ public int supports_ctrl_x(void)
  */
 public int iread(int fd, unsigned char *buf, unsigned int len)
 {
-	int n;
+    int n;
 
 start:
 #if MSDOS_COMPILER==WIN32C
-	if (ABORT_SIGS())
-		return (READ_INTR);
+    if (ABORT_SIGS())
+        return (READ_INTR);
 #else
 #if MSDOS_COMPILER && MSDOS_COMPILER != DJGPPC
-	if (kbhit())
-	{
-		int c;
-		
-		c = getch();
-		if (c == '\003')
-			return (READ_INTR);
-		ungetch(c);
-	}
+    if (kbhit())
+    {
+        int c;
+
+        c = getch();
+        if (c == '\003')
+            return (READ_INTR);
+        ungetch(c);
+    }
 #endif
 #endif
-	if (!reading && SET_JUMP(read_label))
-	{
-		/*
-		 * We jumped here from intread.
-		 */
-		reading = 0;
+    if (!reading && SET_JUMP(read_label))
+    {
+        /*
+         * We jumped here from intread.
+         */
+        reading = 0;
 #if HAVE_SIGPROCMASK
-		{
-		  sigset_t mask;
-		  sigemptyset(&mask);
-		  sigprocmask(SIG_SETMASK, &mask, NULL);
-		}
+        {
+          sigset_t mask;
+          sigemptyset(&mask);
+          sigprocmask(SIG_SETMASK, &mask, NULL);
+        }
 #else
 #if HAVE_SIGSETMASK
-		sigsetmask(0);
+        sigsetmask(0);
 #else
 #ifdef _OSK
-		sigmask(~0);
+        sigmask(~0);
 #endif
 #endif
 #endif
-		return (READ_INTR);
-	}
+        return (READ_INTR);
+    }
 
-	flush();
-	reading = 1;
+    flush();
+    reading = 1;
 #if MSDOS_COMPILER==DJGPPC
-	if (isatty(fd))
-	{
-		/*
-		 * Don't try reading from a TTY until a character is
-		 * available, because that makes some background programs
-		 * believe DOS is busy in a way that prevents those
-		 * programs from working while "less" waits.
+    if (isatty(fd))
+    {
+        /*
+         * Don't try reading from a TTY until a character is
+         * available, because that makes some background programs
+         * believe DOS is busy in a way that prevents those
+         * programs from working while "less" waits.
          * {{ This code was added 12 Jan 2007; still needed? }}
-		 */
-		fd_set readfds;
+         */
+        fd_set readfds;
 
-		FD_ZERO(&readfds);
-		FD_SET(fd, &readfds);
-		if (select(fd+1, &readfds, 0, 0, 0) == -1)
-		{
-			reading = 0;
-			return (READ_ERR);
-		}
-	}
+        FD_ZERO(&readfds);
+        FD_SET(fd, &readfds);
+        if (select(fd+1, &readfds, 0, 0, 0) == -1)
+        {
+            reading = 0;
+            return (READ_ERR);
+        }
+    }
 #endif
 #if USE_POLL
-	if (fd != tty && use_poll)
-	{
-		int ret = check_poll(fd, tty);
-		if (ret != 0)
-		{
-			if (ret == READ_INTR)
-				sigs |= S_INTERRUPT;
-			reading = 0;
-			return (ret);
-		}
-	}
+    if (fd != tty && use_poll)
+    {
+        int ret = check_poll(fd, tty);
+        if (ret != 0)
+        {
+            if (ret == READ_INTR)
+                sigs |= S_INTERRUPT;
+            reading = 0;
+            return (ret);
+        }
+    }
 #else
 #if MSDOS_COMPILER==WIN32C
-	if (win32_kbhit() && WIN32getch() == intr_char)
-	{
-		sigs |= S_INTERRUPT;
-		reading = 0;
-		return (READ_INTR);
-	}
+    if (win32_kbhit() && WIN32getch() == intr_char)
+    {
+        sigs |= S_INTERRUPT;
+        reading = 0;
+        return (READ_INTR);
+    }
 #endif
 #endif
-	n = read(fd, buf, len);
-	reading = 0;
+    n = read(fd, buf, len);
+    reading = 0;
 #if 1
-	/*
-	 * This is a kludge to workaround a problem on some systems
-	 * where terminating a remote tty connection causes read() to
-	 * start returning 0 forever, instead of -1.
-	 */
-	{
-		if (!ignore_eoi)
-		{
-			if (n == 0)
-				consecutive_nulls++;
-			else
-				consecutive_nulls = 0;
-			if (consecutive_nulls > 20)
-				quit(QUIT_ERROR);
-		}
-	}
+    /*
+     * This is a kludge to workaround a problem on some systems
+     * where terminating a remote tty connection causes read() to
+     * start returning 0 forever, instead of -1.
+     */
+    {
+        if (!ignore_eoi)
+        {
+            if (n == 0)
+                consecutive_nulls++;
+            else
+                consecutive_nulls = 0;
+            if (consecutive_nulls > 20)
+                quit(QUIT_ERROR);
+        }
+    }
 #endif
-	if (n < 0)
-	{
+    if (n < 0)
+    {
 #if HAVE_ERRNO
-		/*
-		 * Certain values of errno indicate we should just retry the read.
-		 */
+        /*
+         * Certain values of errno indicate we should just retry the read.
+         */
 #if MUST_DEFINE_ERRNO
-		extern int errno;
+        extern int errno;
 #endif
 #ifdef EINTR
-		if (errno == EINTR)
-			goto start;
+        if (errno == EINTR)
+            goto start;
 #endif
 #ifdef EAGAIN
-		if (errno == EAGAIN)
-			goto start;
+        if (errno == EAGAIN)
+            goto start;
 #endif
 #endif
-		return (READ_ERR);
-	}
-	return (n);
+        return (READ_ERR);
+    }
+    return (n);
 }
 
 /*
@@ -290,7 +290,7 @@ start:
  */
 public void intread(void)
 {
-	LONG_JUMP(read_label, 1);
+    LONG_JUMP(read_label, 1);
 }
 
 /*
@@ -299,10 +299,10 @@ public void intread(void)
 #if HAVE_TIME
 public time_type get_time(void)
 {
-	time_type t;
+    time_type t;
 
-	time(&t);
-	return (t);
+    time(&t);
+    return (t);
 }
 #endif
 
@@ -313,16 +313,16 @@ public time_type get_time(void)
  */
 static char * strerror(int err)
 {
-	static char buf[INT_STRLEN_BOUND(int)+12];
+    static char buf[INT_STRLEN_BOUND(int)+12];
 #if HAVE_SYS_ERRLIST
-	extern char *sys_errlist[];
-	extern int sys_nerr;
-  
-	if (err < sys_nerr)
-		return sys_errlist[err];
+    extern char *sys_errlist[];
+    extern int sys_nerr;
+
+    if (err < sys_nerr)
+        return sys_errlist[err];
 #endif
-	sprintf(buf, "Error %d", err);
-	return buf;
+    sprintf(buf, "Error %d", err);
+    return buf;
 }
 #endif
 
@@ -331,21 +331,21 @@ static char * strerror(int err)
  */
 public char * errno_message(char *filename)
 {
-	char *p;
-	char *m;
-	int len;
+    char *p;
+    char *m;
+    int len;
 #if HAVE_ERRNO
 #if MUST_DEFINE_ERRNO
-	extern int errno;
+    extern int errno;
 #endif
-	p = strerror(errno);
+    p = strerror(errno);
 #else
-	p = "cannot open";
+    p = "cannot open";
 #endif
-	len = (int) (strlen(filename) + strlen(p) + 3);
-	m = (char *) ecalloc(len, sizeof(char));
-	SNPRINTF2(m, len, "%s: %s", filename, p);
-	return (m);
+    len = (int) (strlen(filename) + strlen(p) + 3);
+    m = (char *) ecalloc(len, sizeof(char));
+    SNPRINTF2(m, len, "%s: %s", filename, p);
+    return (m);
 }
 
 /*
@@ -354,14 +354,14 @@ public char * errno_message(char *filename)
  */
 public char * signal_message(int sig)
 {
-	static char sigbuf[sizeof("Signal ") + INT_STRLEN_BOUND(sig) + 1];
+    static char sigbuf[sizeof("Signal ") + INT_STRLEN_BOUND(sig) + 1];
 #if HAVE_STRSIGNAL
-	char *description = strsignal(sig);
-	if (description)
-		return description;
+    char *description = strsignal(sig);
+    if (description)
+        return description;
 #endif
-	sprintf(sigbuf, "Signal %d", sig);
-	return sigbuf;
+    sprintf(sigbuf, "Signal %d", sig);
+    return sigbuf;
 }
 
 /*
@@ -371,17 +371,17 @@ public char * signal_message(int sig)
  */
 public uintmax muldiv(uintmax val, uintmax num, uintmax den)
 {
-	/*
-	 * Like round(val * (double) num / den), but without rounding error.
-	 * Overflow cannot occur, so there is no need for floating point.
-	 */
-	uintmax q = val / den;
-	uintmax r = val % den;
-	uintmax qnum = q * num;
-	uintmax rnum = r * num;
-	uintmax quot = qnum + rnum / den;
-	uintmax rem = rnum % den;
-	return quot + (den / 2 < rem + (quot & ~den & 1));
+    /*
+     * Like round(val * (double) num / den), but without rounding error.
+     * Overflow cannot occur, so there is no need for floating point.
+     */
+    uintmax q = val / den;
+    uintmax r = val % den;
+    uintmax qnum = q * num;
+    uintmax rnum = r * num;
+    uintmax quot = qnum + rnum / den;
+    uintmax rem = rnum % den;
+    return quot + (den / 2 < rem + (quot & ~den & 1));
 }
 
 /*
@@ -390,24 +390,24 @@ public uintmax muldiv(uintmax val, uintmax num, uintmax den)
  */
 public int percentage(POSITION num, POSITION den)
 {
-	return (int) muldiv(num,  (POSITION) 100, den);
+    return (int) muldiv(num,  (POSITION) 100, den);
 }
 
 /*
  * Return the specified percentage of a POSITION.
  * Assume (0 <= POS && 0 <= PERCENT <= 100
- *	   && 0 <= FRACTION < (PERCENT == 100 ? 1 : NUM_FRAC_DENOM)),
+ *     && 0 <= FRACTION < (PERCENT == 100 ? 1 : NUM_FRAC_DENOM)),
  * so the result cannot overflow.  Round to even.
  */
 public POSITION percent_pos(POSITION pos, int percent, long fraction)
 {
-	/*
-	 * Change from percent (parts per 100)
-	 * to pctden (parts per 100 * NUM_FRAC_DENOM).
-	 */
-	POSITION pctden = (percent * NUM_FRAC_DENOM) + fraction;
+    /*
+     * Change from percent (parts per 100)
+     * to pctden (parts per 100 * NUM_FRAC_DENOM).
+     */
+    POSITION pctden = (percent * NUM_FRAC_DENOM) + fraction;
 
-	return (POSITION) muldiv(pos, pctden, 100 * (POSITION) NUM_FRAC_DENOM);
+    return (POSITION) muldiv(pos, pctden, 100 * (POSITION) NUM_FRAC_DENOM);
 }
 
 #if !HAVE_STRCHR
@@ -416,25 +416,25 @@ public POSITION percent_pos(POSITION pos, int percent, long fraction)
  */
 char * strchr(char *s, char c)
 {
-	for ( ;  *s != '\0';  s++)
-		if (*s == c)
-			return (s);
-	if (c == '\0')
-		return (s);
-	return (NULL);
+    for ( ;  *s != '\0';  s++)
+        if (*s == c)
+            return (s);
+    if (c == '\0')
+        return (s);
+    return (NULL);
 }
 #endif
 
 #if !HAVE_MEMCPY
 void * memcpy(void *dst, void *src, int len)
 {
-	char *dstp = (char *) dst;
-	char *srcp = (char *) src;
-	int i;
+    char *dstp = (char *) dst;
+    char *srcp = (char *) src;
+    int i;
 
-	for (i = 0;  i < len;  i++)
-		dstp[i] = srcp[i];
-	return (dst);
+    for (i = 0;  i < len;  i++)
+        dstp[i] = srcp[i];
+    return (dst);
 }
 #endif
 
@@ -445,36 +445,36 @@ void * memcpy(void *dst, void *src, int len)
  */
 public int os9_signal(int type, RETSIGTYPE (*handler)())
 {
-	intercept(handler);
+    intercept(handler);
 }
 
 #include <sgstat.h>
 
 int isatty(int f)
 {
-	struct sgbuf sgbuf;
+    struct sgbuf sgbuf;
 
-	if (_gs_opt(f, &sgbuf) < 0)
-		return -1;
-	return (sgbuf.sg_class == 0);
+    if (_gs_opt(f, &sgbuf) < 0)
+        return -1;
+    return (sgbuf.sg_class == 0);
 }
-	
+
 #endif
 
 public void sleep_ms(int ms)
 {
 #if MSDOS_COMPILER==WIN32C
-	Sleep(ms);
+    Sleep(ms);
 #else
 #if HAVE_NANOSLEEP
-	int sec = ms / 1000;
-	struct timespec t = { sec, (ms - sec*1000) * 1000000 };
-	nanosleep(&t, NULL);
+    int sec = ms / 1000;
+    struct timespec t = { sec, (ms - sec*1000) * 1000000 };
+    nanosleep(&t, NULL);
 #else
 #if HAVE_USLEEP
-	usleep(ms);
+    usleep(ms);
 #else
-	sleep(ms / 1000 + (ms % 1000 != 0));
+    sleep(ms / 1000 + (ms % 1000 != 0));
 #endif
 #endif
 #endif

@@ -124,7 +124,7 @@ On systems which support
 you can also use \(haX or the character specified by the \-\-intr option.
 If the input is a pipe and the \-\-exit-follow-on-close option is in effect,
 .B less
-will automatically stop waiting for data when the input side 
+will automatically stop waiting for data when the input side
 of the pipe is closed.
 .IP "ESC-F"
 Like F, but as soon as a line is found which matches
@@ -237,10 +237,10 @@ Don't interpret regular expression metacharacters;
 that is, do a simple textual comparison.
 .IP "\(haS"
 Followed by a digit N between 1 and 5.
-Only text which has a non-empty match for the N-th parenthesized SUB-PATTERN 
+Only text which has a non-empty match for the N-th parenthesized SUB-PATTERN
 will be considered to match the pattern.
 (Supported only if
-.B less 
+.B less
 is built with one of the regular expression libraries
 .BR posix ", " pcre ", or " pcre2 ".)"
 Multiple \(haS modifiers can be specified,
@@ -461,7 +461,7 @@ On Unix systems, the shell is taken from the environment variable SHELL,
 or defaults to "sh".
 On MS-DOS and OS/2 systems, the shell is the normal command processor.
 .IP "# shell-command"
-Similar to the "!" command, 
+Similar to the "!" command,
 except that the command is expanded in the same way as prompt strings.
 For example, the name of the current file would be given as "%f".
 .IP "| <m> shell-command"
@@ -614,7 +614,7 @@ The \-d option does not otherwise change the behavior of
 on a dumb terminal.
 .IP "\-D\fBx\fP\fIcolor\fP or \-\-color=\fBx\fP\fIcolor\fP"
 Changes the color of different parts of the displayed text.
-\fBx\fP is a single character which selects the type of text 
+\fBx\fP is a single character which selects the type of text
 whose color is being set:
 .RS
 .IP "B"
@@ -639,7 +639,7 @@ Search results.
 The text in a search result which matches
 the first through fifth parenthesized sub-pattern.
 Sub-pattern coloring works only if
-.B less 
+.B less
 is built with one of the regular expression libraries
 .BR posix ", " pcre ", or " pcre2 .
 .IP "W"
@@ -653,16 +653,16 @@ Standout text.
 .IP "u"
 Underlined text.
 .RE
- 
+
 .RS
 The uppercase letters and digits can be used only when the \-\-use-color option is enabled.
 When text color is specified by both an uppercase letter and a lowercase letter,
-the uppercase letter takes precedence. 
+the uppercase letter takes precedence.
 For example, error messages are normally displayed as standout text.
 So if both "s" and "E" are given a color, the "E" color applies
 to error messages, and the "s" color applies to other standout text.
-The "d" and "u" letters refer to bold and underline text formed by 
-overstriking with backspaces (see the \-U option), 
+The "d" and "u" letters refer to bold and underline text formed by
+overstriking with backspaces (see the \-U option),
 not to text using ANSI escape sequences with the \-R option.
 .PP
 A lowercase letter may be followed by a + to indicate that
@@ -673,8 +673,8 @@ But \-Du+g displays underlined text as both green and in underlined format.
 .PP
 \fIcolor\fP is either a 4-bit color string or an 8-bit color string:
 .PP
-A 4-bit color string is zero, one or two characters, where 
-the first character specifies the foreground color and 
+A 4-bit color string is zero, one or two characters, where
+the first character specifies the foreground color and
 the second specifies the background color as follows:
 .IP "b"
 Blue
@@ -694,14 +694,14 @@ White
 Yellow
 .PP
 The corresponding uppercase letter denotes a brighter shade of the color.
-For example, \-DNGk displays line numbers as bright green text on a black 
-background, and \-DEbR displays error messages as blue text on a 
+For example, \-DNGk displays line numbers as bright green text on a black
+background, and \-DEbR displays error messages as blue text on a
 bright red background.
-If either character is a "-" or is omitted, the corresponding color 
+If either character is a "-" or is omitted, the corresponding color
 is set to that of normal text.
 .PP
 An 8-bit color string is one or two decimal integers separated by a dot,
-where the first integer specifies the foreground color and 
+where the first integer specifies the foreground color and
 the second specifies the background color.
 Each integer is a value between 0 and 255 inclusive which selects
 a "CSI 38;5" color value (see
@@ -711,11 +711,11 @@ https://en.wikipedia.org/wiki/ANSI_escape_code#SGR)
 .hy
 If either integer is a "-" or is omitted,
 the corresponding color is set to that of normal text.
-On MS-DOS versions of 
+On MS-DOS versions of
 .BR less ,
 8-bit color is not supported; instead, decimal values are interpreted as 4-bit
 CHAR_INFO.Attributes values
-(see 
+(see
 .br
 .nh
 https://docs.microsoft.com/en-us/windows/console/char-info-str).
@@ -805,7 +805,7 @@ Displays a status column at the left edge of the screen.
 The character displayed in the status column may be one of:
 .RS
 .IP ">"
-The line is chopped with the \-S option, and 
+The line is chopped with the \-S option, and
 the text that is chopped off beyond the right edge of the screen
 contains a match for the current search.
 .IP "<"
@@ -836,9 +836,9 @@ file.
 .IP "\-\-lesskey-src=\fIfilename\fP"
 Causes
 .B less
-to open and interpret the named file as a 
+to open and interpret the named file as a
 .BR lesskey (1)
-source file. 
+source file.
 If the LESSKEYIN or LESSKEYIN_SYSTEM environment variable is set, or
 if a lesskey source file is found in a standard place (see KEY BINDINGS),
 it is also used as a
@@ -846,9 +846,9 @@ it is also used as a
 file.
 Prior to version 582, the
 .B lesskey
-program needed to be run to convert a 
+program needed to be run to convert a
 .I "lesskey source"
-file to a 
+file to a
 .I "lesskey binary"
 file for
 .B less
@@ -878,7 +878,7 @@ file which is currently open.
 .IP "\-m or \-\-long-prompt"
 Causes
 .B less
-to prompt verbosely (like 
+to prompt verbosely (like
 .BR more (1)),
 with the percent into the file.
 By default,
@@ -980,10 +980,10 @@ USE OF THE \-r OPTION IS NOT RECOMMENDED.
 Like \-r, but only ANSI "color" escape sequences and OSC 8 hyperlink
 sequences are output in "raw" form.
 Unlike \-r, the screen appearance is maintained correctly,
-provided that there are no escape sequences in the file 
+provided that there are no escape sequences in the file
 other than these types of escape sequences.
 Color escape sequences are only supported when the color
-is changed within one line, not across lines. 
+is changed within one line, not across lines.
 In other words, the beginning of each line is assumed to be
 normal (non-colored), regardless of any escape sequences in previous lines.
 For the purpose of keeping track of screen appearance,
@@ -991,14 +991,14 @@ these escape sequences are assumed to not move the cursor.
 .sp
 OSC 8 hyperlinks are sequences of the form:
 .sp
-	ESC ] 8 ; \&...\& \\7
+    ESC ] 8 ; \&...\& \\7
 .sp
-The terminating sequence may be either a BEL character (\\7) 
+The terminating sequence may be either a BEL character (\\7)
 or the two-character sequence "ESC \\".
 .sp
 ANSI color escape sequences are sequences of the form:
 .sp
-	ESC [ \&...\& m
+    ESC [ \&...\& m
 .sp
 where the "...\&" is zero or more color specification characters.
 You can make
@@ -1036,7 +1036,7 @@ If the environment variable LESSGLOBALTAGS is set, it is taken to be
 the name of a command compatible with
 .BR global (1),
 and that command is executed to find the tag.
-(See 
+(See
 .nh
 http://www.gnu.org/software/global/global.html).
 .hy
@@ -1156,15 +1156,15 @@ scroll positions is recalculated if the terminal window is resized.
 .IP "\-\-exit-follow-on-close"
 When using the "F" command on a pipe,
 .B less
-will automatically stop waiting for more data when the input side of the 
+will automatically stop waiting for more data when the input side of the
 pipe is closed.
 .IP "\-\-file-size"
 If \-\-file-size is specified,
 .B less
-will determine the size of the file 
+will determine the size of the file
 immediately after opening the file.
 Then the "=" command will display the number of lines in the file.
-Normally this is not done, because it can be slow if the input file 
+Normally this is not done, because it can be slow if the input file
 is non-seekable (such as a pipe) and is large.
 .IP "\-\-follow-name"
 Normally, if the input file is renamed while an F command is executing,
@@ -1183,17 +1183,17 @@ will display the contents of that new file.
 Sets the number of header lines and columns displayed on the screen.
 The value may be of the form "N,M" where N and M are integers,
 to set the header lines to N and the header columns to M,
-or it may be a single integer "N" which sets the header lines to N 
+or it may be a single integer "N" which sets the header lines to N
 and the header columns to zero,
-or it may be ",M" which sets the header columns to M and the 
+or it may be ",M" which sets the header columns to M and the
 header lines to zero.
 When N is nonzero, the first N lines at the top
 of the screen are replaced with the first N lines of the file,
 regardless of what part of the file are being viewed.
-When M is nonzero, the characters displayed at the 
+When M is nonzero, the characters displayed at the
 beginning of each line are replaced with the first M characters of the line,
 even if the rest of the line is scrolled horizontally.
-If either N or M is zero, 
+If either N or M is zero,
 .B less
 stops displaying header lines or columns, respectively.
 (Note that it may be necessary to change the setting of the \-j option
@@ -1201,39 +1201,39 @@ to ensure that the target line is not obscured by the header line(s).)
 .IP "\-\-incsearch"
 Subsequent search commands will be "incremental"; that is,
 .B less
-will advance to the next line containing the search pattern 
+will advance to the next line containing the search pattern
 as each character of the pattern is typed in.
 .IP "\-\-intr=\fIc\fP"
 Use the character \fIc\fP instead of \(haX to interrupt a read
 when the "Waiting for data" message is displayed.
-\fIc\fP must be an ASCII character; that is, one with a value 
+\fIc\fP must be an ASCII character; that is, one with a value
 between 1 and 127 inclusive.
-A caret followed by a single character can be used 
+A caret followed by a single character can be used
 to specify a control character.
 .IP "\-\-line-num-width=\fIn\fP"
-Sets the minimum width of the line number field when the \-N option is in effect 
+Sets the minimum width of the line number field when the \-N option is in effect
 to \fIn\fP characters.
 The default is 7.
 .IP "\-\-modelines=\fIn\fP"
 .RS
 Before displaying a file,
-.B less 
-will read the first \fIn\fP lines to try to find a vim-compatible 
-.IR modeline . 
+.B less
+will read the first \fIn\fP lines to try to find a vim-compatible
+.IR modeline .
 If \fIn\fP is zero,
 .B less
 does not try to find modelines.
-By using a modeline, the file itself can specify the tab stops 
+By using a modeline, the file itself can specify the tab stops
 that should be used when viewing it.
 .PP
-A modeline contains, anywhere in the line, 
+A modeline contains, anywhere in the line,
 a program name ("vi", "vim", "ex", or "less"),
 followed by a colon,
 possibly followed by the word "set",
 and finally followed by zero or more option settings.
 If the word "set" is used,
 option settings are separated by spaces, and end at the first colon.
-If the word "set" is not used, 
+If the word "set" is not used,
 option settings may be separated by either spaces or colons.
 The word "set" is required if the program name is "less"
 but optional if any of the other three names are used.
@@ -1274,7 +1274,7 @@ Searches do not include header lines or header columns.
 .IP "\-\-no-vbell"
 Disables the terminal's visual bell.
 .IP "\-\-proc-backspace"
-If set, backspaces are handled as if neither the \-u option 
+If set, backspaces are handled as if neither the \-u option
 nor the \-U option were set.
 That is, a backspace adjacent to an underscore causes text to be
 displayed in underline mode, and a backspace between identical
@@ -1286,7 +1286,7 @@ If not set, backspace display is controlled by the \-u and \-U options.
 If set, backspaces are handled as if the \-U option were set;
 that is backspaces are treated as control characters.
 .IP "\-\-proc-return"
-If set, carriage returns are handled as if neither the \-u option 
+If set, carriage returns are handled as if neither the \-u option
 nor the \-U option were set.
 That is, a carriage return immediately before a newline is deleted.
 This option overrides the \-u and \-U options, so that display of
@@ -1308,7 +1308,7 @@ that is tabs are treated as control characters.
 When quitting, after sending the terminal deinitialization string,
 redraws the entire last screen.
 On terminals whose terminal deinitialization string causes the
-terminal to switch from an alternate screen, 
+terminal to switch from an alternate screen,
 this makes the last screenful of the current file remain visible after
 .B less
 has quit.
@@ -1322,7 +1322,7 @@ Save marks in the history file, so marks are retained
 across different invocations of
 .BR less .
 .IP "\-\-search-options=\fI...\fP"
-Sets default search modifiers. 
+Sets default search modifiers.
 The value is a string of one or more of the characters
 E, F, K, N, R or W.
 Setting any of these has the same effect as typing that
@@ -1334,7 +1334,7 @@ which has the same effect as typing \(haS followed by that digit
 at the beginning of every search pattern.
 The value "-" disables all default search modifiers.
 .IP "\-\-show-preproc-errors"
-If a preprocessor produces data, 
+If a preprocessor produces data,
 then exits with a non-zero exit code,
 .B less
 will display a warning.
@@ -1355,9 +1355,9 @@ This allows a dollar sign to be included in option strings.
 .IP "\-\-use-color"
 Enables colored text in various places.
 The \-D option can be used to change the colors.
-Colored text works only if the terminal supports 
+Colored text works only if the terminal supports
 ANSI color escape sequences (as defined in ECMA-48 SGR;
-see 
+see
 .br
 .nh
 https://www.ecma-international.org/publications-and-standards/standards/ecma-48).
@@ -1573,33 +1573,33 @@ view them directly:
 .PP
 lessopen.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	case "$1" in
+    case "$1" in
 .br
-	*.Z)	TEMPFILE=$(mktemp)
+    *.Z)    TEMPFILE=$(mktemp)
 .br
-		uncompress \-c $1  >$TEMPFILE  2>/dev/null
+        uncompress \-c $1  >$TEMPFILE  2>/dev/null
 .br
-		if [ \-s $TEMPFILE ]; then
+        if [ \-s $TEMPFILE ]; then
 .br
-			echo $TEMPFILE
+            echo $TEMPFILE
 .br
-		else
+        else
 .br
-			rm \-f $TEMPFILE
+            rm \-f $TEMPFILE
 .br
-		fi
+        fi
 .br
-		;;
+        ;;
 .br
-	esac
+    esac
 .PP
 lessclose.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	rm $2
+    rm $2
 .PP
 To use these scripts, put them both where they can be executed and
 set LESSOPEN="lessopen.sh\ %s", and
@@ -1632,21 +1632,21 @@ previous example scripts:
 .PP
 lesspipe.sh:
 .br
-	#! /bin/sh
+    #! /bin/sh
 .br
-	case "$1" in
+    case "$1" in
 .br
-	*.Z)	uncompress \-c $1  2>/dev/null
+    *.Z)    uncompress \-c $1  2>/dev/null
 .br
-		;;
+        ;;
 .br
-	*)	exit 1
+    *)  exit 1
 .br
-		;;
+        ;;
 .br
-	esac
+    esac
 .br
-	exit $?
+    exit $?
 .br
 .PP
 To use this script, put it where it can be executed and set
@@ -1657,9 +1657,9 @@ is interpreted as meaning there is no replacement, and
 the original file is used.
 To avoid this, if LESSOPEN starts with two vertical bars,
 the exit status of the script determines the behavior when the output is empty.
-If the output is empty and the exit status is zero, 
+If the output is empty and the exit status is zero,
 the empty output is considered to be replacement text.
-If the output is empty and the exit status is nonzero, 
+If the output is empty and the exit status is nonzero,
 the original file is used.
 For compatibility with previous versions of
 .BR less ,
@@ -1759,16 +1759,16 @@ to each of the possible values for LESSCHARSET:
 .RS 5m
 .TS
 l l.
-ascii	8bcccbcc18b95.b
-dos	8bcccbcc12bc5b95.b.
-ebcdic	5bc6bcc7bcc41b.9b7.9b5.b..8b6.10b6.b9.7b
-	9.8b8.17b3.3b9.7b9.8b8.6b10.b.b.b.
-IBM-1047	4cbcbc3b9cbccbccbb4c6bcc5b3cbbc4bc4bccbc
-	191.b
-iso8859	8bcccbcc18b95.33b.
-koi8-r	8bcccbcc18b95.b128.
-latin1	8bcccbcc18b95.33b.
-next	8bcccbcc18b95.bb125.bb
+ascii   8bcccbcc18b95.b
+dos 8bcccbcc12bc5b95.b.
+ebcdic  5bc6bcc7bcc41b.9b7.9b5.b..8b6.10b6.b9.7b
+    9.8b8.17b3.3b9.7b9.8b8.6b10.b.b.b.
+IBM-1047    4cbcbc3b9cbccbccbb4c6bcc5b3cbbc4bc4bccbc
+    191.b
+iso8859 8bcccbcc18b95.33b.
+koi8-r  8bcccbcc18b95.b128.
+latin1  8bcccbcc18b95.33b.
+next    8bcccbcc18b95.bb125.bb
 .TE
 .RE
 .PP
@@ -1832,7 +1832,7 @@ in that range, it may be desirable to tell
 .B less
 to treat such characters as printable.
 This can be done by setting the LESSUTFCHARDEF environment variable
-to a comma-separated list of 
+to a comma-separated list of
 .I "character type"
 definitions.
 Each character type definition consists of either one hexadecimal codepoint
@@ -1858,7 +1858,7 @@ A composing (zero width) character.
 For example, setting LESSUTFCHARDEF to
 .nf
 .sp
-	E000-F8FF:p,F0000-FFFFD:p,100000-10FFFD:p
+    E000-F8FF:p,F0000-FFFFD:p,100000-10FFFD:p
 .sp
 .fi
 would make all Private Use Area characters be treated as printable.
@@ -2023,17 +2023,17 @@ Each is broken into two lines here for readability only.
 .nf
 .sp
 ?n?f%f\ .?m(%T\ %i\ of\ %m)\ ..?e(END)\ ?x-\ Next\e:\ %x.:
-	?pB%pB\e%:byte\ %bB?s/%s...%t
+    ?pB%pB\e%:byte\ %bB?s/%s...%t
 .sp
 ?f%f\ .?n?m(%T\ %i\ of\ %m)\ ..?ltlines\ %lt-%lb?L/%L.\ :
-	byte\ %bB?s/%s.\ .?e(END)\ ?x-\ Next\e:\ %x.:?pB%pB\e%..%t
+    byte\ %bB?s/%s.\ .?e(END)\ ?x-\ Next\e:\ %x.:?pB%pB\e%..%t
 .sp
 .fi
 And here is the default message produced by the = command:
 .nf
 .sp
 ?f%f\ .?m(%T\ %i\ of\ %m)\ .?ltlines\ %lt-%lb?L/%L.\ .
-	byte\ %bB?s/%s.\ ?e(END)\ :?pB%pB\e%..%t
+    byte\ %bB?s/%s.\ ?e(END)\ :?pB%pB\e%..%t
 .fi
 .PP
 The prompt expansion features are also used for another purpose:
@@ -2043,7 +2043,7 @@ The LESSEDIT string is expanded in the same way as the prompt strings.
 The default value for LESSEDIT is:
 .nf
 .sp
-	%E\ ?lm+%lm.\ %g
+    %E\ ?lm+%lm.\ %g
 .sp
 .fi
 Note that this expands to the editor name, followed by a + and the
@@ -2088,7 +2088,7 @@ Less can also be compiled to be permanently in "secure" mode.
 If the environment variable LESS_IS_MORE is set to 1,
 or if the program is invoked via a file link named "more",
 .B less
-behaves (mostly) in conformance with the POSIX 
+behaves (mostly) in conformance with the POSIX
 .BR more (1)
 command specification.
 In this mode, less behaves differently in these ways:
@@ -2227,7 +2227,7 @@ See discussion under SECURITY.
 String to be appended to a directory name in filename completion.
 .IP LESSUTFBINFMT
 Format for displaying non-printable Unicode code points.
-.IP LESSUTFCHARDEF 
+.IP LESSUTFCHARDEF
 Overrides the type of specified Unicode characters.
 .IP LESS_COLUMNS
 Sets the number of columns on the screen.
@@ -2258,7 +2258,7 @@ Emulate the
 .BR more (1)
 command.
 .IP LESS_TERMCAP_xx
-Where "xx" is any two characters, overrides the definition 
+Where "xx" is any two characters, overrides the definition
 of the termcap "xx" capability for the terminal.
 .IP LINES
 Sets the number of lines on the screen.
@@ -2283,7 +2283,7 @@ is being run.
 .IP VISUAL
 The name of the editor (used for the v command).
 .IP XDG_CONFIG_HOME
-Possible location of the 
+Possible location of the
 .B lesskey
 file; see the KEY BINDINGS section.
 .IP XDG_DATA_HOME
