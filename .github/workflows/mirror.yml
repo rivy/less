@@ -113,7 +113,7 @@ jobs:
               exit 1
             fi
           fi
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         if: ${{ steps.vars.outputs.OWN_REPO == 'true' }} ## avoid automatic/un-requested runs on forks
       - name: Mirror/Sync (branches)
         if: ${{ steps.vars.outputs.OWN_REPO == 'true' }} ## avoid automatic/un-requested runs on forks
