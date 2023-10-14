@@ -3,7 +3,7 @@
 
 struct xbuffer
 {
-    char *data;
+    unsigned char *data;
     int end;
     int size;
 };

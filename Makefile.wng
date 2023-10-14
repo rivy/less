@@ -76,12 +76,12 @@ endif
 	${CC} -c -I. ${CFLAGS} $<
 
 LESS_SRC = brac.c ch.c charset.c cmdbuf.c command.c     \
-	cvt.c decode.c edit.c filename.c forwback.c      \
-	ifile.c input.c jump.c line.c linenum.c      \
-	lsystem.c main.c mark.c optfunc.c option.c       \
-	opttbl.c os.c output.c pattern.c position.c      \
-	prompt.c          screen.c scrsize.c search.c    \
-	signal.c tags.c ttyin.c version.c xbuf.c
+           cvt.c decode.c edit.c filename.c forwback.c      \
+           ifile.c input.c jump.c line.c linenum.c      \
+           lsystem.c main.c mark.c optfunc.c option.c       \
+       opttbl.c os.c output.c pattern.c position.c      \
+       prompt.c          screen.c scrsize.c search.c    \
+	   signal.c tags.c ttyin.c version.c xbuf.c
 ifeq  (${REGEX_PACKAGE},regcomp-local)
 LESS_SRC += regexp.c
 endif
@@ -112,8 +112,9 @@ lessecho: lessecho.o version.o
 defines.h: defines.wn
 	copy $< $@
 
-funcs.h:
-	perl mkfuncs.pl ${LESS_SRC}  > $@
+funcs.h: ${LESS_SRC}
+	-move funcs.h funcs.h.old
+	grep -h "^public [^;]*$$" ${LESS_SRC} | sed "s/$$/;/" >funcs.h
 
 help.c: less.hlp
 	perl mkhelp.pl  < $<  > $@

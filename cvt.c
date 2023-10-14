@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2022  Mark Nudelman
+ * Copyright (C) 1984-2023  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -54,13 +54,7 @@ cvt_alloc_chpos(len)
  * Returns converted text in odst.  The original offset of each
  * odst character (when it was in osrc) is returned in the chpos array.
  */
-    public void
-cvt_text(odst, osrc, chpos, lenp, ops)
-    char *odst;
-    char *osrc;
-    int *chpos;
-    int *lenp;
-    int ops;
+public void cvt_text(char *odst, char *osrc, int *chpos, int *lenp, int ops)
 {
     char *dst;
     char *edst = odst;
