@@ -36,7 +36,7 @@ public int win32_kbhit (void);
 public char WIN32getch (void);
 public void WIN32setcolors (int fg, int bg);
 public void WIN32textout (char *text, size_t len);
-public void match_brac (int obrac, int cbrac, int forwdir, int n);
+public void match_brac (char obrac, char cbrac, int forwdir, int n);
 public void ch_ungetchar (int c);
 public void end_logfile (void);
 public void sync_logfile (void);
