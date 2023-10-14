@@ -1,5 +1,5 @@
 '\" t
-.TH LESSKEY 1 "Version 603: 14 Mar 2022"
+.TH LESSKEY 1 "Version 608: 22 Jul 2022"
 .SH NAME
 lesskey \- customize key bindings for less
 .SH "SYNOPSIS (deprecated)"
@@ -149,7 +149,10 @@ quits, the first character of the extra string is used as its exit status.
 .SH EXAMPLE
 The following input file describes the set of
 default command keys used by
-.IR less :
+.IR less .
+Documentation on each command can be found in the
+.less
+man page, under the key sequence which invokes the command.
 .sp
 .RS 5m
 .TS
@@ -250,6 +253,8 @@ T   prev-tag
 -   toggle-option
 :t  toggle-option t
 s   toggle-option o
+    ## Use a long option name by starting the extra string with ONE dash; eg:
+    ##   s toggle-option -log-file\n
 \&_ display-option
 |   pipe
 v   visual
@@ -438,7 +443,7 @@ which start with a NUL character (0).
 This NUL character should be represented as \e340 in a lesskey file.
 .
 .SH COPYRIGHT
-Copyright (C) 1984-2021  Mark Nudelman
+Copyright (C) 1984-2022  Mark Nudelman
 .PP
 less is part of the GNU project and is free software.
 You can redistribute it and/or modify it

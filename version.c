@@ -948,6 +948,12 @@ v600  1/7/22    Use /dev/tty if cannot open ttyname().
 v601  1/31/22   Add --exit-follow-on-close option.
 v602  3/1/22    Doc changes.
 v603  3/14/22   Fix --header.
+v604  5/14/22   Fix termlib detection; fix non-ASCII input on Windows.
+v605  6/14/22   Update version number.
+v606  7/17/22   Fix bug with multibyte chars and --incsearch;
+                escape filenames in LESSCLOSE; fix bin_file overrun.
+v607  7/19/22   Update Unicode tables.
+v608  7/22/22   Fix highlighting on colored text boundaries.
 */
 
-char version[] = "603";
+char version[] = "608";
