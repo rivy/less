@@ -2515,7 +2515,7 @@ public COLOR_TYPE parse_color(char *str, int *p_fg, int *p_bg)
         str++; /* ignore leading + */
 
     fg = parse_color4(str[0]);
-    bg = parse_color4((strlen(str) < 2) ? '-' : str[1]);
+    bg = parse_color4((char)((strlen(str) < 2) ? '-' : str[1]));
     if (fg != CV_ERROR && bg != CV_ERROR)
         type = CT_4BIT;
     else
