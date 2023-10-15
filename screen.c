@@ -257,7 +257,9 @@ public int full_screen = TRUE;
 
 static int attrmode = AT_NORMAL;
 static int termcap_debug = -1;
+#if !MSDOS_COMPILER
 static int no_alt_screen;       /* sc_init does not switch to alt screen */
+#endif
 extern int binattr;
 extern int one_screen;
 #if LESSTEST

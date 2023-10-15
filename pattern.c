@@ -442,7 +442,7 @@ static int match_pattern1(PATTERN_TYPE pattern, char *tpattern, char *line, int 
     return (matched);
 }
 
-public int match_pattern(PATTERN_TYPE pattern, char *tpattern, char *line, int line_len, char **sp, char **ep, int nsp, int notbol, int search_type)
+public int match_pattern(PATTERN_TYPE pattern, char *tpattern, char *line, size_t line_len, char **sp, char **ep, int nsp, int notbol, int search_type)
 {
     int matched = match_pattern1(pattern, tpattern, line, line_len, sp, ep, nsp, notbol, search_type);
     int i;

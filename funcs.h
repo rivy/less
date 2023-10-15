@@ -312,7 +312,7 @@ public int compile_pattern (char *pattern, int search_type, int show_error, PATT
 public void uncompile_pattern (PATTERN_TYPE *pattern);
 public int valid_pattern (char *pattern);
 public int is_null_pattern (PATTERN_TYPE pattern);
-public int match_pattern (PATTERN_TYPE pattern, char *tpattern, char *line, size_t line_len, char **sp, char **ep, int notbol, int search_type);
+public int match_pattern (PATTERN_TYPE pattern, char *tpattern, char *line, size_t line_len, char **sp, char **ep, int nsp, int notbol, int search_type);
 public char * pattern_lib_name (void);
 public POSITION position (int sindex);
 public void add_forw_pos (POSITION pos);
@@ -384,3 +384,5 @@ public void close_altpipe(IFILE ifile);
 public uintmax muldiv(uintmax val, uintmax num, uintmax den);
 
 public int supports_ctrl_x(void);
+
+public int skip_columns(int cols, char **linep, int *line_lenp);
