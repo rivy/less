@@ -185,7 +185,7 @@ static struct mark * getmark(LWCHAR c)
 /*
  * Is a mark letter invalid?
  */
-public int badmark(LWCHAR c)
+public int badmark(int c)
 {
     return (getmark(c) == NULL);
 }
@@ -193,7 +193,7 @@ public int badmark(LWCHAR c)
 /*
  * Set a user-defined mark.
  */
-public void setmark(LWCHAR c, int where)
+public void setmark(int c, int where)
 {
     struct mark *m;
     struct scrpos scrpos;
@@ -214,7 +214,7 @@ public void setmark(LWCHAR c, int where)
 /*
  * Clear a user-defined mark.
  */
-public void clrmark(LWCHAR c)
+public void clrmark(int c)
 {
     struct mark *m;
 
@@ -249,7 +249,7 @@ public void lastmark(void)
 /*
  * Go to a mark.
  */
-public void gomark(LWCHAR c)
+public void gomark(int c)
 {
     struct mark *m;
     struct scrpos scrpos;
@@ -290,7 +290,7 @@ public void gomark(LWCHAR c)
  * is associated with, but this doesn't matter much,
  * because it's always the first non-blank line on the screen.
  */
-public POSITION markpos(LWCHAR c)
+public POSITION markpos(int c)
 {
     struct mark *m;
 
