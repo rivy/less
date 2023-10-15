@@ -1381,8 +1381,8 @@ static int search_range(POSITION pos, POSITION endpos, int search_type, int matc
                          */
                         if (sp[0] != NULL && ep[0] != NULL)
                         {
-                            POSITION start_off = (POSITION)(sp - cline);
-                            POSITION end_off = (POSITION)(ep - cline);
+                            POSITION start_off = (POSITION)(sp[0] - cline);
+                            POSITION end_off = (POSITION)(ep[0] - cline);
                             int save_hshift = hshift;
                             int sshift;
                             int eshift;
@@ -1410,7 +1410,7 @@ static int search_range(POSITION pos, POSITION endpos, int search_type, int matc
                          */
                         if (ep[0] != NULL)
                         {
-                            POSITION end_off = (POSITION)(ep - cline);
+                            POSITION end_off = (POSITION)(ep[0] - cline);
                             if (end_off >= swidth * sheight / 4) /* heuristic */
                                 *plastlinepos = get_lastlinepos(linepos, linepos + chpos[end_off], sheight);
                         }
