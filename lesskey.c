@@ -121,14 +121,17 @@ int lstrtoi(char *buf, char **ebuf, int radix)
     return (int) strtol(buf, ebuf, radix);
 }
 
-    void *
-ecalloc(count, size)
-    size_t count;
-    size_t size;
+void out_of_memory(void)
 {
-    VOID_POINTER p;
+    fprintf(stderr, "lesskey: cannot allocate memory");
+    exit(1);
+}
 
-    p = (VOID_POINTER) calloc(count, size);
+void * ecalloc(size_t count, size_t size)
+{
+    void * p;
+
+    p = (void *) calloc(count, size);
     if (p != NULL)
         return (p);
     fprintf(stderr, "lesskey: cannot allocate %lu bytes of memory\n", (long unsigned)(count*size));

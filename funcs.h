@@ -386,3 +386,5 @@ public uintmax muldiv(uintmax val, uintmax num, uintmax den);
 public int supports_ctrl_x(void);
 
 public int skip_columns(int cols, char **linep, int *line_lenp);
+
+public void out_of_memory(void);

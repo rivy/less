@@ -177,7 +177,7 @@ char * strchr(char *s, char c)
 int main(int argc, char *argv[])
 {
     char *arg;
-    char *s;
+    char *s = 0;
     int no_more_options;
 
     no_more_options = 0;
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
             closequote = *++arg;
             break;
         case 'd':
-            closequote = (char)lstrtol(++arg, 0, &s); // interpret as ASCII character, ignoring overflow
+            closequote = (char)lstrtol(++arg, 0, 10); // interpret as ASCII character, ignoring overflow
             if (s == arg)
                 pr_error("Missing number after -d");
             break;
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
                 meta_escape = arg;
             break;
         case 'f':
-            meta_escape_buf[0] = (char)lstrtol(++arg, 0, &s); // interpret as ASCII character, ignoring overflow
+            meta_escape_buf[0] = (char)lstrtol(++arg, 0, 10); // interpret as ASCII character, ignoring overflow
             meta_escape = meta_escape_buf;
             if (s == arg)
                 pr_error("Missing number after -f");
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
             openquote = *++arg;
             break;
         case 'p':
-            openquote = (char)lstrtol(++arg, 0, &s); // interpret as ASCII character, ignoring overflow
+            openquote = (char)lstrtol(++arg, 0, 10); // interpret as ASCII character, ignoring overflow
             if (s == arg)
                 pr_error("Missing number after -p");
             break;
@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
             add_metachar(*++arg);
             break;
         case 'n':
-            metachars[num_metachars++] = (char)lstrtol(++arg, 0, &s); // interpret as ASCII character, ignoring overflow
+            metachars[num_metachars++] = (char)lstrtol(++arg, 0, 10); // interpret as ASCII character, ignoring overflow
             if (s == arg)
                 pr_error("Missing number after -n");
             break;
