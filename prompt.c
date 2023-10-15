@@ -462,7 +462,7 @@ static constant char * wherechar(char constant *p, int *wp)
 public char * pr_expand(constant char *proto)
 {
     constant char *p;
-    int c;
+    char c;
     int where;
 
     mp = message;
