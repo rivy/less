@@ -82,9 +82,9 @@ static void init_status_col(POSITION base_pos, POSITION disp_pos, POSITION edisp
  */
 public POSITION forw_line_seg(POSITION curr_pos, int skipeol, int rscroll, int nochop)
 {
-    POSITION base_pos;
-    POSITION new_pos;
-    POSITION edisp_pos;
+    POSITION base_pos = 0;
+    POSITION new_pos = 0;
+    POSITION edisp_pos = 0;
     int c;
     int blankline;
     int endline;
@@ -358,10 +358,10 @@ public POSITION forw_line(POSITION curr_pos)
  */
 public POSITION back_line(POSITION curr_pos)
 {
-    POSITION base_pos;
-    POSITION new_pos;
-    POSITION edisp_pos;
-    POSITION begin_new_pos;
+    POSITION base_pos = 0;
+    POSITION new_pos = 0;
+    POSITION edisp_pos = 0;
+    POSITION begin_new_pos = 0;
     int c;
     int endline;
     int chopped;
