@@ -230,59 +230,7 @@ static int ch_get(void)
              */
             return (EOI);
 
-    /*
-     * Read the block.
-     * If we read less than a full block, that's ok.
-     * We use partial block and pick up the rest next time.
-     */
-    if (ch_ungotchar != -1)
-    {
-        bp->data[bp->datasize] = ch_ungotchar;
-        n = 1;
-        ch_ungotchar = -1;
-    } else if (ch_flags & CH_HELPFILE)
-    {
-        bp->data[bp->datasize] = helpdata[ch_fpos];
-        n = 1;
-    } else
-    {
-        n = iread(ch_file, &bp->data[bp->datasize],
-            (unsigned int)(LBUFSIZE - bp->datasize));
-    }
-
-    if (n == READ_INTR)
-        return (EOI);
-    if (n < 0)
-    {
-#if MSDOS_COMPILER==WIN32C
-        if (errno != EPIPE)
-#endif
-        {
-            error("read error", NULL_PARG);
-            clear_eol();
-        }
-        n = 0;
-    }
-
-#if LOGFILE
-    /*
-     * If we have a log file, write the new data to it.
-     */
-    if (!secure && logfile >= 0 && n > 0)
-        (void)! write(logfile, (char *) &bp->data[bp->datasize], n);
-#endif
-
-    ch_fpos += n;
-    bp->datasize += n;
-
-    /*
-     * If we have read to end of file, set ch_fsize to indicate
-     * the position of the end of file.
-     */
-    if (n == 0)
-    {
-        ch_fsize = pos;
-        if (ignore_eoi)
+        if (pos != ch_fpos)
         {
             /*
              * Not at the correct position: must seek.
@@ -467,7 +415,7 @@ public void sync_logfile(void)
             bp = bufnode_buf(bn);
             if (bp->block == block)
             {
-                (void)! write(logfile, (char *) bp->data, bp->datasize);
+                write(logfile, (char *) bp->data, bp->datasize);
                 wrote = TRUE;
                 break;
             }

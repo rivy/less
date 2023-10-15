@@ -325,22 +325,22 @@ public void out_of_memory(void)
     quit(QUIT_ERROR);
 }
 
-/*
- * Allocate memory.
- * Like calloc(), but never returns an error (NULL).
- */
-    public VOID_POINTER
-ecalloc(count, size)
-    size_t count;
-    size_t size;
-{
-    void * p;
+// /*
+//  * Allocate memory.
+//  * Like calloc(), but never returns an error (NULL).
+//  */
+//     public VOID_POINTER
+// ecalloc(count, size)
+//     size_t count;
+//     size_t size;
+// {
+//     void * p;
 
-    p = (void *) calloc(count, size);
-    if (p == NULL)
-        out_of_memory();
-    return p;
-}
+//     p = (void *) calloc(count, size);
+//     if (p == NULL)
+//         out_of_memory();
+//     return p;
+// }
 
 /*
  * See how many characters of two strings are identical.
@@ -389,7 +389,7 @@ public void quit(int status)
     else
         save_status = status;
     quitting = 1;
-    check_altpipe_error();
+   // FIXME:  check_altpipe_error();
     if (interactive())
         clear_bot();
     deinit();

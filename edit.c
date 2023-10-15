@@ -145,6 +145,7 @@ public char * back_textlist(struct textlist *tlist, char *prev)
     return (s);
 }
 
+#if HAVE_STRSTR
 /*
  * Parse a single option setting in a modeline.
  */
@@ -167,7 +168,9 @@ static void modeline_option(char *str, int opt_len)
         }
     }
 }
+#endif /* HAVE_STRSTR */
 
+#if HAVE_STRSTR
 /*
  * String length, terminated by option separator (space or colon).
  * Space/colon can be escaped with backspace.
@@ -187,7 +190,9 @@ static int modeline_option_len(char *str)
     }
     return (s - str);
 }
+#endif /* HAVE_STRSTR */
 
+#if HAVE_STRSTR
 /*
  * Parse colon- or space-separated option settings in a modeline.
  */
@@ -206,6 +211,7 @@ static void modeline_options(char *str, char end_char)
             str += 1; /* skip past the separator */
     }
 }
+#endif /* HAVE_STRSTR */
 
 /*
  * See if there is a modeline string in a line.

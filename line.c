@@ -1544,7 +1544,7 @@ public int rrshift(void)
  */
 static int lookup_color_index(int attr)
 {
-    int cx;
+    unsigned int cx;
     for (cx = 0;  cx < sizeof(color_map)/sizeof(*color_map);  cx++)
         if (color_map[cx].attr == attr)
             return cx;
