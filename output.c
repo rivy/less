@@ -506,7 +506,7 @@ type funcname(char *buf, char **ebuf, int radix) \
         v |= ckd_add(&val, val, digit); \
     } \
     if (ebuf != NULL) *ebuf = buf; \
-    return v ? -1 : val; \
+    return (v ? (type)(-1) : val); \
 }
 
 STR_TO_TYPE_FUNC(lstrtopos, POSITION)
