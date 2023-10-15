@@ -325,22 +325,20 @@ public void out_of_memory(void)
     quit(QUIT_ERROR);
 }
 
-// /*
-//  * Allocate memory.
-//  * Like calloc(), but never returns an error (NULL).
-//  */
-//     public VOID_POINTER
-// ecalloc(count, size)
-//     size_t count;
-//     size_t size;
-// {
-//     void * p;
+/*
+ * Allocate memory.
+ * Like calloc(), but never returns an error (NULL).
+ */
+    public void *
+ecalloc(size_t count, size_t size)
+{
+    void * p;
 
-//     p = (void *) calloc(count, size);
-//     if (p == NULL)
-//         out_of_memory();
-//     return p;
-// }
+    p = (void *) calloc(count, size);
+    if (p == NULL)
+        out_of_memory();
+    return p;
+}
 
 /*
  * See how many characters of two strings are identical.

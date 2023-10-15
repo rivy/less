@@ -111,12 +111,13 @@ public RETSIGTYPE winch(int type)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-static BOOL WINAPI wbreak_handler LESSPARAMS ((DWORD dwCtrlType));
-static RETSIGTYPE terminate LESSPARAMS ((int type));
+// static BOOL WINAPI wbreak_handler LESSPARAMS ((DWORD dwCtrlType));
+// static RETSIGTYPE terminate LESSPARAMS ((int type));
+static BOOL WINAPI wbreak_handler (DWORD dwCtrlType);
+static RETSIGTYPE terminate (int type);
 
     static BOOL WINAPI
-wbreak_handler(dwCtrlType)
-    DWORD dwCtrlType;
+wbreak_handler(DWORD dwCtrlType)
 {
     switch (dwCtrlType)
     {
