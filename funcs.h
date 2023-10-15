@@ -267,6 +267,7 @@ public void opt_wheel_lines (int type, char *s);
 public void opt_linenum_width (int type, char *s);
 public void opt_status_col_width (int type, char *s);
 public void opt_filesize (int type, char *s);
+public void opt_intr(int type, char *s);
 public void opt_header (int type, char *s);
 public void opt_search_type (int type, char *s);
 public void opt_ttyin_name (int type, char *s);
@@ -379,3 +380,7 @@ public void set_tabs(char *s, int len);
 public void init_poll(void);
 
 public void close_altpipe(IFILE ifile);
+
+public uintmax muldiv(uintmax val, uintmax num, uintmax den);
+
+public int supports_ctrl_x(void);
