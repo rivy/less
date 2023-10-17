@@ -872,7 +872,12 @@ public int is_composing_char(LWCHAR ch)
  */
 public int is_ubin_char(LWCHAR ch)
 {
-    int ubin = is_in_table(ch, &ubin_table) ||
+    int ubin = FALSE;
+    if (is_in_table(ch, &user_ubin_table)) return 1;
+    if (is_in_table(ch, &user_compose_table)) return 0;
+    if (is_in_table(ch, &user_prt_table)) return 0;
+    if (is_in_table(ch, &user_wide_table)) return 0;
+    ubin = is_in_table(ch, &ubin_table) ||
                (bs_mode == BS_CONTROL && is_in_table(ch, &fmt_table));
 #if MSDOS_COMPILER==WIN32C
     if (!ubin && utf_mode == 2 && ch < 0x10000)
