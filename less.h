@@ -638,6 +638,6 @@ void inttoa(int, char*, int);
 int lstrtoi(char*, char**, int);
 POSITION lstrtopos(char*, char**, int);
 unsigned long lstrtoul(char*, char**, int);
-#if MSDOS_COMPILER==WIN32C && !defined(__GNUC__)
+#if MSDOS_COMPILER==WIN32C && !defined(__GNUC__) && !defined(_MSC_VER)
 int pclose(FILE*);
 #endif
