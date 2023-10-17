@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1984-2022  Mark Nudelman
+ * Copyright (C) 1984-2023  Mark Nudelman
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -80,7 +80,14 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
+<<<<<<< HEAD
 #include "less.h"
+=======
+#include "defines.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+>>>>>>> bitbucket/dev.merge.up
 #include "lesskey.h"
 #include "cmd.h"
 
@@ -105,46 +112,54 @@ char *outfile = NULL ;
 
 extern char version[];
 
-    static void
-usage(void)
+static void usage(void)
 {
     fprintf(stderr, "usage: lesskey [-o output] [input]\n");
     exit(1);
 }
 
-    void
-lesskey_parse_error(s)
-    char *s;
+void lesskey_parse_error(char *s)
 {
     fprintf(stderr, "%s\n", s);
 }
 
-    int
-lstrtoi(buf, ebuf)
-    char *buf;
-    char **ebuf;
+int lstrtoi(char *buf, char **ebuf, int radix)
 {
-    return (int) strtol(buf, ebuf, 10);
+    return (int) strtol(buf, ebuf, radix);
 }
 
+<<<<<<< HEAD
     void *
 ecalloc(count, size)
     size_t count;
     size_t size;
+=======
+void out_of_memory(void)
+{
+    fprintf(stderr, "lesskey: cannot allocate memory\n");
+    exit(1);
+}
+
+void * ecalloc(int count, unsigned int size)
+>>>>>>> bitbucket/dev.merge.up
 {
     VOID_POINTER p;
 
+<<<<<<< HEAD
     p = (VOID_POINTER) calloc(count, size);
     if (p != NULL)
         return (p);
     fprintf(stderr, "lesskey: cannot allocate %lu bytes of memory\n", (long unsigned)(count*size));
     exit(1);
+=======
+    p = calloc(count, size);
+    if (p == NULL)
+        out_of_memory();
+    return (p);
+>>>>>>> bitbucket/dev.merge.up
 }
 
-    static char *
-mkpathname(dirname, filename)
-    char *dirname;
-    char *filename;
+static char * mkpathname(char *dirname, char *filename)
 {
     char *pathname;
 
@@ -158,9 +173,7 @@ mkpathname(dirname, filename)
 /*
  * Figure out the name of a default file (in the user's HOME directory).
  */
-    char *
-homefile(filename)
-    char *filename;
+char * homefile(char *filename)
 {
     char *p;
     char *pathname;
@@ -182,10 +195,7 @@ homefile(filename)
 /*
  * Parse command line arguments.
  */
-    static void
-parse_args(argc, argv)
-    int argc;
-    char **argv;
+static void parse_args(int argc, char **argv)
 {
     char *arg;
 
@@ -255,11 +265,7 @@ parse_args(argc, argv)
 /*
  * Output some bytes.
  */
-    static void
-fputbytes(fd, buf, len)
-    FILE *fd;
-    char *buf;
-    int len;
+static void fputbytes(FILE *fd, char *buf, int len)
 {
     while (len-- > 0)
     {
@@ -271,10 +277,7 @@ fputbytes(fd, buf, len)
 /*
  * Output an integer, in special KRADIX form.
  */
-    static void
-fputint(fd, val)
-    FILE *fd;
-    unsigned int val;
+static void fputint(FILE *fd, unsigned int val)
 {
     char c;
 
@@ -290,10 +293,7 @@ fputint(fd, val)
     fwrite(&c, sizeof(char), 1, fd);
 }
 
-    int
-main(argc, argv)
-    int argc;
-    char *argv[];
+int main(int argc, char *argv[])
 {
     struct lesskey_tables tables;
     FILE *out;
