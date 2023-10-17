@@ -107,7 +107,7 @@
 #define ckd_add(r, a, b) help_ckd_add(r, a, b, sizeof *(r), signed_expr(*(r)))
 #define ckd_mul(r, a, b) help_ckd_mul(r, a, b, sizeof *(r), signed_expr(*(r)))
 /* True if the integer expression E, after promotion, is signed.  */
-#define signed_expr(e) ((TRUE ? 0 : e) - 1 < 0)
+#define signed_expr(e) ((TRUE ? 0 : e) - 1 < (e - e))
 #endif
 
 #if defined UINTMAX_MAX
