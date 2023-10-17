@@ -302,7 +302,7 @@ static int match_pattern1(PATTERN_TYPE pattern, char *tpattern, char *line, int 
     search_type |= SRCH_NO_REGEX;
 #endif
     if (search_type & SRCH_NO_REGEX)
-        matched = match(tpattern, strlen(tpattern), line, line_len, &sp, &ep, nsp);
+        matched = match(tpattern, (int)strlen(tpattern), line, line_len, &sp, &ep, nsp);
     else
     {
 #if HAVE_GNU_REGEX
@@ -444,7 +444,7 @@ static int match_pattern1(PATTERN_TYPE pattern, char *tpattern, char *line, int 
 
 public int match_pattern(PATTERN_TYPE pattern, char *tpattern, char *line, size_t line_len, char **sp, char **ep, int nsp, int notbol, int search_type)
 {
-    int matched = match_pattern1(pattern, tpattern, line, line_len, sp, ep, nsp, notbol, search_type);
+    int matched = match_pattern1(pattern, tpattern, line, (int)line_len, sp, ep, nsp, notbol, search_type);
     int i;
     for (i = 1;  i <= NUM_SEARCH_COLORS;  i++)
     {

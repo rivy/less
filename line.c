@@ -817,7 +817,7 @@ static int store_char(LWCHAR ch, int a, char *rep, POSITION pos)
 
 static int store_string(char *s, int a, POSITION pos)
 {
-    if (!fits_on_screen(strlen(s), a))
+    if (!fits_on_screen((int)strlen(s), a))
         return 1;
     for ( ;  *s != 0;  s++)
         STORE_CHAR(*s, a, NULL, pos);

@@ -716,7 +716,7 @@ public void opt_x(int type, char *s)
     {
     case INIT:
     case TOGGLE:
-        set_tabs(s, strlen(s));
+        set_tabs(s, (int)strlen(s));
         break;
     case QUERY:
         strcpy(msg, "Tab stops ");
