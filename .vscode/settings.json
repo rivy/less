@@ -1,3 +1,7 @@
 {
-	"project": { "name": "project", "build_dir": "#build", "make_options": "CC_DEFINES=1" },
+	"project": {
+		"name": "project",
+		"build_dir": "#build",
+		"make_options": "CC_DEFINES=1"
+	}
 }
