@@ -1,3 +1,6 @@
+#include "pattern.h"
+#include "xbuf.h"
+
 public char * save (constant char *s);
 public void * ecalloc (size_t count, size_t size);
 public char * skipsp (char *s);
