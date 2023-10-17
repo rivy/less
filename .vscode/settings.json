@@ -3,5 +3,6 @@
 		"name": "project",
 		"build_dir": "#build",
 		"make_options": "CC_DEFINES=1"
-	}
+	},
+	"editor.formatOnSave": false,
 }
