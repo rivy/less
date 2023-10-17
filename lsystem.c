@@ -116,7 +116,7 @@ public void lsystem(char *cmd, char *donemsg)
 #if !MSDOS_COMPILER
     if (open_tty() < 0)
 #endif
-        dup(inp);
+        (void)! dup(inp);
 #endif
 
     /*
@@ -150,7 +150,7 @@ public void lsystem(char *cmd, char *donemsg)
         else
             p = save(cmd);
     }
-    system(p);
+    (void)! system(p);
     free(p);
 #else
 #if MSDOS_COMPILER==DJGPPC
@@ -175,7 +175,7 @@ public void lsystem(char *cmd, char *donemsg)
      * Restore standard input, reset signals, raw mode, etc.
      */
     close(0);
-    dup(inp);
+    (void)! dup(inp);
     close(inp);
 #endif
 

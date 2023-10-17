@@ -296,7 +296,7 @@ static int ch_get(void)
          * If we have a log file, write the new data to it.
          */
         if (!secure && logfile >= 0 && n > 0)
-            write(logfile, (char *) &bp->data[bp->datasize], n);
+            (void)! write(logfile, (char *) &bp->data[bp->datasize], n);
 #endif
 
         ch_fpos += n;
@@ -415,7 +415,7 @@ public void sync_logfile(void)
             bp = bufnode_buf(bn);
             if (bp->block == block)
             {
-                write(logfile, (char *) bp->data, bp->datasize);
+                (void)! write(logfile, (char *) bp->data, bp->datasize);
                 wrote = TRUE;
                 break;
             }
