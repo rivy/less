@@ -886,8 +886,8 @@ static void add_hilite(struct hilite_tree *anchor, struct hilite *hl)
  */
 static void create_hilites(POSITION linepos, char *line, char *sp, char *ep, int attr, int *chpos)
 {
-    int start_index = sp - line;
-    int end_index = ep - line;
+    int start_index = (int)(sp - line);
+    int end_index = (int)(ep - line);
     struct hilite hl;
     int i;
 

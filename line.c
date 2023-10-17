@@ -1468,7 +1468,7 @@ public int skip_columns(int cols, char **linep, int *line_lenp)
             pch = ch;
         }
     }
-    bytes = line - *linep;
+    bytes = (int)(line - *linep);
     *linep = line;
     *line_lenp -= bytes;
     return (bytes);

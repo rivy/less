@@ -306,7 +306,7 @@ static void expand_cmd_table(struct tablelist *tlist)
     struct tablelist *t;
     for (t = tlist;  t != NULL;  t = t->t_next)
     {
-        expand_special_keys(t->t_start, t->t_end - t->t_start);
+        expand_special_keys(t->t_start, (int)(t->t_end - t->t_start));
     }
 }
 

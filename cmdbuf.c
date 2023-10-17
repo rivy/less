@@ -227,7 +227,7 @@ static char * cmd_step_right(char **pp, int *pwidth, int *bswidth)
     char *p = *pp;
     LWCHAR ch = step_char(pp, +1, p + strlen(p));
 
-    return cmd_step_common(p, ch, *pp - p, pwidth, bswidth);
+    return cmd_step_common(p, ch, (int)(*pp - p), pwidth, bswidth);
 }
 
 /*
@@ -238,7 +238,7 @@ static char * cmd_step_left(char **pp, int *pwidth, int *bswidth)
     char *p = *pp;
     LWCHAR ch = step_char(pp, -1, cmdbuf);
 
-    return cmd_step_common(*pp, ch, p - *pp, pwidth, bswidth);
+    return cmd_step_common(*pp, ch, (int)(p - *pp), pwidth, bswidth);
 }
 
 /*
@@ -912,7 +912,7 @@ static int cmd_istr(char *str)
     {
         char *os = s;
         step_char(&s, +1, endline);
-        action = cmd_ichar(os, s - os);
+        action = cmd_ichar(os, (int)(s - os));
         if (action != CC_OK)
             return (action);
     }
