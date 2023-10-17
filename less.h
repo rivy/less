@@ -109,6 +109,9 @@
 /* True if the integer expression E, after promotion, is signed.  */
 #define signed_expr(e) ((TRUE ? 0 : e) - 1 < (e - e))
 #endif
+// ToDO: investigate a more portable way to determine type signedness
+//   ... see <https://stackoverflow.com/questions/7469915/value-vs-type-code-to-determine-if-a-variable-is-signed-or-not> @@ <https://archive.ph/G24Eq>
+//   ... see <https://www.eevblog.com/forum/programming/c-macro-to-determine-if-a-type-is-signed> @@ <https://archive.is/YW6Py>
 
 #if defined UINTMAX_MAX
 typedef uintmax_t uintmax;
