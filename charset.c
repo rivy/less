@@ -414,15 +414,6 @@ static void set_charset(void)
 {
     char *s;
 
-#if MSDOS_COMPILER==WIN32C
-    /*
-     * If the Windows console is using UTF-8, we'll use it too.
-     */
-    if (GetConsoleOutputCP() == CP_UTF8)
-        if (icharset("utf-8", 1))
-            return;
-#endif
-
     ichardef_utf(lgetenv("LESSUTFCHARDEF"));
 
     /*
@@ -475,6 +466,14 @@ static void set_charset(void)
      */
     ilocale();
 #else
+#if MSDOS_COMPILER==WIN32C
+    /*
+     * If the Windows console is using UTF-8, we'll use it too.
+     */
+    if (GetConsoleOutputCP() == CP_UTF8)
+        if (icharset("utf-8", 1))
+            return;
+#endif
 #if MSDOS_COMPILER
     /*
      * Default to "dos".
