@@ -30,6 +30,7 @@ endif
 
 DEFINE_EXT := $(if $(filter-out i586-pc-msdosdjgpp-gcc,${CC}),wn,ds)
 
+DEFINE_EXISTS := $(if $(wildcard ${SRC_DIR}/defines.h),${true},${false})
 DEFINE_DIFFERS := ${false}
 DEFINE_DIFF := $(shell $(call %diff_shell_s,${SRC_DIR}/defines.h,${SRC_DIR}/defines.${DEFINE_EXT}))
 # * if ${.SHELLSTATUS} == 0, there is no difference (${DEFINE_DIFF} may contain other, extraneous, text)
@@ -41,12 +42,12 @@ else
 DEFINE_DIFFERS := ${true}
 endif
 $(call %debug_var,DEFINE_EXT)
+$(call %debug_var,DEFINE_EXISTS)
 $(call %debug_var,DEFINE_DIFF)
 $(call %debug_var,DEFINE_DIFFERS)
 
-ifneq (${DEFINE_DIFFERS},${false})
-$(call %rm_files,${SRC_DIR}/defines.h)
-$(call %info,previous (incompatible) '${SRC_DIR}/defines.h' removed.)
+ifeq (${true},${DEFINE_DIFFERS})
+$(if $(call %rm_file,${SRC_DIR}/defines.h),$(call %info,previous (incompatible) '${SRC_DIR}/defines.h' removed.),)
 endif
 
 ####

@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2023.10.09)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.03.02)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -86,15 +86,18 @@ makefile_set_abs := $(abspath ${makefile_set})
 
 #### * determine OS ID
 
+# note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10, 11, ...
 OSID := $(or $(and $(filter .exe,$(patsubst %.exe,.exe,$(subst $() $(),_,${SHELL}))),$(filter win,${OS:Windows_NT=win})),nix)## OSID == [nix,win]
-# for Windows OS, set SHELL to `%ComSpec%` or `cmd` (note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10 ...)
-# * `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" error output is indicative
 ifeq (${OSID},win)
-# use fallbacks, avoiding env var case variance issues; note: assumes *no spaces* within the path values specified by ${ComSpec}, ${SystemRoot}, or ${windir}
+# * set SHELL (from COMSPEC or SystemRoot, if possible)
+# ... `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" or "CreateProcess(NULL,...)" error output is indicative
+SHELL := cmd## for WinOS, use `cmd` as reasonable default fallback shell (NOTE: requires XP+)
+# avoid environment var case variance issues; NOTE: assumes *no spaces* within the path values specified by ${ComSpec}, ${SystemRoot}, or ${windir}
 COMSPEC := $(strip $(shell echo %ComSpec%))
-HOME := $(or $(strip $(shell echo %HOME%)),$(strip $(shell echo %UserProfile%)))
 SystemRoot := $(or $(strip $(shell echo %SystemRoot%)),$(strip $(shell echo %windir%)))
 SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
+# * set HOME
+HOME := $(or $(strip $(shell echo %HOME%)),$(strip $(shell echo %UserProfile%)))
 endif
 
 #### * determine compiler ID
