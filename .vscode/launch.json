@@ -8,9 +8,11 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug-x32/executable.exe",
+			// "args": [], // * note: use this configuration array to add run-time arguments to the debugged process
 			"args": ["main.c"], // * note: use this configuration array to add run-time arguments to the debugged process
 			// "args": ["/?"], // * note: use this configuration array to add run-time arguments to the debugged process
 			// "args": ["${fileWorkspaceFolder}/../causes-fault-single-line.txt"],
+			// "args": ["<", "${fileWorkspaceFolder}/in.txt"], // ref: <https://stackoverflow.com/a/69744570/43774> @@ <https://archive.is/IuKNe>
 			"stopAtEntry": false,
 			"cwd": "${fileWorkspaceFolder}",
 			"environment": [],
@@ -54,6 +56,26 @@
 				}
 			],
 			"preLaunchTask": "Build (gcc/64-bit/DEBUG)"
-		}
+		},
+		{
+			// * NOTE: for external processes, an interrupt signal (eg, CTRL-C) is required to pause the process for the debugger to fully attach
+			"name": "Attach (32-bit)",
+			"type": "cppdbg",
+			"request": "attach",
+			"processId": "${command:pickProcess}",
+			"program": "${fileWorkspaceFolder}/${config:project.build_dir}/debug-x32/executable.exe",
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable GDB pretty-printing",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				},
+				{
+					"description": "Fix pretty-printing of UTF-8 characters; ref: <https://stackoverflow.com/a/68954359/43774>",
+					"text": "set charset UTF-8"
+				}
+			],
+		},
 	]
 }
