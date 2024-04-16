@@ -616,10 +616,7 @@ public int utf_len(int ch)
 /*
  * Does the parameter point to the lead byte of a well-formed UTF-8 character?
  */
-    public int
-is_utf8_well_formed(ss, slen)
-    char *ss;
-    size_t slen;
+public int is_utf8_well_formed(char *ss, size_t slen)
 {
     size_t i;
     size_t len;

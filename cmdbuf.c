@@ -1195,7 +1195,7 @@ public int cmd_char(int c)
 
     if (!utf_mode)
     {
-        cmd_mbc_buf[0] = c;
+        cmd_mbc_buf[0] = (char)c;
         len = 1;
     } else
     {
@@ -1204,7 +1204,7 @@ public int cmd_char(int c)
         {
          retry:
             cmd_mbc_buf_index = 1;
-            *cmd_mbc_buf = c;
+            *cmd_mbc_buf = (char)c;
             if (IS_ASCII_OCTET(c))
                 cmd_mbc_buf_len = 1;
 #if MSDOS_COMPILER || OS2
@@ -1226,7 +1226,7 @@ public int cmd_char(int c)
             }
         } else if (IS_UTF8_TRAIL(c))
         {
-            cmd_mbc_buf[cmd_mbc_buf_index++] = c;
+            cmd_mbc_buf[cmd_mbc_buf_index++] = (char)c;
             if (cmd_mbc_buf_index < cmd_mbc_buf_len)
                 return (CC_OK);
             if (!is_utf8_well_formed(cmd_mbc_buf, cmd_mbc_buf_index))
@@ -1477,6 +1477,7 @@ static void read_cmdhist(void (*action)(void*,struct mlist*,char*), void *uparam
 
 static void addhist_init(void *uparam, struct mlist *ml, char *string)
 {
+    (void)uparam; // avoid unreferenced parameter warning
     if (ml != NULL)
         cmd_addhist(ml, string, 0);
     else if (string != NULL)
@@ -1590,6 +1591,7 @@ static void copy_hist(void *uparam, struct mlist *ml, char *string)
  */
 static void make_file_private(FILE *f)
 {
+   (void)f; // avoid unreferenced parameter warning
 #if HAVE_FCHMOD
     int do_chmod = 1;
 #if HAVE_STAT

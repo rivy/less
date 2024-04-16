@@ -604,7 +604,7 @@ STRIP := $()
 ## /subsystem:console,4.00 :: generate "Win32 character-mode" console application; 4.00 => minimum supported system is Win9x/NT; supported only by MSVC 9 (`cl` version "15xx" from 2008) or less
 ## /subsystem:console,5.01 :: generate "Win32 character-mode" console application; 5.01 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 32-bit
 ## /subsystem:console,5.02 :: generate "Win32 character-mode" console application; 5.02 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 64-bit
-CFLAGS = /nologo /W3 /WX /EHs $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+CFLAGS = /nologo /W4 /WX /EHs $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 %cflags_incs = $(call %map,$(eval %f=/I $(call %shell_quote,$${1}))%f,$(strip ${1}))
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_ARCH_32 := $(if $(filter clang-cl,${CC}),-m32,)

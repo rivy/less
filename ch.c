@@ -147,7 +147,7 @@ static int ch_addbuf();
  */
 static int ch_get(void)
 {
-    struct buf *bp;
+    struct buf *bp = NULL;
     struct bufnode *bn;
     int n;
     int read_again;
@@ -253,9 +253,9 @@ static int ch_get(void)
          * If we read less than a full block, that's ok.
          * We use partial block and pick up the rest next time.
          */
-        if (ch_ungotchar != -1)
+        if (ch_ungotchar > -1)
         {
-            bp->data[bp->datasize] = ch_ungotchar;
+            bp->data[bp->datasize] = (char)ch_ungotchar;
             n = 1;
             ch_ungotchar = -1;
         } else if (ch_flags & CH_HELPFILE)
