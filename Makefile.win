@@ -1,9 +1,9 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.03.02)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.04.16)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
 # GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
-# Copyright (C) 2020-2023 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
+# Copyright (C) 2020-2024 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
 # NOTE: * requires `make` version 4.0+ (minimum needed for correct path functions); for windows, install using `scoop install make`
 # NOTE: `make` doesn't handle spaces within file names without gyrations (see <https://stackoverflow.com/questions/9838384/can-gnu-make-handle-filenames-with-spaces>@@<https://archive.is/PYKKq>)
@@ -89,15 +89,17 @@ makefile_set_abs := $(abspath ${makefile_set})
 # note: environment/${OS}=="Windows_NT" for XP, 2000, Vista, 7, 10, 11, ...
 OSID := $(or $(and $(filter .exe,$(patsubst %.exe,.exe,$(subst $() $(),_,${SHELL}))),$(filter win,${OS:Windows_NT=win})),nix)## OSID == [nix,win]
 ifeq (${OSID},win)
+# WinOS-specific settings
 # * set SHELL (from COMSPEC or SystemRoot, if possible)
-# ... `make` may otherwise use an incorrect shell (eg, `bash`), if found; "syntax error: unexpected end of file" or "CreateProcess(NULL,...)" error output is indicative
-SHELL := cmd## for WinOS, use `cmd` as reasonable default fallback shell (NOTE: requires XP+)
-# avoid environment var case variance issues; NOTE: assumes *no spaces* within the path values specified by ${ComSpec}, ${SystemRoot}, or ${windir}
+# ... `make` may otherwise use an incorrect shell (eg, `sh` or `bash`, if found in PATH); "syntax error: unexpected end of file" or "CreateProcess(NULL,...)" error output is indicative
+SHELL := cmd$()## start with a known default shell (`cmd` for WinOS XP+)
+# * set internal variables from environment variables (if available)
+# ... avoid env var case variance issues and use fallbacks
+# ... note: assumes *no spaces* within the path values specified by ${ComSpec}, ${SystemRoot}, or ${windir}
+HOME := $(or $(strip $(shell echo %HOME%)),$(strip $(shell echo %UserProfile%)))
 COMSPEC := $(strip $(shell echo %ComSpec%))
 SystemRoot := $(or $(strip $(shell echo %SystemRoot%)),$(strip $(shell echo %windir%)))
 SHELL := $(firstword $(wildcard ${COMSPEC} ${SystemRoot}/System32/cmd.exe) cmd)
-# * set HOME
-HOME := $(or $(strip $(shell echo %HOME%)),$(strip $(shell echo %UserProfile%)))
 endif
 
 #### * determine compiler ID
@@ -399,16 +401,6 @@ runner_positions := $(call %map,$(eval %f=$$(call %position,$${1},${MAKECMDGOALS
 runner_position := $(firstword ${runner_positions})
 
 make_runner_ARGS := $(if ${has_runner_target},$(call %tail,$(wordlist ${runner_position},$(call %length,${make_ARGS}),${make_ARGS})),)
-override ARGS := $(or $(and ${ARGS},${ARGS}${SPACE})${make_runner_ARGS},${ARGS_default_${has_runner_target}})
-
-$(call %debug_var,has_runner_first)
-$(call %debug_var,has_runner_target)
-$(call %debug_var,runner_position)
-$(call %debug_var,MAKECMDGOALS)
-$(call %debug_var,make_ARGS)
-$(call %debug_var,make_runner_ARGS)
-$(call %debug_var,ARGS_default_${has_runner_target})
-$(call %debug_var,ARGS)
 
 has_debug_target := $(strip $(call %map,$(eval %f=$$(findstring $${1},${MAKECMDGOALS}))%f,debug))
 ifneq (${has_debug_target},)
@@ -421,6 +413,19 @@ $(call %debug_var,DEBUG)
 
 # include sibling configuration file, if exists (easier project config with a stable base Makefile)
 -include ${makefile_path}.config
+
+####
+
+override ARGS := $(or $(and ${ARGS},${ARGS}${SPACE})${make_runner_ARGS},${ARGS_default_${has_runner_target}})
+
+$(call %debug_var,has_runner_first)
+$(call %debug_var,has_runner_target)
+$(call %debug_var,runner_position)
+$(call %debug_var,MAKECMDGOALS)
+$(call %debug_var,make_ARGS)
+$(call %debug_var,make_runner_ARGS)
+$(call %debug_var,ARGS_default_${has_runner_target})
+$(call %debug_var,ARGS)
 
 #### End of basic configuration section ####
 
@@ -504,7 +509,10 @@ LDFLAGS += $()
 LDFLAGS_ARCH_32 := ${CFLAGS_ARCH_32}
 LDFLAGS_ARCH_64 := ${CFLAGS_ARCH_64}
 LDFLAGS_DEBUG_false := $(if $(filter nix,${OSID}),-Xlinker --strip-all,)
-LDFLAGS_DEBUG_true := $(if $(filter win,${OSID}),$(if $(filter clang,${CC_ID}),-Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrtd,),)
+LDFLAGS_DEBUG_true_STATIC_false_clang := -Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrtd
+LDFLAGS_DEBUG_false_STATIC_false_clang := -Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrt
+LDFLAGS_DEBUG_true_STATIC_false_gcc := -shared-libgcc -shared-libstdc++
+LDFLAGS_DEBUG_false_STATIC_false_gcc := -shared-libgcc -shared-libstdc++
 # LDFLAGS_STATIC_false := -pie
 # LDFLAGS_STATIC_false := -shared
 # LDFLAGS_STATIC_true := -static -static-libgcc -static-libstdc++
@@ -568,7 +576,8 @@ STRIP := $()
 ## /W3 :: set warning level to 3 [1..4, all; increasing level of warning scrutiny]
 ## /WX :: treat warnings as errors
 ## /wd4996 :: suppress POSIX function name deprecation warning (#C4996)
-## /EHsc :: enable C++ EH (no SEH exceptions) + extern "C" defaults to nothrow (replaces deprecated /GX)
+## /EHs :: enable synchronous C++ EH (`throw`; no SEH exceptions) + extern "C" may also throw; usually minimal performance decrease unless there is 'heavy use of external "C" functions that throw'
+## /EHsc :: enable synchronous C++ EH (`throw`; no SEH exceptions) + extern "C" defaults to nothrow (replaces deprecated /GX); undefined behavior occurs if the extern "C" function throws an exception
 ## /D "_CRT_SECURE_NO_WARNING" :: compiler directive == suppress "unsafe function" compiler warning
 ## /Od :: disable optimization
 ## /Ox :: maximum optimizations
@@ -595,7 +604,7 @@ STRIP := $()
 ## /subsystem:console,4.00 :: generate "Win32 character-mode" console application; 4.00 => minimum supported system is Win9x/NT; supported only by MSVC 9 (`cl` version "15xx" from 2008) or less
 ## /subsystem:console,5.01 :: generate "Win32 character-mode" console application; 5.01 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 32-bit
 ## /subsystem:console,5.02 :: generate "Win32 character-mode" console application; 5.02 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 64-bit
-CFLAGS = /nologo /W3 /WX /EHsc $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+CFLAGS = /nologo /W3 /WX /EHs $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 %cflags_incs = $(call %map,$(eval %f=/I $(call %shell_quote,$${1}))%f,$(strip ${1}))
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_ARCH_32 := $(if $(filter clang-cl,${CC}),-m32,)
@@ -1026,6 +1035,8 @@ LDFLAGS += ${LDFLAGS_ARCH_${ARCH_ID}}
 LDFLAGS += ${LDFLAGS_TARGET}
 LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}}
 LDFLAGS += ${LDFLAGS_STATIC_${STATIC}}
+LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}_STATIC_${STATIC}}
+LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}_STATIC_${STATIC}_${CC_ID}}
 LDFLAGS += ${LDFLAGS_VC6_${is_VC6}}## name-expanded variable is only defined for ${CC_ID}=='cl'
 LDFLAGS += ${LDFLAGS_${CC_ID}}
 LDFLAGS += ${LDFLAGS_${CC_ID}_${OSID}}
