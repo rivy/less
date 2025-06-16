@@ -218,6 +218,8 @@ static void modeline_options(char *str, char end_char)
  */
 static void check_modeline(char *line)
 {
+    (void)line; // avoid `unused parameter` warning
+
 #if HAVE_STRSTR
     static char *pgms[] = { "less:", "vim:", "vi:", "ex:", NULL };
     char **pgm;
@@ -448,6 +450,8 @@ public int edit_ifile(IFILE ifile)
     IFILE was_curr_ifile;
     PARG parg;
 
+    f = 0; // avoid `potentially uninitialized local variable` warning
+
     if (ifile == curr_ifile)
     {
         /*
@@ -601,9 +605,9 @@ public int edit_ifile(IFILE ifile)
     }
     if (!force_open && f >= 0 && isatty(f))
     {
-        PARG parg;
-        parg.p_string = filename;
-        error("%s is a terminal (use -f to open it)", &parg);
+        PARG arg;
+        arg.p_string = filename;
+        error("%s is a terminal (use -f to open it)", &arg);
         return edit_error(filename, alt_filename, altpipe, ifile, was_curr_ifile);
     }
 

@@ -115,11 +115,13 @@ static struct tag * maketagent(char *name, char *file, LINENUM linenum, char *pa
 {
     struct tag *tp;
 
+    (void)name; // avoid `unreferenced formal type` warning
+
     tp = (struct tag *) ecalloc(sizeof(struct tag), 1);
     tp->tag_file = (char *) ecalloc(strlen(file) + 1, sizeof(char));
     strcpy(tp->tag_file, file);
     tp->tag_linenum = linenum;
-    tp->tag_endline = endline;
+    tp->tag_endline = (char)endline;
     if (pattern == NULL)
         tp->tag_pattern = NULL;
     else

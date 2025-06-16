@@ -137,6 +137,7 @@ wbreak_handler(DWORD dwCtrlType)
 
 static RETSIGTYPE terminate(int type)
 {
+    (void)type; // avoid `unreferenced formal type` warning
     quit(15);
 }
 

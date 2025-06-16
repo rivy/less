@@ -264,6 +264,8 @@ static int match(char *pattern, int pattern_len, char *buf, int buf_len, char **
     char *pattern_end = pattern + pattern_len;
     char *buf_end = buf + buf_len;
 
+    (void)nsubs; // avoid `unreferenced formal parameter` warning
+
     for ( ;  buf < buf_end;  buf++)
     {
         for (pp = pattern, lp = buf;  ;  pp++, lp++)

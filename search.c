@@ -211,6 +211,8 @@ public void init_search(void)
  */
 static int get_cvt_ops(int search_type)
 {
+    (void)search_type; // avoid `unreferenced formal parameter` warning
+
     int ops = 0;
 
     if (is_caseless && (!re_handles_caseless || (search_type & SRCH_NO_REGEX)))
@@ -927,6 +929,8 @@ static void hilite_line(POSITION linepos, char *line, int line_len, int *chpos, 
 {
     char *searchp;
     char *line_end = line + line_len;
+
+    (void)cvt_ops; // avoid `unreferenced formal parameter` warning
 
     /*
      * sp[0] and ep[0] delimit the first match in the line.

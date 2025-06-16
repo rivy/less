@@ -1220,6 +1220,9 @@ public void commands(void)
     IFILE new_ifile;
     char *tagfile;
 
+    c = 0;
+    extra = 0;
+
     search_type = SRCH_FORW;
     wscroll = (sc_height + 1) / 2;
     newaction = A_NOACTION;
@@ -1322,7 +1325,7 @@ public void commands(void)
                  * want erase_char/kill_char to be treated
                  * as line editing characters.
                  */
-                tbuf[0] = c;
+                tbuf[0] = (char)c;
                 tbuf[1] = '\0';
                 cbuf = tbuf;
             }
@@ -2004,7 +2007,7 @@ public void commands(void)
                     c = '.';
                 if (badmark(c))
                     break;
-                pipec = c;
+                pipec = (char)c;
                 start_mca(A_PIPE, "!", ml_shell, 0);
                 c = getcc();
                 goto again;

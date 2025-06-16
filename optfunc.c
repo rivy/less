@@ -454,6 +454,8 @@ public void opt__P(int type, char *s)
     /*ARGSUSED*/
 public void opt_b(int type, char *s)
 {
+    (void)s; // avoid `unreferenced formal parameter` warning
+
     switch (type)
     {
     case INIT:
@@ -474,6 +476,8 @@ public void opt_b(int type, char *s)
     /*ARGSUSED*/
 public void opt_i(int type, char *s)
 {
+    (void)s; // avoid `unreferenced formal parameter` warning
+
     switch (type)
     {
     case TOGGLE:
@@ -491,6 +495,8 @@ public void opt_i(int type, char *s)
     /*ARGSUSED*/
 public void opt__V(int type, char *s)
 {
+    (void)s; // avoid `unreferenced formal parameter` warning
+
     switch (type)
     {
     case TOGGLE:
@@ -815,6 +821,8 @@ public void opt_rscroll(int type, char *s)
     /*ARGSUSED*/
 public void opt_query(int type, char *s)
 {
+    (void)s; // avoid `unreferenced formal parameter` warning
+
     switch (type)
     {
     case QUERY:
@@ -832,6 +840,8 @@ public void opt_query(int type, char *s)
     /*ARGSUSED*/
 public void opt_mousecap(int type, char *s)
 {
+    (void)s; // avoid `unreferenced formal parameter` warning
+
     switch (type)
     {
     case TOGGLE:
@@ -852,6 +862,8 @@ public void opt_mousecap(int type, char *s)
     /*ARGSUSED*/
 public void opt_wheel_lines(int type, char *s)
 {
+    (void)s; // avoid `unreferenced formal parameter` warning
+
     switch (type)
     {
     case INIT:
@@ -871,6 +883,8 @@ public void opt_wheel_lines(int type, char *s)
 public void opt_linenum_width(int type, char *s)
 {
     PARG parg;
+
+    (void)s; // avoid `unreferenced formal parameter` warning
 
     switch (type)
     {
@@ -896,6 +910,8 @@ public void opt_status_col_width(int type, char *s)
 {
     PARG parg;
 
+    (void)s; // avoid `unreferenced formal parameter` warning
+
     switch (type)
     {
     case INIT:
@@ -918,6 +934,8 @@ public void opt_status_col_width(int type, char *s)
     /*ARGSUSED*/
 public void opt_filesize(int type, char *s)
 {
+    (void)s; // avoid `unreferenced formal parameter` warning
+
     switch (type)
     {
     case INIT:
@@ -1052,7 +1070,7 @@ public void opt_search_type(int type, char *s)
         if (def_search_type & SRCH_WRAP)       *bp++ = 'W';
         for (i = 1;  i <= NUM_SEARCH_COLORS;  i++)
             if (def_search_type & SRCH_SUBSEARCH(i))
-                *bp++ = '0'+i;
+                *bp++ = '0'+(char)i;
         if (bp == buf)
             *bp++ = '-';
         *bp = '\0';

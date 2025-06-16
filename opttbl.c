@@ -783,9 +783,9 @@ static int is_optchar(char c)
  * is updated to point after the matched name.
  * p_oname if non-NULL is set to point to the full option name.
  */
-public struct loption * findopt_name(char **p_optname, char **p_oname, int *p_err)
+public struct loption * findopt_name(char **p_name, char **p_oname, int *p_err)
 {
-    char *optname = *p_optname;
+    char *optname = *p_name;
     struct loption *o;
     struct optname *oname;
     int len;
@@ -854,7 +854,7 @@ public struct loption * findopt_name(char **p_optname, char **p_oname, int *p_er
             *p_err = OPT_AMBIG;
         return (NULL);
     }
-    *p_optname = optname + maxlen;
+    *p_name = optname + maxlen;
     if (p_oname != NULL)
         *p_oname = maxoname == NULL ? NULL : maxoname->oname;
     return (maxo);

@@ -19,11 +19,9 @@ extern int utf_mode;
 /*
  * Get the length of a buffer needed to convert a string.
  */
-    public size_t
-cvt_length(len, ops)
-    size_t len;
-    int ops;
+public size_t cvt_length(size_t len, int ops)
 {
+    (void)ops;
     if (utf_mode)
         /*
          * Just copying a string in UTF-8 mode can cause it to grow
@@ -37,9 +35,7 @@ cvt_length(len, ops)
 /*
  * Allocate a chpos array for use by cvt_text.
  */
-    public int *
-cvt_alloc_chpos(len)
-    size_t len;
+public int *cvt_alloc_chpos(size_t len)
 {
     size_t i;
     int *chpos = (int *) ecalloc(sizeof(int), len);

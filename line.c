@@ -789,7 +789,6 @@ static int store_char(LWCHAR ch, int a, char *rep, POSITION pos)
         if (linebuf.end > linebuf.print)
         {
             /* Shift left enough to put last byte of this char at print-1. */
-            int i;
             for (i = 0; i < linebuf.print; i++)
             {
                 linebuf.buf[i] = linebuf.buf[i+replen];
@@ -929,7 +928,7 @@ public int pappend(int c, POSITION pos)
         {
         retry:
             mbc_buf_index = 1;
-            *mbc_buf = c;
+            *mbc_buf = (char)c;
             if (IS_ASCII_OCTET(c))
                 r = do_append(c, NULL, pos);
             else if (IS_UTF8_LEAD(c))
@@ -942,7 +941,7 @@ public int pappend(int c, POSITION pos)
                 r = flush_mbc_buf(pos);
         } else if (IS_UTF8_TRAIL(c))
         {
-            mbc_buf[mbc_buf_index++] = c;
+            mbc_buf[mbc_buf_index++] = (char)c;
             if (mbc_buf_index < mbc_buf_len)
                 return (0);
             if (is_utf8_well_formed(mbc_buf, mbc_buf_index))
@@ -1360,7 +1359,7 @@ public POSITION forw_raw_line(POSITION curr_pos, char **linep, int *line_lenp)
                 break;
             }
         }
-        linebuf.buf[n++] = c;
+        linebuf.buf[n++] = (char)c;
         c = ch_forw_get();
     }
     linebuf.buf[n] = '\0';
@@ -1432,7 +1431,7 @@ public POSITION back_raw_line(POSITION curr_pos, char **linep, int *line_lenp)
                 *to = *fm;
             n = size_linebuf - old_size_linebuf;
         }
-        linebuf.buf[--n] = c;
+        linebuf.buf[--n] = (char)c;
     }
     if (linep != NULL)
         *linep = &linebuf.buf[n];

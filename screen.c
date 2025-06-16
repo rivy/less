@@ -1540,8 +1540,8 @@ static void _settextposition(int row, int col)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
 
     GetConsoleScreenBufferInfo(con_out, &csbi);
-    cpos.X = csbi.srWindow.Left + (col - 1);
-    cpos.Y = csbi.srWindow.Top + (row - 1);
+    cpos.X = (SHORT)(csbi.srWindow.Left + (col - 1));
+    cpos.Y = (SHORT)(csbi.srWindow.Top + (row - 1));
     SetConsoleCursorPosition(con_out, cpos);
 }
 #endif
@@ -2049,7 +2049,7 @@ public void win32_scroll_up(int n)
     /* Get the extent of what will remain visible after scrolling. */
     GetConsoleScreenBufferInfo(con_out, &csbi);
     rcSrc.Left    = csbi.srWindow.Left;
-    rcSrc.Top     = csbi.srWindow.Top + n;
+    rcSrc.Top     = csbi.srWindow.Top + (SHORT)n;
     rcSrc.Right   = csbi.srWindow.Right;
     rcSrc.Bottom  = csbi.srWindow.Bottom;
 
@@ -2073,7 +2073,7 @@ public void win32_scroll_up(int n)
 
     /* Clear remaining lines at bottom. */
     topleft.X = csbi.dwCursorPosition.X;
-    topleft.Y = rcSrc.Bottom - n;
+    topleft.Y = rcSrc.Bottom - (SHORT)n;
     size = (n * csbi.dwSize.X) + (rcSrc.Right - topleft.X);
     FillConsoleOutputCharacter(con_out, ' ', size, topleft,
         &nchars);
@@ -2082,7 +2082,7 @@ public void win32_scroll_up(int n)
     SetConsoleTextAttribute(con_out, curr_attr);
 
     /* Move cursor n lines up from where it was. */
-    csbi.dwCursorPosition.Y -= n;
+    csbi.dwCursorPosition.Y -= (SHORT)n;
     SetConsoleCursorPosition(con_out, csbi.dwCursorPosition);
 }
 #endif
@@ -2839,8 +2839,8 @@ public int win32_kbhit(void)
         if (mousecap && ip.EventType == MOUSE_EVENT &&
             ip.Event.MouseEvent.dwEventFlags != MOUSE_MOVED)
         {
-            x11mousebuf[3] = X11MOUSE_OFFSET + ip.Event.MouseEvent.dwMousePosition.X + 1;
-            x11mousebuf[4] = X11MOUSE_OFFSET + ip.Event.MouseEvent.dwMousePosition.Y + 1;
+            x11mousebuf[3] = (char)(X11MOUSE_OFFSET + ip.Event.MouseEvent.dwMousePosition.X + 1);
+            x11mousebuf[4] = (char)(X11MOUSE_OFFSET + ip.Event.MouseEvent.dwMousePosition.Y + 1);
             switch (ip.Event.MouseEvent.dwEventFlags)
             {
             case 0: /* press or release */
@@ -2849,7 +2849,7 @@ public int win32_kbhit(void)
                 else if (ip.Event.MouseEvent.dwButtonState & (FROM_LEFT_3RD_BUTTON_PRESSED | FROM_LEFT_4TH_BUTTON_PRESSED))
                     continue;
                 else
-                    x11mousebuf[2] = X11MOUSE_OFFSET + X11MOUSE_BUTTON1 + ((int)ip.Event.MouseEvent.dwButtonState << 1);
+                    x11mousebuf[2] = (char)(X11MOUSE_OFFSET + X11MOUSE_BUTTON1 + ((int)ip.Event.MouseEvent.dwButtonState << 1));
                 break;
             case MOUSE_WHEELED:
                 x11mousebuf[2] = X11MOUSE_OFFSET + (((int)ip.Event.MouseEvent.dwButtonState < 0) ? X11MOUSE_WHEEL_DOWN : X11MOUSE_WHEEL_UP);
@@ -2956,7 +2956,7 @@ public char WIN32getch(void)
             ascii = utf8[0];
             utf8_next_byte = 1;
         } else
-            ascii = currentKey.ascii;
+            ascii = (char)currentKey.ascii;
         /*
          * On PC's, the extended keys return a 2 byte sequence beginning
          * with '00', so if the ascii code is 00, the next byte will be
@@ -2980,10 +2980,7 @@ public void WIN32setcolors(int fg, int bg)
 
 /*
  */
-    public void
-WIN32textout(text, len)
-    char *text;
-    size_t len;
+public void WIN32textout(char *text, size_t len)
 {
 #if MSDOS_COMPILER==WIN32C
     DWORD written;

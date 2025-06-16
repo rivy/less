@@ -445,7 +445,7 @@ public int putchr(int c)
      */
     if (ob >= &obuf[sizeof(obuf)-1])
         flush();
-    *ob++ = c;
+    *ob++ = (char)c;
     at_prompt = 0;
     return (c);
 }

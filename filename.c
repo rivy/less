@@ -505,7 +505,8 @@ static POSITION seek_filesize(int f)
 static char * readfd(FILE *fd)
 {
     int len;
-    int ch;
+    int c;
+    char ch;
     char *buf;
     char *p;
 
@@ -517,8 +518,9 @@ static char * readfd(FILE *fd)
     buf = (char *) ecalloc(len, sizeof(char));
     for (p = buf;  ;  p++)
     {
-        if ((ch = getc(fd)) == '\n' || ch == EOF)
+        if ((c = getc(fd)) == '\n' || c == EOF)
             break;
+        ch = (char)c;
         if (p - buf >= len-1)
         {
             /*

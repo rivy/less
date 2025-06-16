@@ -239,6 +239,8 @@ static void protochar(int c, int where, int iseditproto)
     IFILE h;
     char *s;
 
+    (void)iseditproto; // avoid `unreferenced formal parameter` warning
+
 #undef  PAGE_NUM
 #define PAGE_NUM(linenum)  ((((linenum) - 1) / (sc_height - header_lines - 1)) + 1)
 

@@ -302,8 +302,11 @@ int main(int argc, char *argv[])
     init();
     commands();
     quit(QUIT_OK);
+
+    #ifndef _MSC_VER
     /*NOTREACHED*/
     return (0);
+    #endif
 }
 
 /*

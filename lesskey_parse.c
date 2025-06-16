@@ -123,6 +123,10 @@ static struct lesskey_cmdname editnames[] =
 static void parse_error(char *fmt, char *arg1)
 {
     char buf[2048];
+
+    (void)fmt; // avoid `unreferenced formal parameter` warning
+    (void)arg1; // avoid `unreferenced formal parameter` warning
+
     ++errors;
     lesskey_parse_error(buf);
 }
@@ -153,7 +157,7 @@ static char * char_string(char *buf, int ch, int lit)
 {
     if (lit || (ch >= 0x20 && ch < 0x7f))
     {
-        buf[0] = ch;
+        buf[0] = (char)ch;
         buf[1] = '\0';
     } else
     {
@@ -294,9 +298,7 @@ static int issp(char ch)
 /*
  * Skip leading spaces in a string.
  */
-    char *
-skipsp(s)
-    char *s;
+char * skipsp(char *s)
 {
     while (issp(*s))
         s++;
@@ -380,6 +382,8 @@ static char * version_line(char *s, struct lesskey_tables *tables)
     int ver;
     char *e;
     char buf[CHAR_STRING_LEN];
+
+    (void)tables; // avoid `unreferenced formal parameter` warning
 
     s += strlen("#version");
     s = skipsp(s);

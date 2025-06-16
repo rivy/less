@@ -101,6 +101,9 @@ public void pos_init(void)
 {
     struct scrpos scrpos;
 
+    scrpos.ln = 0; // avoid `potentially uninitialized local variable` warning
+    scrpos.pos = 0; // avoid `potentially uninitialized local variable` warning
+
     if (sc_height <= table_size)
         return;
     /*
@@ -168,6 +171,9 @@ public void get_scrpos(struct scrpos *scrpos, int where)
     int i;
     int dir;
     int last;
+
+    dir = 0; // avoid `potentially uninitialized local variable` warning
+    last = 0; // avoid `potentially uninitialized local variable` warning
 
     switch (where)
     {

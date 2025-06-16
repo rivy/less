@@ -444,6 +444,8 @@ static int mouse_wheel_up(void)
  */
 static int mouse_button_rel(int x, int y)
 {
+    (void)x; // avoid `unreferenced formal parameter` warning
+
     /*
      * {{ It would be better to return an action and then do this
      *    in commands() but it's nontrivial to pass y to it. }}
@@ -465,7 +467,7 @@ static int getcc_int(char *pterm)
     int digits = 0;
     for (;;)
     {
-        char ch = getcc();
+        char ch = (char)getcc();
         if (ch < '0' || ch > '9')
         {
             if (pterm != NULL) *pterm = ch;
@@ -875,6 +877,8 @@ public int add_hometable(int (*call_lesskey)(char *, int), char *envname, char *
     char *filename;
     int r;
 
+    filename = NULL; // avoid `potentially uninitialized local variable` warning
+
     if (envname != NULL && (filename = lgetenv(envname)) != NULL)
         filename = save(filename);
     else if (sysvar) /* def_filename is full path */
@@ -941,7 +945,7 @@ public int editchar(int c, int flags)
     do {
             if (nch > 0)
             c = getcc();
-        usercmd[nch] = c;
+        usercmd[nch] = (char)c;
         usercmd[nch+1] = '\0';
         nch++;
         action = ecmd_decode(usercmd, &s);
