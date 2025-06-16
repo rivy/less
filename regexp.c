@@ -168,7 +168,7 @@ static long regsize;        /* Code size. */
  * The first byte of the regexp internal "program" is actually this magic
  * number; the start node begins in the second byte.
  */
-#define MAGIC   0234
+#define MAGIC   0x78
 
 
 /*
@@ -222,7 +222,7 @@ regexp * regcomp(char *exp)
     regnpar = 1;
     regsize = 0L;
     regcode = &regdummy;
-    regc(MAGIC);
+    regc((char)MAGIC);
     if (reg(0, &flags) == NULL)
         return(NULL);
 
@@ -239,7 +239,7 @@ regexp * regcomp(char *exp)
     regparse = exp;
     regnpar = 1;
     regcode = r->program;
-    regc(MAGIC);
+    regc((char)MAGIC);
     if (reg(0, &flags) == NULL)
     {
         free(r);
@@ -713,7 +713,7 @@ int regexec2(
     }
 
     /* Check validity of program. */
-    if (UCHARAT(prog->program) != MAGIC) {
+    if (UCHARAT(prog->program) != (unsigned char)MAGIC) {
         regerror("corrupted program");
         return(0);
     }
