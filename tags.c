@@ -416,6 +416,8 @@ static POSITION ctagsearch(void)
     pos = ch_zero();
     linenum = find_linenum(pos);
 
+    linepos = 0; // avoid `uninitialized local variable` warning
+
     for (found = 0; !found;)
     {
         /*

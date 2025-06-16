@@ -22,8 +22,20 @@
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x400
 #endif
+#define WIN32_LEAN_AND_MEAN
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(disable : 4305) /* Disable truncation warning */
+#endif
+#endif
 #include <windows.h>
-public DWORD console_mode;
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(default : 4305) /* Disable truncation warning */
+#endif
+#endif
+public
+DWORD console_mode;
 public HANDLE tty;
 #else
 public int tty;

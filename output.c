@@ -14,7 +14,18 @@
 
 #include "less.h"
 #if MSDOS_COMPILER==WIN32C
-#include "windows.h"
+#define WIN32_LEAN_AND_MEAN
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(disable : 4305) /* Disable truncation warning */
+#endif
+#endif
+#include <windows.h>
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(default : 4305) /* Disable truncation warning */
+#endif
+#endif
 #ifndef COMMON_LVB_UNDERSCORE
 #define COMMON_LVB_UNDERSCORE 0x8000
 #endif

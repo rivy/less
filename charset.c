@@ -25,7 +25,17 @@
 
 #if MSDOS_COMPILER==WIN32C
 #define WIN32_LEAN_AND_MEAN
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(disable : 4305) /* Disable truncation warning */
+#endif
+#endif
 #include <windows.h>
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(default : 4305) /* Disable truncation warning */
+#endif
+#endif
 #endif
 
 extern int bs_mode;
@@ -637,7 +647,7 @@ public int is_utf8_well_formed(char *ss, size_t slen)
     } else
     {
         unsigned char mask;
-        mask = (~((1 << (8-len)) - 1)) & 0xFF;
+        mask = (unsigned char)((~((1 << (8-len)) - 1)) & 0xFF);
         if (s[0] == mask && (s[1] & mask) == 0x80)
             return (0);
     }

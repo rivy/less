@@ -273,7 +273,7 @@ static int match(char *pattern, int pattern_len, char *buf, int buf_len, char **
             char cp = *pp;
             char cl = *lp;
             if (caseless == OPT_ONPLUS && ASCII_IS_UPPER(cp))
-                cp = ASCII_TO_LOWER(cp);
+                cp = (char)(ASCII_TO_LOWER(cp));
             if (cp != cl)
                 break;
             if (pp == pattern_end || lp == buf_end)

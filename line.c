@@ -19,7 +19,17 @@
 
 #if MSDOS_COMPILER==WIN32C
 #define WIN32_LEAN_AND_MEAN
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(disable : 4305) /* Disable truncation warning */
+#endif
+#endif
 #include <windows.h>
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(default : 4305) /* Disable truncation warning */
+#endif
+#endif
 #endif
 
 #define MAX_PFX_WIDTH (MAX_LINENUM_WIDTH + MAX_STATUSCOL_WIDTH + 1)

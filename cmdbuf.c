@@ -1533,7 +1533,7 @@ static char * make_tempname(char *filename)
     char *tempname = ecalloc(1, strlen(filename)+1);
     strcpy(tempname, filename);
     lastch = tempname[strlen(tempname)-1];
-    tempname[strlen(tempname)-1] = (lastch == 'Q') ? 'Z' : 'Q';
+    tempname[strlen(tempname)-1] = (char)((lastch == 'Q') ? 'Z' : 'Q');
     return tempname;
 }
 

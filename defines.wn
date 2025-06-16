@@ -432,4 +432,8 @@
 #ifdef _MSC_VER
 /* disable warning C4996: ... POSIX name for this item is deprecated */
 #pragma warning(disable:4996)
+#if _MSC_VER <= 1200 /* Visual C++ 6.0 or earlier */
+#pragma warning(disable:4127) /* Disable conditional expression is constant warning */
+#endif
+
 #endif

@@ -203,7 +203,7 @@ static char * tstr(char **pp, int xlate)
             ch = 0;
             i = 0;
             do
-                ch = 8*ch + (*p - '0');
+                ch = (char)(8*ch + (*p - '0'));
             while (*++p >= '0' && *p <= '7' && ++i < 3);
             *pp = p;
             if (xlate && ch == CONTROL('K'))

@@ -124,8 +124,12 @@ static int help_fixup(void *r, uintmax val, int rsize, int rsigned)
             *pr = (unsigned)val;
         } else if (rsize == sizeof (unsigned long)) {
             unsigned long *pr = r;
+            #ifdef _MSC_VER
+            #if _MSC_VER > 1200 /* later than Visual C++ 6.0 */
             if (ULONG_MAX < val)
                 return TRUE;
+            #endif
+            #endif
             *pr = (unsigned long)val;
 #ifdef ULLONG_MAX
         } else if (rsize == sizeof (unsigned long long)) {

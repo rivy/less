@@ -59,10 +59,7 @@ static void pr_version(void)
     printf("%s\n", buf);
 }
 
-    NORETURN
-    static void
-pr_error(s)
-    char *s;
+NORETURN static void pr_error(char *s)
 {
     fprintf(stderr, "%s\n", s);
     exit(1);
@@ -153,7 +150,7 @@ static void add_metachar(int ch)
         }
         metachars = p;
     }
-    metachars[num_metachars++] = ch;
+    metachars[num_metachars++] = (char)ch;
     metachars[num_metachars] = '\0';
 }
 

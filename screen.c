@@ -29,7 +29,18 @@ extern int fd0;
 #endif
 #else
 #if MSDOS_COMPILER==WIN32C
+#define WIN32_LEAN_AND_MEAN
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(disable : 4305) /* Disable truncation warning */
+#endif
+#endif
 #include <windows.h>
+#ifdef _MSC_VER
+#if _MSC_VER <= 1200            /* Visual C++ 6.0 or earlier */
+#pragma warning(default : 4305) /* Disable truncation warning */
+#endif
+#endif
 #endif
 #endif
 #endif
@@ -1634,8 +1645,8 @@ static void win32_init_term(void)
             (LPVOID) NULL);
     }
 
-    size.X = scr.srWindow.Right - scr.srWindow.Left + 1;
-    size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1;
+    size.X = (SHORT)(scr.srWindow.Right - scr.srWindow.Left + 1);
+    size.Y = (SHORT)(scr.srWindow.Bottom - scr.srWindow.Top + 1);
     SetConsoleScreenBufferSize(con_out_ours, size);
     SetConsoleActiveScreenBuffer(con_out_ours);
     con_out = con_out_ours;
@@ -1923,7 +1934,7 @@ public void add_line(void)
 
     /* Move the top left corner of the source window down one row. */
     new_org.X = rcSrc.Left;
-    new_org.Y = rcSrc.Top + 1;
+    new_org.Y = (SHORT)(rcSrc.Top + 1);
 
     /* Fill the right character and attributes. */
     fillchar.Char.AsciiChar = ' ';
@@ -2049,7 +2060,7 @@ public void win32_scroll_up(int n)
     /* Get the extent of what will remain visible after scrolling. */
     GetConsoleScreenBufferInfo(con_out, &csbi);
     rcSrc.Left    = csbi.srWindow.Left;
-    rcSrc.Top     = csbi.srWindow.Top + (SHORT)n;
+    rcSrc.Top     = (SHORT)(csbi.srWindow.Top + n);
     rcSrc.Right   = csbi.srWindow.Right;
     rcSrc.Bottom  = csbi.srWindow.Bottom;
 
@@ -2073,7 +2084,7 @@ public void win32_scroll_up(int n)
 
     /* Clear remaining lines at bottom. */
     topleft.X = csbi.dwCursorPosition.X;
-    topleft.Y = rcSrc.Bottom - (SHORT)n;
+    topleft.Y = (SHORT)(rcSrc.Bottom - n);
     size = (n * csbi.dwSize.X) + (rcSrc.Right - topleft.X);
     FillConsoleOutputCharacter(con_out, ' ', size, topleft,
         &nchars);
@@ -2082,7 +2093,7 @@ public void win32_scroll_up(int n)
     SetConsoleTextAttribute(con_out, curr_attr);
 
     /* Move cursor n lines up from where it was. */
-    csbi.dwCursorPosition.Y -= (SHORT)n;
+    csbi.dwCursorPosition.Y = (SHORT)(csbi.dwCursorPosition.Y - n);
     SetConsoleCursorPosition(con_out, csbi.dwCursorPosition);
 }
 #endif
@@ -2149,8 +2160,8 @@ public void check_winch(void)
 
     flush();
     GetConsoleScreenBufferInfo(con_out, &scr);
-    size.Y = scr.srWindow.Bottom - scr.srWindow.Top + 1;
-    size.X = scr.srWindow.Right - scr.srWindow.Left + 1;
+    size.Y = (SHORT)(scr.srWindow.Bottom - scr.srWindow.Top + 1);
+    size.X = (SHORT)(scr.srWindow.Right - scr.srWindow.Left + 1);
     if (size.Y != sc_height || size.X != sc_width)
     {
         sc_height = size.Y;
@@ -2852,7 +2863,7 @@ public int win32_kbhit(void)
                     x11mousebuf[2] = (char)(X11MOUSE_OFFSET + X11MOUSE_BUTTON1 + ((int)ip.Event.MouseEvent.dwButtonState << 1));
                 break;
             case MOUSE_WHEELED:
-                x11mousebuf[2] = X11MOUSE_OFFSET + (((int)ip.Event.MouseEvent.dwButtonState < 0) ? X11MOUSE_WHEEL_DOWN : X11MOUSE_WHEEL_UP);
+                x11mousebuf[2] = (char)(X11MOUSE_OFFSET + (((int)ip.Event.MouseEvent.dwButtonState < 0) ? X11MOUSE_WHEEL_DOWN : X11MOUSE_WHEEL_UP));
                 break;
             default:
                 continue;

@@ -266,9 +266,9 @@ static void fputint(FILE *fd, unsigned int val)
             val, KRADIX*KRADIX);
         exit(1);
     }
-    c = val % KRADIX;
+    c = (char)(val % KRADIX);
     fwrite(&c, sizeof(char), 1, fd);
-    c = val / KRADIX;
+    c = (char)(val / KRADIX);
     fwrite(&c, sizeof(char), 1, fd);
 }
 

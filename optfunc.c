@@ -803,7 +803,7 @@ public void opt_rscroll(int type, char *s)
             rscroll_char = 0;
         } else
         {
-            rscroll_char = *fmt ? *fmt : '>';
+            rscroll_char = (char)(*fmt ? *fmt : '>');
             rscroll_attr = attr|AT_COLOR_RSCROLL;
         }
         break; }
@@ -962,7 +962,7 @@ public void opt_intr(int type, char *s)
     case TOGGLE:
         intr_char = *s;
         if (intr_char == '^' && s[1] != '\0')
-            intr_char = CONTROL(s[1]);
+            intr_char = (char)(CONTROL(s[1]));
         break;
     case QUERY: {
         p.p_string = prchar(intr_char);
@@ -1070,7 +1070,7 @@ public void opt_search_type(int type, char *s)
         if (def_search_type & SRCH_WRAP)       *bp++ = 'W';
         for (i = 1;  i <= NUM_SEARCH_COLORS;  i++)
             if (def_search_type & SRCH_SUBSEARCH(i))
-                *bp++ = '0'+(char)i;
+                *bp++ = (char)('0'+i);
         if (bp == buf)
             *bp++ = '-';
         *bp = '\0';

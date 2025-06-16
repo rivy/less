@@ -211,12 +211,11 @@ public void init_search(void)
  */
 static int get_cvt_ops(int search_type)
 {
-    (void)search_type; // avoid `unreferenced formal parameter` warning
-
     int ops = 0;
 
-    if (is_caseless && (!re_handles_caseless || (search_type & SRCH_NO_REGEX)))
-        ops |= CVT_TO_LC;
+    (void)search_type; // avoid `unreferenced formal parameter` warning
+
+    if (is_caseless && (!re_handles_caseless || (search_type & SRCH_NO_REGEX))) ops |= CVT_TO_LC;
     if (proc_backspace == OPT_ON || (bs_mode == BS_SPECIAL && proc_backspace == OPT_OFF))
         ops |= CVT_BS;
     if (proc_return == OPT_ON || (bs_mode != BS_CONTROL && proc_backspace == OPT_OFF))

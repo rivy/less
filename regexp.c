@@ -337,7 +337,7 @@ static char * reg(int paren /* Parenthesized? */, int *flagp)
     }
 
     /* Make a closing node, and hook it on the end. */
-    ender = regnode((paren) ? (char)(CLOSE+parno) : (char)END);
+    ender = regnode((char)((paren) ? CLOSE+parno : END));
     regtail(ret, ender);
 
     /* Hook the tails of the branches to the closing node. */
@@ -655,8 +655,8 @@ static void regtail(char *p, char *val)
         offset = (int) (scan - val);
     else
         offset = (int) (val - scan);
-    *(scan+1) = (offset>>8)&0377;
-    *(scan+2) = offset&0377;
+    *(scan+1) = (char)((offset>>8)&0377);
+    *(scan+2) = (char)(offset&0377);
 }
 
 /*
