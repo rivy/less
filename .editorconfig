@@ -34,7 +34,7 @@ end_of_line = crlf
 
 [*.{c,cc,cpp,cxx,h,hh,hpp,hxx,[Cc],[Cc][Cc],[Cc][Pp][Pp],[Cc][Xx][Xx],[Hh],[Hh][Hh],[Hh][Pp][Pp],[Hh][Xx][Xx]}]
 # C/C++
-indent_size = 3
+indent_size = 4
 smart_tabs = true  # ## unstable; ref: <https://github.com/editorconfig/editorconfig/issues/323>
 
 [*.{cjs,cjx,cts,ctx,js,jsx,mjs,mts,mtx,ts,tsx,json,jsonc,vue}]
