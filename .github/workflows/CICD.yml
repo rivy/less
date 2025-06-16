@@ -145,7 +145,7 @@ jobs:
               sudo dpkg --add-architecture amd64
               # note: list of current dpkg architectures held at '/var/lib/dpkg/arch'
               sudo apt-get -y update
-              sudo apt-get -y install lib32ncurses5-dev libncurses5-dev gcc-multilib clang
+              sudo apt-get -y install lib32ncurses-dev libncurses-dev gcc-multilib clang
             ;;
             windows-*)
               case '${{ matrix.job.compiler }}' in clang) echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH ;; esac;
