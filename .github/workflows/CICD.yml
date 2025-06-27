@@ -182,6 +182,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
+          # Build
           case '${{ matrix.job.os }}' in
             ubuntu-*)
               sudo chmod a+x ./configure
