@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.04.17)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.04.20)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -53,8 +53,7 @@ RES = $()## list of any additional required (common/shared) resources (space-sep
 # `make ...` command line flag/option defaults
 ARCH := $()## default ARCH for compilation ([$(),...]); $()/empty/null => use CC default ARCH
 CC_DEFINES := false## provide compiler info (as `CC_...` defines) to compiling targets ('truthy'-type)
-# * COLOR ~ defaults to "auto" mode ("on/true" if STDOUT is tty, "off/false" if STDOUT is redirected); respects CLICOLOR/CLICOLOR_FORCE and NO_COLOR (but overridden by `COLOR=..` on command line); refs: <https://bixense.com/clicolors> , <https://no-color.org>
-COLOR := $(or $(if ${CLICOLOR_FORCE},$(if $(filter 0,${CLICOLOR_FORCE}),$(),true),$()),$(if ${MAKE_TERMOUT},$(if $(or $(filter 0,${CLICOLOR}),${NO_COLOR}),$(),true),$()))## enable colorized output ('truthy'-type)
+COLOR := auto## defaults to "auto" mode ("on/true" if STDOUT is tty, "off/false" if STDOUT is redirected); will be modified later, in-process, to respect CLICOLOR/CLICOLOR_FORCE and NO_COLOR (but overridden by `COLOR=..` on command line); refs: <https://bixense.com/clicolors>@@<https://archive.is/mF4IA> , <https://no-color.org>@@<https://archive.ph/c32Wn>
 DEBUG := false## enable compiler debug flags/options ('truthy'-type)
 STATIC := true## compile to statically linked executable ('truthy'-type)
 VERBOSE := false## verbose `make` output ('truthy'-type)
@@ -282,6 +281,13 @@ endif
 
 ####
 
+## determine COLOR based on NO_COLOR and CLICOLOR_FORCE/CLICOLOR; refs: <https://bixense.com/clicolors>@@<https://archive.is/mF4IA> , <https://no-color.org>@@<https://archive.ph/c32Wn>
+COLOR := $(if $(call %is_truthy,${NO_COLOR}),false,${COLOR})## unconditionally NO_COLOR => COLOR=false
+COLOR := $(if $(filter auto,${COLOR}),$(if $(call %is_truthy,${CLICOLOR_FORCE}),true,${COLOR}),${COLOR})## if autoset default ('auto') && CLICOLOR_FORCE => COLOR=true
+COLOR := $(if $(filter auto,${COLOR}),$(if $(and ${CLICOLOR},$(call %is_falsey,${CLICOLOR})),false,${COLOR}),${COLOR})## if autoset default ('auto') && defined CLICOLOR && !CLICOLOR => COLOR=false
+
+####
+
 override COLOR := $(call %as_truthy,$(or $(filter-out auto,$(call %lc,${COLOR})),${MAKE_TERMOUT}))
 override DEBUG := $(call %as_truthy,${DEBUG})
 override STATIC := $(call %as_truthy,${STATIC})
@@ -301,6 +307,7 @@ color_yellow := $(if $(call %is_truthy,${COLOR}),${ESC}[0;33m,)
 color_white := $(if $(call %is_truthy,${COLOR}),${ESC}[0;37m,)
 color_bold := $(if $(call %is_truthy,${COLOR}),${ESC}[1m,)
 color_dim := $(if $(call %is_truthy,${COLOR}),${ESC}[2m,)
+color_hide := $(if $(call %is_truthy,${COLOR}),${ESC}[8;30m,)
 color_reset := $(if $(call %is_truthy,${COLOR}),${ESC}[0m,)
 #
 color_command := ${color_dim}
@@ -1386,8 +1393,9 @@ $(call %debug_var,shell_filter_targets)
 
 all_phony_targets += help
 help: ## Display help
-	@${ECHO} $(call %shell_escape,`${color_command}${make_invoke_alias}${color_reset}`)
+	@${ECHO_newline}
 	@${ECHO} $(call %shell_escape,Usage: `${color_command}${make_invoke_alias} [MAKE_TARGET...] [ARCH=32|64|..] [CC=cl|clang|gcc|..] [CC_DEFINES=<truthy>] [DEBUG=<truthy>] [STATIC=<truthy>] [SUBSYSTEM=console|windows|..] [TARGET=..] [COLOR=<truthy>] [MAKEFLAGS_debug=<truthy>] [VERBOSE=<truthy>]${color_reset}`)
+	@${ECHO_newline}
 	@${ECHO} $(call %shell_escape,Builds $(if $(filter all bins,${.DEFAULT_GOAL}),'${color_target}${.DEFAULT_GOAL}${color_reset}' targets,'${color_target}$(call %strip_leading_dotslash,${.DEFAULT_GOAL})${color_reset}') within '${color_path}$(call %strip_leading_dotslash,${current_dir})${color_reset}')
 ifeq (,${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files})
 	@${ECHO} $(call %shell_escape,$(call %info_text,Add files to project to enable more MAKEFILE_TARGETs.))
@@ -1412,7 +1420,7 @@ ifeq (${OSID},win)
 else
 	@${CAT} $(call %map,%shell_quote,${makefile_set}) | ${shell_filter_targets} | ${SORT} | ${AWK} 'match($$0,"^([^:]+):.*?${HASH}${HASH}\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }END{}'
 endif
-	@${ECHO} ${DOT}
+	@${ECHO} ${color_hide}${DOT}${color_reset}
 
 ####
 
