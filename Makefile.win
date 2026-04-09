@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.04.16)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.04.17)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -509,6 +509,7 @@ LDFLAGS += $()
 LDFLAGS_ARCH_32 := ${CFLAGS_ARCH_32}
 LDFLAGS_ARCH_64 := ${CFLAGS_ARCH_64}
 LDFLAGS_DEBUG_false := $(if $(filter nix,${OSID}),-Xlinker --strip-all,)
+LDFLAGS_DEBUG_true_STATIC_true_clang := -Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrtd
 LDFLAGS_DEBUG_true_STATIC_false_clang := -Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrtd
 LDFLAGS_DEBUG_false_STATIC_false_clang := -Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrt
 LDFLAGS_DEBUG_true_STATIC_false_gcc := -shared-libgcc -shared-libstdc++
@@ -550,10 +551,10 @@ RC_gcc_o := -o
 %ld_subsystem = $(if $(filter win,${OSID}),$(if $(filter-out file,$(origin SUBSYSTEM)),$(if $(filter gcc,${CC_ID}),-m${SUBSYSTEM},-Wl${COMMA}/subsystem:${SUBSYSTEM}),$(if $(call %eq,${SUBSYSTEM},${1}),,$(if ${1},$(if $(filter gcc,${CC_ID}),-m${1},-Wl${COMMA}/subsystem:${1}),))),)
 %LDX_flags = $(strip ${LDXFLAGS} $(call %ld_subsystem,${1}) $(foreach dir,${LIB_DIRS},-L$(call %shell_quote,${dir})) $(foreach lib,${LIBS},-l$(call %shell_quote,${lib})))
 
-# ifeq ($(CC),clang)
+# ifeq (${CC},clang)
 # LDFLAGS_dynamic := -Wl,-nodefaultlib:libcmt -lmsvcrt # only works for MSVC targets
 # endif
-# ifeq ($(CC),gcc)
+# ifeq (${CC},gcc)
 # # CFLAGS_dynamic := -fpie
 # # LDFLAGS_dynamic := -fpie
 # endif
@@ -604,7 +605,7 @@ STRIP := $()
 ## /subsystem:console,4.00 :: generate "Win32 character-mode" console application; 4.00 => minimum supported system is Win9x/NT; supported only by MSVC 9 (`cl` version "15xx" from 2008) or less
 ## /subsystem:console,5.01 :: generate "Win32 character-mode" console application; 5.01 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 32-bit
 ## /subsystem:console,5.02 :: generate "Win32 character-mode" console application; 5.02 => minimum supported system is XP; supported by MSVC 10 (`cl` version "16xx") or later when compiling for 64-bit
-CFLAGS = /nologo /W4 /WX /EHs $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
+CFLAGS = /nologo /W3 /WX /EHs $(call %cflags_incs,${INCLUDE_DIRS})## requires delayed expansion (b/c uses `%shell_quote` which is defined later)
 %cflags_incs = $(call %map,$(eval %f=/I $(call %shell_quote,$${1}))%f,$(strip ${1}))
 CFLAGS_COMPILE_ONLY := -c
 CFLAGS_ARCH_32 := $(if $(filter clang-cl,${CC}),-m32,)
@@ -887,12 +888,12 @@ $(call %debug_var,NAME)
 
 ARCH_allowed := $(sort ${ARCH_32} ${ARCH_64})
 ifneq (${ARCH},$(filter ${ARCH},${ARCH_allowed}))
-$(call %error,Unknown architecture "$(ARCH)"; valid values are [""$(subst $(SPACE),$(),$(addprefix ${COMMA}",$(addsuffix ",${ARCH_allowed})))])
+$(call %error,Unknown architecture "${ARCH}"; valid values are [""$(subst ${SPACE},$(),$(addprefix ${COMMA}",$(addsuffix ",${ARCH_allowed})))])
 endif
 
 SUBSYSTEM_allowed := $(sort console windows posix)
 ifneq (${SUBSYSTEM},$(filter ${SUBSYSTEM},${SUBSYSTEM_allowed}))
-$(call %error,Unknown subsystem "$(SUBSYSTEM)"; valid values are [""$(subst $(SPACE),$(),$(addprefix ${COMMA}",$(addsuffix ",${SUBSYSTEM_allowed})))])
+$(call %error,Unknown subsystem "${SUBSYSTEM}"; valid values are [""$(subst ${SPACE},$(),$(addprefix ${COMMA}",$(addsuffix ",${SUBSYSTEM_allowed})))])
 endif
 
 line_marker := $(if $(filter-out ${CC},clang-cl),1:,2:)
@@ -1342,7 +1343,7 @@ all_phony_targets += $()
 
 # include sibling target(s) file (if/when sibling file exists; provides easy project customization upon a stable base Makefile)
 # * note: `-include ${makefile_path}.target` is placed as late as possible, just prior to any goal/target declarations
--include ${makefile_path}.target
+-include ${makefile_path}.target.config
 
 ####
 
@@ -1391,7 +1392,9 @@ help: ## Display help
 ifeq (,${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files})
 	@${ECHO} $(call %shell_escape,$(call %info_text,Add files to project to enable more MAKEFILE_TARGETs.))
 endif
+ifneq (,${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files})
 	@${ECHO_newline}
+endif
 ifneq (,${BIN_SRC_files})
 	@${ECHO} $(call %shell_escape,* '${color_target}bins${color_reset}' will be built/stored to "${color_path}$(call %strip_leading_dotslash,${BIN_OUT_DIR_bin})${color_reset}")
 endif
@@ -1401,9 +1404,7 @@ endif
 ifneq (,${TEST_SRC_files})
 	@${ECHO} $(call %shell_escape,* '${color_target}tests${color_reset}' will be built/stored to "${color_path}$(call %strip_leading_dotslash,${TEST_OUT_DIR_bin})${color_reset}")
 endif
-ifneq (,${EG_SRC_files}${TEST_SRC_files})
 	@${ECHO_newline}
-endif
 	@${ECHO} $(call %shell_escape,MAKE_TARGETs:)
 	@${ECHO_newline}
 ifeq (${OSID},win)
@@ -1411,6 +1412,7 @@ ifeq (${OSID},win)
 else
 	@${CAT} $(call %map,%shell_quote,${makefile_set}) | ${shell_filter_targets} | ${SORT} | ${AWK} 'match($$0,"^([^:]+):.*?${HASH}${HASH}\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }END{}'
 endif
+	@${ECHO} ${DOT}
 
 ####
 
@@ -1445,7 +1447,7 @@ compile: ${OBJ_files} ${OBJ_sup_files} $(if $(filter all bins,${.DEFAULT_GOAL}),
 
 ifneq (${NULL},${BIN_SRC_files})## define 'bins' target only when bin source files are found
 all_phony_targets += bins
-bins: ${BIN_bin_files} ## Build extra project binaries
+bins: ${BIN_bin_files} ## Build project binaries
 endif
 ifneq (${NULL},${EG_SRC_files})## define 'examples' target only when examples source files are found
 all_phony_targets += examples
@@ -1453,14 +1455,14 @@ examples: ${EG_bin_files} ## Build project examples
 endif
 ifneq (${NULL},${TEST_SRC_files})## define 'test' and 'tests' targets only when test source files are found
 all_phony_targets += test tests
-test: tests $(addsuffix *[makefile.run]*,${TEST_bin_files}) ## Build/execute project tests
+test: tests $(addsuffix *[makefile.run]*,${TEST_bin_files}) ## Build and execute project tests
 tests: ${TEST_bin_files} ## Build project tests
 endif
 
 ####
 
 all_phony_targets += debug ${DEBUG_TARGET}
-debug: ${DEBUG_TARGET} ## Build a specific executable for debugging (use `DEBUG_FROM=...` to specify a specific source file)
+debug: ${DEBUG_TARGET} ## Build an executable for debugging (use `DEBUG_FROM=...` to specify a specific source file)
 
 ####
 endif ## not ${has_run_first}
@@ -1581,7 +1583,7 @@ ${TEST_OUT_DIR_obj}/%.${REZ}: ${TEST_DIR}/%.rc ${DEPS_common} | ${out_dirs}
 
 ####
 
-${DEBUG_TARGET}: ${DEBUG_OUT_FILE}
+${DEBUG_TARGET}: ${DEBUG_OUT_FILE} | ${out_dirs}
 	@${CP} $(call %shell_quote,$(call %as_os_path,$<)) $(call %shell_quote,$(call %as_os_path,${DEBUG_TARGET})) >${devnull}
 	@${ECHO} $(call %shell_escape,$(call %success_text,(re-)created '$(call %strip_leading_dotslash,${DEBUG_TARGET})'.))
 
