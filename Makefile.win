@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.04.20)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.05.13)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -331,8 +331,8 @@ color_error := ${color_red}
 %info = $(info $(call %info_text,${1}))
 %success = $(info $(call %success_text,${1}))
 %failure = $(info $(call %failure_text,${1}))
-%warn = $(warning $(call %warning_text,${1}))
-%warning = $(warning $(call %warning_text,${1}))
+%warn = $(info $(call %warning_text,${1}))
+%warning = $(info $(call %warning_text,${1}))
 
 %debug_var = $(call %debug,${1}="${${1}}")
 %info_var = $(call %info,${1}="${${1}}")
@@ -409,12 +409,27 @@ runner_position := $(firstword ${runner_positions})
 
 make_runner_ARGS := $(if ${has_runner_target},$(call %tail,$(wordlist ${runner_position},$(call %length,${make_ARGS}),${make_ARGS})),)
 
+$(call %debug_var,has_runner_first)
+$(call %debug_var,has_runner_target)
+$(call %debug_var,runner_position)
+$(call %debug_var,MAKECMDGOALS)
+$(call %debug_var,make_ARGS)
+$(call %debug_var,make_runner_ARGS)
+$(call %debug_var,ARGS_default_${has_runner_target})
+$(call %debug_var,ARGS)
+
 has_debug_target := $(strip $(call %map,$(eval %f=$$(findstring $${1},${MAKECMDGOALS}))%f,debug))
 ifneq (${has_debug_target},)
 override DEBUG := $(call %as_truthy,${true})
 endif
 $(call %debug_var,has_debug_target)
 $(call %debug_var,DEBUG)
+
+$(call %debug_var,COLOR)
+$(call %debug_var,DEBUG)
+$(call %debug_var,STATIC)
+$(call %debug_var,VERBOSE)
+$(call %debug_var,MAKEFILE_debug)
 
 ####
 
@@ -1132,7 +1147,7 @@ BUILD_DIR := ${BASEPATH}/$(or ${BUILD_PATH},${HASH}build)## note: `${HASH}build`
 
 $(call %debug_var,BUILD_DIR)
 
-CONFIG := $(if $(call %is_truthy,${DEBUG}),debug,release)
+override CONFIG := $(if $(call %is_truthy,${DEBUG}),debug,release)
 
 $(call %debug_var,CONFIG)
 
@@ -1293,7 +1308,7 @@ $(call %debug_var,TEST_cflags_includes)
 
 PROJECT_TARGET := ${OUT_DIR_bin}/${NAME}${EXEEXT}
 
-.DEFAULT_GOAL := $(if ${SRC_files},${PROJECT_TARGET},$(if ${BIN_SRC_files},bins,all))# *default* target
+.DEFAULT_GOAL := $(if ${SRC_files},${PROJECT_TARGET},$(if ${BIN_SRC_files},bins,$(if ${EG_SRC_files},examples,)))# *default* target
 
 $(call %debug_var,PROJECT_TARGET)
 $(call %debug_var,.DEFAULT_GOAL)
@@ -1329,7 +1344,7 @@ endif
 
 ####
 
-out_dirs += $(strip $(call %uniq,$(if ${has_debug_target},${DEBUG_DIR},) ${OUT_DIR} $(if $(filter-out all bins,${.DEFAULT_GOAL}),${OUT_DIR_bin},) $(if ${BIN_SRC_files},${BIN_OUT_DIR_bin},) $(if ${EG_SRC_files},${EG_OUT_DIR_bin},) $(if ${TEST_SRC_files},${TEST_OUT_DIR_bin},) $(if $(filter-out all bins,${.DEFAULT_GOAL}),${OUT_DIR_obj},) $(patsubst %/,%,$(dir ${OBJ_files} ${OBJ_sup_files} $(if ${BIN_SRC_files},${BIN_OBJ_files} ${BIN_OBJ_sup_files} ${BIN_REZ_files} ,) $(if ${EG_SRC_files},${EG_OBJ_files} ${EG_OBJ_sup_files} ${EG_REZ_files},) $(if ${TEST_SRC_files},${TEST_OBJ_files} ${TEST_OBJ_sup_files} ${TEST_REZ_files},) ${REZ_files})) ${OUT_DIR_targets}))
+out_dirs += $(strip $(call %uniq,$(if ${has_debug_target},${DEBUG_DIR},) ${OUT_DIR} $(if $(filter-out bins examples,${.DEFAULT_GOAL}),${OUT_DIR_bin},) $(if ${BIN_SRC_files},${BIN_OUT_DIR_bin},) $(if ${EG_SRC_files},${EG_OUT_DIR_bin},) $(if ${TEST_SRC_files},${TEST_OUT_DIR_bin},) $(if $(filter-out bins examples,${.DEFAULT_GOAL}),${OUT_DIR_obj},) $(patsubst %/,%,$(dir ${OBJ_files} ${OBJ_sup_files} $(if ${BIN_SRC_files},${BIN_OBJ_files} ${BIN_OBJ_sup_files} ${BIN_REZ_files} ,) $(if ${EG_SRC_files},${EG_OBJ_files} ${EG_OBJ_sup_files} ${EG_REZ_files},) $(if ${TEST_SRC_files},${TEST_OBJ_files} ${TEST_OBJ_sup_files} ${TEST_REZ_files},) ${REZ_files})) ${OUT_DIR_targets}))
 
 out_dirs_for_rules = $(strip $(call %tr,${DOLLAR} ${HASH},${DOLLAR}${DOLLAR} ${BACKSLASH}${HASH},${out_dirs}))
 
@@ -1354,7 +1369,7 @@ all_phony_targets += $()
 
 ####
 
-ifneq (${NULL},$(filter-out all bins,${.DEFAULT_GOAL}))## define 'run' target only for real executable targets (ignore 'all' or 'bins')
+ifneq (${NULL},$(filter-out all bins examples,${.DEFAULT_GOAL}))## define 'run' target only for real executable targets (ignore 'all', 'bins', 'examples', 'help')
 all_phony_targets += run
 run: ${.DEFAULT_GOAL} ## Build and execute project executable (for ARGS, use `-- [ARGS]` or `ARGS="..."`)
 	@$(strip ${RUNNER} $(call %shell_quote,$^)) ${ARGS}
@@ -1364,30 +1379,44 @@ endif
 ifeq (${false},${has_run_first})## define standard phony targets only when 'run' is not the first target (all text following 'run' is assumed to be arguments for the run; minimizes recipe duplication/overwrite warnings)
 ####
 
+have_tests := $(if $(shell go test -v ./... -list . 2>${devnull}),${true},)
+
+$(call %debug_var,have_tests)
+
 ifeq (${OSID},win)
 shell_filter_targets := ${FINDSTR} -rc:"^[a-zA-Z][^: ]*:[^=].*${HASH}${HASH}"
-shell_filter_targets := $(strip ${shell_filter_targets} $(and $(filter all bins,${.DEFAULT_GOAL}), | ${FINDSTR} -v "^run:"))
-shell_filter_targets := $(strip ${shell_filter_targets} $(if ${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files},, | ${FINDSTR} -v "^all:"))
-shell_filter_targets := $(strip ${shell_filter_targets} $(if ${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files},, | ${FINDSTR} -v "^debug:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if $(or $(call %not,${.DEFAULT_GOAL}),$(filter all bins examples,${.DEFAULT_GOAL})), | ${FINDSTR} -v "^run:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if $(or $(call %not,${.DEFAULT_GOAL}),$(filter all bins examples,${.DEFAULT_GOAL})), | ${FINDSTR} -v "^install:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if $(or $(call %not,${.DEFAULT_GOAL}),$(filter all bins examples,${.DEFAULT_GOAL})), | ${FINDSTR} -v "^uninstall:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${FINDSTR} -v "^build:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${FINDSTR} -v "^compile:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${FINDSTR} -v "^rebuild:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if ${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files},, | ${FINDSTR} -v "^all:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if ${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files},, | ${FINDSTR} -v "^debug:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${BIN_SRC_files}), | ${FINDSTR} -v "^bins:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${EG_SRC_files}), | ${FINDSTR} -v "^examples:"))
-shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${TEST_SRC_files}), | ${FINDSTR} -v "^test:"))
-shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${TEST_SRC_files}), | ${FINDSTR} -v "^tests:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${FINDSTR} -v "^coverage:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${FINDSTR} -v "^lint:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${FINDSTR} -v "^reformat:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${have_tests}), | ${FINDSTR} -v "^test:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${have_tests}), | ${FINDSTR} -v "^tests:"))
 else
 shell_filter_targets := ${GREP} -P '(?i)^[[:alpha:]][^:\s]*:[^=].*${HASH}${HASH}'
-shell_filter_targets := $(strip ${shell_filter_targets} $(and $(filter all bins,${.DEFAULT_GOAL}), | ${GREP} -Pv "^run:"))
-shell_filter_targets := $(strip ${shell_filter_targets} $(if ${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files},, | ${GREP} -Pv "^all:"))
-shell_filter_targets := $(strip ${shell_filter_targets} $(if ${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files},, | ${GREP} -Pv "^debug:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if $(or $(call %not,${.DEFAULT_GOAL}),$(filter all bins examples,${.DEFAULT_GOAL})), | ${GREP} -Pv "^run:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if $(or $(call %not,${.DEFAULT_GOAL}),$(filter all bins examples,${.DEFAULT_GOAL})), | ${GREP} -Pv "^install:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if $(or $(call %not,${.DEFAULT_GOAL}),$(filter all bins examples,${.DEFAULT_GOAL})), | ${GREP} -Pv "^uninstall:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${GREP} -Pv "^build:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${GREP} -Pv "^compile:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${GREP} -Pv "^rebuild:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if ${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files},, | ${GREP} -Pv "^all:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(if ${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files},, | ${GREP} -Pv "^debug:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${BIN_SRC_files}), | ${GREP} -Pv "^bins:"))
 shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${EG_SRC_files}), | ${GREP} -Pv "^examples:"))
-shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${TEST_SRC_files}), | ${GREP} -Pv "^test:"))
-shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${TEST_SRC_files}), | ${GREP} -Pv "^tests:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${GREP} -Pv "^coverage:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${GREP} -Pv "^lint:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${SRC_files}), | ${GREP} -Pv "^reformat:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${have_tests}), | ${GREP} -Pv "^test:"))
+shell_filter_targets := $(strip ${shell_filter_targets} $(and $(call %not,${have_tests}), | ${GREP} -Pv "^tests:"))
 endif
 $(call %debug_var,shell_filter_targets)
 
@@ -1396,7 +1425,9 @@ help: ## Display help
 	@${ECHO_newline}
 	@${ECHO} $(call %shell_escape,Usage: `${color_command}${make_invoke_alias} [MAKE_TARGET...] [ARCH=32|64|..] [CC=cl|clang|gcc|..] [CC_DEFINES=<truthy>] [DEBUG=<truthy>] [STATIC=<truthy>] [SUBSYSTEM=console|windows|..] [TARGET=..] [COLOR=<truthy>] [MAKEFLAGS_debug=<truthy>] [VERBOSE=<truthy>]${color_reset}`)
 	@${ECHO_newline}
-	@${ECHO} $(call %shell_escape,Builds $(if $(filter all bins,${.DEFAULT_GOAL}),'${color_target}${.DEFAULT_GOAL}${color_reset}' targets,'${color_target}$(call %strip_leading_dotslash,${.DEFAULT_GOAL})${color_reset}') within '${color_path}$(call %strip_leading_dotslash,${current_dir})${color_reset}')
+ifneq (,$(or ${SRC_files},${BIN_SRC_files},${EG_SRC_files}))
+	@${ECHO} $(call %shell_escape,Builds $(if $(filter all bins examples,${.DEFAULT_GOAL}),'${color_target}${.DEFAULT_GOAL}${color_reset}' targets,'${color_target}$(call %strip_leading_dotslash,${.DEFAULT_GOAL})${color_reset}') within '${color_path}$(call %strip_leading_dotslash,${current_dir})${color_reset}')
+endif
 ifeq (,${SRC_files}${BIN_SRC_files}${EG_SRC_files}${TEST_SRC_files})
 	@${ECHO} $(call %shell_escape,$(call %info_text,Add files to project to enable more MAKEFILE_TARGETs.))
 endif
@@ -1420,7 +1451,7 @@ ifeq (${OSID},win)
 else
 	@${CAT} $(call %map,%shell_quote,${makefile_set}) | ${shell_filter_targets} | ${SORT} | ${AWK} 'match($$0,"^([^:]+):.*?${HASH}${HASH}\\s*(.*)$$",m){ printf "${color_success}%-10s${color_reset}\t${color_info}%s${color_reset}\n", m[1], m[2] }END{}'
 endif
-	@${ECHO} ${color_hide}${DOT}${color_reset}
+	@${ECHO} $(call %shell_escape,${color_hide}${DOT}${color_reset})
 
 ####
 
@@ -1449,7 +1480,7 @@ rebuild: clean build ## Clean and re-build project
 all_phony_targets += all compile
 
 all: $(if $(filter all,${.DEFAULT_GOAL}),,build) $(if ${BIN_SRC_files},bins,$()) $(if ${EG_SRC_files},examples,$()) $(if ${TEST_SRC_files},tests,$()) ## Build all project targets
-compile: ${OBJ_files} ${OBJ_sup_files} $(if $(filter all bins,${.DEFAULT_GOAL}),${BIN_OBJ_files} ${BIN_sup_files},) $(if $(filter all,${.DEFAULT_GOAL}),${EG_OBJ_files} ${EG_sup_files},)## Build intermediate targets
+compile: ${OBJ_files} ${OBJ_sup_files} $(if $(filter all bins,${.DEFAULT_GOAL}),${BIN_OBJ_files} ${BIN_sup_files},) $(if $(filter all examples,${.DEFAULT_GOAL}),${EG_OBJ_files} ${EG_sup_files},)## Build intermediate targets
 
 ####
 
@@ -1611,7 +1642,8 @@ $(foreach dir,$(filter-out ${DOT} ${DOT}${DOT},${out_dirs_for_rules}),$(eval $(c
 #### * final checks and hints
 
 ifeq (${NULL},$(or ${SRC_files},${BIN_SRC_files},${EG_SRC_files}))
-$(call %warning,no source files found; is `SRC_DIR` ('${SRC_DIR}') set correctly for the project?)
+msg := no source files found; is `SRC_DIR` ('${SRC_DIR}') set correctly for the project?
+$(call %warning,${msg})
 endif
 
 # $(call %debug_var,NULL)
