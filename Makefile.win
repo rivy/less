@@ -1,9 +1,9 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2024.05.13)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2025.06.16)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
 # GNU make (gmake) compatible; ref: <https://www.gnu.org/software/make/manual>
-# Copyright (C) 2020-2024 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
+# Copyright (C) 2020-2025 ~ Roy Ivy III <rivy.dev@gmail.com>; MIT+Apache-2.0 license
 
 # NOTE: * requires `make` version 4.0+ (minimum needed for correct path functions); for windows, install using `scoop install make`
 # NOTE: `make` doesn't handle spaces within file names without gyrations (see <https://stackoverflow.com/questions/9838384/can-gnu-make-handle-filenames-with-spaces>@@<https://archive.is/PYKKq>)
@@ -534,14 +534,23 @@ LDFLAGS_DEBUG_false := $(if $(filter nix,${OSID}),-Xlinker --strip-all,)
 LDFLAGS_DEBUG_true_STATIC_true_clang := -Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrtd
 LDFLAGS_DEBUG_true_STATIC_false_clang := -Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrtd
 LDFLAGS_DEBUG_false_STATIC_false_clang := -Xlinker /NODEFAULTLIB:libcmt -Xlinker /NODEFAULTLIB:libcmtd -lmsvcrt
-LDFLAGS_DEBUG_true_STATIC_false_gcc := -shared-libgcc -shared-libstdc++
-LDFLAGS_DEBUG_false_STATIC_false_gcc := -shared-libgcc -shared-libstdc++
+# ## * gcc v10 (and earlier); dynamic linking of C++ library requires `-shared-libstdc++` option
+# LDFLAGS_DEBUG_true_STATIC_false_gcc := -shared -shared-libgcc -shared-libstdc++
+# LDFLAGS_DEBUG_false_STATIC_false_gcc := -shared -shared-libgcc -shared-libstdc++
+# ## * gcc v11+ ; dynamic linking of C++ library became the default (and `-shared-libstdc++` option removed)
+# LDFLAGS_DEBUG_true_STATIC_false_gcc := -shared -shared-libgcc
+# LDFLAGS_DEBUG_false_STATIC_false_gcc := -shared -shared-libgcc
 # LDFLAGS_STATIC_false := -pie
-# LDFLAGS_STATIC_false := -shared
+LDFLAGS_STATIC_false := -shared
 # LDFLAGS_STATIC_true := -static -static-libgcc -static-libstdc++
 LDFLAGS_STATIC_true := -static
 LDFLAGS_clang += $(if $(filter nix,${OSID}),-lstdc++,)
 LDFLAGS_gcc += -lstdc++
+# gcc-version-specific flags
+## * gcc v10 (and earlier); dynamic linking of C++ library requires `-shared-libstdc++` option
+## * gcc v11+ ; dynamic linking of C++ library became the default (and `-shared-libstdc++` option removed)
+LDFLAGS_gcc_gcc11+_false_STATIC_false := -shared-libgcc -shared-libstdc++
+LDFLAGS_gcc_gcc11+_true_STATIC_false := -shared-libgcc
 ## * resource compiler
 ## for `clang`, use `llvm-rc -H` for option help
 ## for `gcc`, use `windres --help` for option help
@@ -979,6 +988,7 @@ CC_version_Mm := $(strip ${CC_version_M}.${CC_version_m})
 
 is_clang13+ := $(call %as_truthy,$(and $(call %eq,clang,${CC_ID}),$(call %not,$(filter ${CC_version_M},0 1 2 3 4 5 6 7 8 9 10 11 12)),${true}))
 is_CL1600+ := $(call %as_truthy,$(or $(call %eq,clang-cl,${CC}),$(and $(call %eq,cl,${CC}),$(call %not,$(filter ${CC_version_M},0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15)),${true})))
+is_gcc11+ := $(call %as_truthy,$(and $(call %eq,gcc,${CC_ID}),$(call %not,$(filter ${CC_version_M},0 1 2 3 4 5 6 7 8 9 10)),${true}))
 is_VC6 := $(call %as_truthy,$(and $(call %eq,cl,${CC}),$(call %eq,12,${CC_version_M}),${true}))
 
 $(call %debug_var,CC_version)
@@ -989,6 +999,7 @@ $(call %debug_var,CC_version_r)
 $(call %debug_var,CC_version_Mm)
 $(call %debug_var,is_clang13+)
 $(call %debug_var,is_CL1600+)
+$(call %debug_var,is_gcc11+)
 $(call %debug_var,is_VC6)
 
 ####
@@ -1060,6 +1071,7 @@ LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}}
 LDFLAGS += ${LDFLAGS_STATIC_${STATIC}}
 LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}_STATIC_${STATIC}}
 LDFLAGS += ${LDFLAGS_DEBUG_${DEBUG}_STATIC_${STATIC}_${CC_ID}}
+LDFLAGS += ${LDFLAGS_${CC_ID}_gcc11+_${is_gcc11+}_STATIC_${STATIC}}
 LDFLAGS += ${LDFLAGS_VC6_${is_VC6}}## name-expanded variable is only defined for ${CC_ID}=='cl'
 LDFLAGS += ${LDFLAGS_${CC_ID}}
 LDFLAGS += ${LDFLAGS_${CC_ID}_${OSID}}
