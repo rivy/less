@@ -1,4 +1,4 @@
-# Makefile (C/C++; OOS-build support; gmake-form/style; v2026.04.09)
+# Makefile (C/C++; OOS-build support; gmake-form/style; v2026.04.10)
 # Cross-platform (bash/sh + CMD/PowerShell)
 # `bcc32`, `cl`, `clang`, `embcc32`, and `gcc` (defaults to `CC=clang`)
 # * supports multi-binary projects; adapts to project structure
@@ -80,7 +80,7 @@ makefile_abs_path := $(abspath ${makefile_path})
 makefile_dir := $(abspath $(dir ${makefile_abs_path}))
 make_invoke_alias ?= $(if $(filter-out Makefile,${makefile_path}),${MAKE} -f "${makefile_path}",${MAKE})
 current_dir := ${CURDIR}
-makefile_set := $(wildcard ${makefile_path} ${makefile_path}.config ${makefile_path}.target)
+makefile_set := $(wildcard ${makefile_path} ${makefile_path}.config ${makefile_path}.target.config)
 makefile_set_abs := $(abspath ${makefile_set})
 
 #### * determine OS ID
@@ -433,7 +433,9 @@ $(call %debug_var,MAKEFILE_debug)
 
 ####
 
-# include sibling configuration file, if exists (easier project config with a stable base Makefile)
+# include sibling configuration file, if exists
+# * enables project specific configuration from a stable/"read-only" base Makefile
+# * include of *${makefile_path}.config* occurs just at the end of basic initial configuration and function definition
 -include ${makefile_path}.config
 
 ####
@@ -1388,8 +1390,9 @@ all_phony_targets += $()
 
 ####
 
-# include sibling target(s) file (if/when sibling file exists; provides easy project customization upon a stable base Makefile)
-# * note: `-include ${makefile_path}.target` is placed as late as possible, just prior to any goal/target declarations
+# include sibling target(s) config file (if/when sibling file exists; provides easy project customization upon a stable base Makefile)
+# * enables project TARGET customizations from a stable/"read-only" base Makefile
+# * include of *${makefile_path}.target.config* occurs just after the default goal/target and any included dependencies, but prior to any other goal/target declarations
 -include ${makefile_path}.target.config
 
 ####
